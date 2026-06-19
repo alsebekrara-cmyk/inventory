@@ -280,6 +280,13 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
 .bc-prev{background:var(--bg);border:1px solid var(--bdr2);border-radius:var(--rsm);padding:10px;text-align:center;margin-top:8px}
 .bc-tag{font-size:9px;color:var(--txt3);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
 
+/* ══ ANIMATIONS ══ */
+@keyframes pulse-update {
+  0% { transform:scale(1); }
+  50% { transform:scale(1.15); opacity:0.8; }
+  100% { transform:scale(1); }
+}
+
 /* ══ RESPONSIVE ══ */
 @media(min-width:600px){
   .stats-row{grid-template-columns:repeat(4,1fr)}
@@ -759,19 +766,38 @@ function openDetCam(productCode) {
           // Check if scanned code matches this product's barcode
           if(code === productCode || code === p.origCode) {
             // Same product — add quantity
+            const prevCount = p.count;
             p.count++;
             p.totalWholesale += p.wholesalePrice;
             p.totalSell += p.sellPrice;
             p.lastScan = new Date().toISOString();
             save();
-            document.getElementById('detCamSt').innerHTML = `<span style="color:var(--grn)">✓ تمت الإضافة — العدد: ${p.count}</span>`;
-            toast(`✓ ${p.name} | ${p.count} قطعة`);
+            
+            // Updated display with more details
+            const addedAmount = fmt(p.sellPrice);
+            document.getElementById('detCamSt').innerHTML = `
+              <span style="color:var(--grn);display:block;margin-bottom:3px">✓ تمت الإضافة بنجاح</span>
+              <span style="font-size:10px;color:var(--txt2)">
+                العدد: <span style="color:var(--acc2);font-weight:700">${p.count}</span> قطعة | 
+                السعر: <span style="color:var(--grn);font-weight:700">${addedAmount} د.ع</span>
+              </span>
+            `;
+            toast(`✓ ${p.name} | +1 = ${p.count} قطعة | ${addedAmount} د.ع`);
             renderStats(); renderRecent();
             refreshDetailValues(productCode);
             setTimeout(()=>{ 
               if(document.getElementById('detCamSt')) 
-                document.getElementById('detCamSt').textContent='وجّه الكاميرا أو الجهاز — تبقى مفتوحة حتى تُغلقها يدوياً'; 
-            }, 2000);
+                document.getElementById('detCamSt').innerHTML='<i data-lucide="scan" style="width:12px;height:12px;color:var(--grn);vertical-align:middle"></i> وجّه الكاميرا أو الجهاز — تبقى مفتوحة حتى تُغلقها يدوياً';
+              lucide.createIcons();
+            }, 2500);
+          } else {
+            // Different product barcode
+            document.getElementById('detCamSt').innerHTML = `<span style="color:var(--amb)">⚠️ باركود مختلف</span><span style="display:block;font-size:9px;color:var(--txt3);margin-top:3px">هذا المنتج: ${productCode}<br>تم مسح: ${code}</span>`;
+            setTimeout(()=>{ 
+              if(document.getElementById('detCamSt')) 
+                document.getElementById('detCamSt').innerHTML='<i data-lucide="scan" style="width:12px;height:12px;color:var(--grn);vertical-align:middle"></i> وجّه الكاميرا أو الجهاز — تبقى مفتوحة حتى تُغلقها يدوياً';
+              lucide.createIcons();
+            }, 3000);
           }
         }
         detBarcodeBuffer = '';
@@ -840,14 +866,32 @@ function startDetDecode(video, productCode) {
         p.count++; p.totalWholesale += p.wholesalePrice; p.totalSell += p.sellPrice;
         p.lastScan = new Date().toISOString();
         save();
-        document.getElementById('detCamSt').innerHTML = `<span style="color:var(--grn)">✓ تمت الإضافة — العدد: ${p.count}</span>`;
-        toast(`✓ ${p.name} | ${p.count} قطعة`);
+        const addedAmount = fmt(p.sellPrice);
+        document.getElementById('detCamSt').innerHTML = `
+          <span style="color:var(--grn);display:block;margin-bottom:3px">✓ تمت الإضافة بنجاح</span>
+          <span style="font-size:10px;color:var(--txt2)">
+            العدد: <span style="color:var(--acc2);font-weight:700">${p.count}</span> قطعة | 
+            السعر: <span style="color:var(--grn);font-weight:700">${addedAmount} د.ع</span>
+          </span>
+        `;
+        toast(`✓ ${p.name} | +1 = ${p.count} قطعة | ${addedAmount} د.ع`);
         renderStats(); renderRecent();
         // Refresh the detail values
         refreshDetailValues(productCode);
+        setTimeout(()=>{ 
+          if(document.getElementById('detCamSt')) {
+            document.getElementById('detCamSt').innerHTML='<i data-lucide="scan" style="width:12px;height:12px;color:var(--grn);vertical-align:middle"></i> وجّه الكاميرا أو الجهاز — تبقى مفتوحة حتى تُغلقها يدوياً';
+            lucide.createIcons();
+          }
+        }, 2500);
       } else {
-        document.getElementById('detCamSt').innerHTML = `<span style="color:var(--amb)">⚠️ باركود مختلف: ${code}</span>`;
-        setTimeout(()=>{ if(document.getElementById('detCamSt')) document.getElementById('detCamSt').textContent='وجّه الكاميرا — تبقى مفتوحة حتى تُغلقها يدوياً'; }, 2000);
+        document.getElementById('detCamSt').innerHTML = `<span style="color:var(--amb)">⚠️ باركود مختلف</span><span style="display:block;font-size:9px;color:var(--txt3);margin-top:3px">هذا المنتج: ${productCode}<br>تم مسح: ${code}</span>`;
+        setTimeout(()=>{ 
+          if(document.getElementById('detCamSt')) {
+            document.getElementById('detCamSt').innerHTML='<i data-lucide="scan" style="width:12px;height:12px;color:var(--grn);vertical-align:middle"></i> وجّه الكاميرا أو الجهاز — تبقى مفتوحة حتى تُغلقها يدوياً';
+            lucide.createIcons();
+          }
+        }, 3000);
       }
     }catch(e){}
   }, 300);
@@ -856,9 +900,28 @@ function startDetDecode(video, productCode) {
 function refreshDetailValues(code) {
   const p = DB[code]; if(!p) return;
   const el = id => document.getElementById('dv-'+id);
-  if(el('cnt')) el('cnt').textContent = p.count.toLocaleString();
-  if(el('tot')) el('tot').textContent = fmt(p.totalSell) + ' د.ع';
-  if(el('prf')) el('prf').textContent = fmt(p.totalSell - p.totalWholesale) + ' د.ع';
+  
+  // Update with animation effect
+  if(el('cnt')) {
+    el('cnt').style.animation = 'none';
+    el('cnt').offsetHeight; // Trigger reflow
+    el('cnt').style.animation = 'pulse-update 0.6s ease';
+    el('cnt').textContent = p.count.toLocaleString();
+  }
+  
+  if(el('tot')) {
+    el('tot').style.animation = 'none';
+    el('tot').offsetHeight; // Trigger reflow
+    el('tot').style.animation = 'pulse-update 0.6s ease';
+    el('tot').textContent = fmt(p.totalSell) + ' د.ع';
+  }
+  
+  if(el('prf')) {
+    el('prf').style.animation = 'none';
+    el('prf').offsetHeight; // Trigger reflow
+    el('prf').style.animation = 'pulse-update 0.6s ease';
+    el('prf').textContent = fmt(p.totalSell - p.totalWholesale) + ' د.ع';
+  }
 }
 
 function stopDetStream() {
@@ -1029,11 +1092,11 @@ function showDetail(code) {
       <div class="det-cat">${p.cat}${p.sub?' · '+p.sub:''}</div>
     </div>
     <div class="det-grid">
-      <div class="di"><div class="di-lbl">العدد</div><div class="di-val acc" id="dv-cnt">${p.count.toLocaleString()}</div></div>
-      <div class="di"><div class="di-lbl">سعر البيع</div><div class="di-val grn">${fmt(p.sellPrice)} د.ع</div></div>
+      <div class="di"><div class="di-lbl">العدد (قطعة)</div><div class="di-val acc" id="dv-cnt">${p.count.toLocaleString()}</div></div>
+      <div class="di"><div class="di-lbl">سعر القطعة</div><div class="di-val grn">${fmt(p.sellPrice)} د.ع</div></div>
       <div class="di"><div class="di-lbl">سعر الجملة</div><div class="di-val">${fmt(p.wholesalePrice)} د.ع</div></div>
       <div class="di"><div class="di-lbl">ربح القطعة</div><div class="di-val ${profit>=0?'grn':''}">${fmt(profit)} د.ع</div></div>
-      <div class="di"><div class="di-lbl">إجمالي المخزون</div><div class="di-val" id="dv-tot">${fmt(p.totalSell)} د.ع</div></div>
+      <div class="di"><div class="di-lbl">إجمالي البيع</div><div class="di-val grn" id="dv-tot">${fmt(p.totalSell)} د.ع</div></div>
       <div class="di"><div class="di-lbl">الربح الكلي</div><div class="di-val grn" id="dv-prf">${fmt(profitTotal)} د.ع</div></div>
     </div>
     <div class="det-bc">
