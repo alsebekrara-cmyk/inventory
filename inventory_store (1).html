@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>سنتر الملابس — نظام الجرد الذكي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
+<style>
+:root {
+  --bg: #0f1117;
+  --bg2: #161822;
+  --bg3: #1e2030;
+  --bg4: #252740;
+  --surface: #1a1c2e;
+  --surface2: #222438;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --accent: #6c63ff;
+  --accent2: #8b85ff;
+  --accent-glow: rgba(108,99,255,0.25);
+  --green: #10d9a0;
+  --green2: #0fb888;
+  --green-bg: rgba(16,217,160,0.1);
+  --red: #ff5c6c;
+  --red-bg: rgba(255,92,108,0.1);
+  --amber: #fbbf24;
+  --amber-bg: rgba(251,191,36,0.1);
+  --blue: #38bdf8;
+  --blue-bg: rgba(56,189,248,0.1);
+  --pink: #f472b6;
+  --pink-bg: rgba(244,114,182,0.1);
+  --text: #e8eaf6;
+  --text2: #9092b0;
+  --text3: #5c5e7a;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --radius-lg: 20px;
+  --shadow: 0 8px 32px rgba(0,0,0,0.4);
+  --shadow-sm: 0 2px 12px rgba(0,0,0,0.3);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: 'IBM Plex Sans Arabic', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  direction: rtl;
+  overflow-x: hidden;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+
+/* ── LAYOUT ── */
+.app { display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ── HEADER ── */
+.header {
+  background: linear-gradient(135deg, #1a1c2e 0%, #161828 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+  backdrop-filter: blur(20px);
+}
+.header-brand { display: flex; align-items: center; gap: 10px; }
+.header-logo {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), #9c8fff);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px var(--accent-glow);
+}
+.header-logo svg { color: #fff; }
+.header-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.header-sub { font-size: 11px; color: var(--text2); margin-top: 1px; }
+.header-actions { display: flex; gap: 8px; }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: var(--radius-sm);
+  font-size: 12px; font-weight: 600; font-family: inherit;
+  cursor: pointer; border: none; transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn svg { width: 14px; height: 14px; }
+.btn-ghost {
+  background: var(--surface2); color: var(--text2);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { background: var(--bg4); color: var(--text); border-color: var(--border2); }
+.btn-accent {
+  background: linear-gradient(135deg, var(--accent), #8b85ff);
+  color: #fff; box-shadow: 0 4px 16px var(--accent-glow);
+}
+.btn-accent:hover { transform: translateY(-1px); box-shadow: 0 6px 24px var(--accent-glow); }
+.btn-green {
+  background: var(--green-bg); color: var(--green);
+  border: 1px solid rgba(16,217,160,0.2);
+}
+.btn-green:hover { background: rgba(16,217,160,0.18); }
+.btn-red {
+  background: var(--red-bg); color: var(--red);
+  border: 1px solid rgba(255,92,108,0.2);
+}
+.btn-red:hover { background: rgba(255,92,108,0.18); }
+.icon-btn {
+  width: 32px; height: 32px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface2); color: var(--text2);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+}
+.icon-btn svg { width: 14px; height: 14px; }
+.icon-btn:hover { background: var(--bg4); color: var(--text); border-color: var(--border2); }
+.icon-btn.danger:hover { background: var(--red-bg); color: var(--red); border-color: rgba(255,92,108,0.3); }
+.icon-btn.success:hover { background: var(--green-bg); color: var(--green); border-color: rgba(16,217,160,0.3); }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-around;
+  padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+  backdrop-filter: blur(20px);
+}
+.nav-item {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 6px 18px; border-radius: var(--radius-sm);
+  cursor: pointer; transition: all 0.2s; color: var(--text3);
+  font-size: 10px; font-weight: 600; font-family: inherit; border: none; background: none;
+}
+.nav-item svg { width: 20px; height: 20px; transition: all 0.2s; }
+.nav-item.active { color: var(--accent2); }
+.nav-item.active svg { filter: drop-shadow(0 0 6px var(--accent)); }
+.nav-scan-btn {
+  width: 52px; height: 52px; border-radius: 16px;
+  background: linear-gradient(135deg, var(--accent), #8b85ff);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; border: none; margin-top: -20px;
+  box-shadow: 0 4px 20px var(--accent-glow);
+  transition: all 0.2s;
+}
+.nav-scan-btn:hover { transform: scale(1.06); box-shadow: 0 6px 28px var(--accent-glow); }
+.nav-scan-btn svg { width: 24px; height: 24px; color: #fff; }
+
+/* ── PAGE CONTENT ── */
+.page { display: none; padding: 16px; padding-bottom: 90px; }
+.page.active { display: block; }
+
+/* ── SCAN PAGE ── */
+.scan-hero {
+  background: linear-gradient(135deg, var(--surface) 0%, var(--bg3) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.scan-hero::before {
+  content: '';
+  position: absolute; top: -60px; left: -60px;
+  width: 160px; height: 160px; border-radius: 50%;
+  background: var(--accent-glow);
+  filter: blur(40px);
+  pointer-events: none;
+}
+.scan-hero-title { font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+.scan-hero-title svg { width: 14px; height: 14px; color: var(--accent2); }
+.scan-input-row { display: flex; gap: 8px; align-items: center; }
+.scan-field-wrap { flex: 1; position: relative; }
+.scan-field {
+  width: 100%;
+  padding: 12px 16px 12px 44px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border2);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  font-family: 'JetBrains Mono', monospace;
+  direction: ltr;
+  letter-spacing: 1px;
+  transition: border-color 0.2s;
+}
+.scan-field:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+.scan-field::placeholder { font-family: 'IBM Plex Sans Arabic', sans-serif; direction: rtl; letter-spacing: 0; color: var(--text3); font-size: 13px; }
+.scan-field-icon {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  color: var(--text3); pointer-events: none;
+}
+.scan-field-icon svg { width: 16px; height: 16px; }
+.scan-actions { display: flex; gap: 8px; margin-top: 10px; }
+.scan-result {
+  margin-top: 12px; padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  display: none;
+}
+.scan-result.success { background: var(--green-bg); color: var(--green); border: 1px solid rgba(16,217,160,0.2); }
+.scan-result.info { background: var(--blue-bg); color: var(--blue); border: 1px solid rgba(56,189,248,0.2); }
+.scan-result svg { width: 14px; height: 14px; vertical-align: -2px; margin-left: 4px; }
+
+/* CAMERA MODAL */
+.camera-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.9);
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center;
+  backdrop-filter: blur(8px);
+}
+.camera-overlay.open { display: flex; }
+.camera-box {
+  background: var(--bg2);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border2);
+  padding: 20px;
+  width: min(420px, 95vw);
+  box-shadow: var(--shadow);
+}
+.camera-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.camera-header h3 { font-size: 15px; font-weight: 700; }
+.camera-viewport {
+  width: 100%; aspect-ratio: 4/3;
+  border-radius: var(--radius);
+  overflow: hidden; background: #000;
+  position: relative;
+}
+#cameraVideo { width: 100%; height: 100%; object-fit: cover; }
+.camera-frame {
+  position: absolute; inset: 0; pointer-events: none;
+  display: flex; align-items: center; justify-content: center;
+}
+.camera-reticle {
+  width: 200px; height: 120px;
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  box-shadow: 0 0 0 9999px rgba(0,0,0,0.35);
+  position: relative;
+}
+.camera-reticle::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  animation: scanLine 2s ease-in-out infinite;
+}
+@keyframes scanLine {
+  0% { top: 0; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: calc(100% - 2px); opacity: 0; }
+}
+.camera-corners { position: absolute; inset: -2px; }
+.camera-corner {
+  position: absolute; width: 16px; height: 16px;
+  border-color: #fff; border-style: solid;
+}
+.camera-corner.tl { top: 0; right: 0; border-width: 2px 0 0 2px; border-radius: 0 0 0 4px; }
+.camera-corner.tr { top: 0; left: 0; border-width: 2px 2px 0 0; border-radius: 0 0 4px 0; }
+.camera-corner.bl { bottom: 0; right: 0; border-width: 0 0 2px 2px; border-radius: 4px 0 0 0; }
+.camera-corner.br { bottom: 0; left: 0; border-width: 0 2px 2px 0; border-radius: 0 4px 0 0; }
+.camera-status { text-align: center; margin-top: 12px; font-size: 12px; color: var(--text2); }
+.camera-actions { display: flex; gap: 8px; margin-top: 14px; }
+.camera-select-wrap { margin-bottom: 12px; }
+.camera-select {
+  width: 100%; padding: 8px 12px; border-radius: var(--radius-sm);
+  background: var(--bg3); border: 1px solid var(--border2);
+  color: var(--text); font-family: inherit; font-size: 12px;
+}
+.camera-select:focus { outline: none; border-color: var(--accent); }
+
+/* ── STATS GRID ── */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  position: relative; overflow: hidden;
+}
+.stat-card::after {
+  content: '';
+  position: absolute; top: -20px; right: -20px;
+  width: 60px; height: 60px; border-radius: 50%;
+  opacity: 0.08;
+}
+.stat-card.c-purple::after { background: var(--accent); }
+.stat-card.c-green::after { background: var(--green); }
+.stat-card.c-blue::after { background: var(--blue); }
+.stat-card.c-amber::after { background: var(--amber); }
+.stat-card.c-red::after { background: var(--red); }
+.stat-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 10px;
+}
+.stat-icon svg { width: 16px; height: 16px; }
+.stat-card.c-purple .stat-icon { background: rgba(108,99,255,0.15); color: var(--accent2); }
+.stat-card.c-green .stat-icon { background: var(--green-bg); color: var(--green); }
+.stat-card.c-blue .stat-icon { background: var(--blue-bg); color: var(--blue); }
+.stat-card.c-amber .stat-icon { background: var(--amber-bg); color: var(--amber); }
+.stat-card.c-red .stat-icon { background: var(--red-bg); color: var(--red); }
+.stat-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+.stat-value { font-size: 20px; font-weight: 700; color: var(--text); }
+.stat-value.small { font-size: 15px; }
+.stat-sub { font-size: 10px; color: var(--text3); margin-top: 2px; }
+
+/* ── SECTION HEADING ── */
+.section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.section-head h2 { font-size: 13px; font-weight: 700; color: var(--text2); display: flex; align-items: center; gap: 6px; }
+.section-head h2 svg { width: 14px; height: 14px; color: var(--accent2); }
+
+/* ── PRODUCT CARDS ── */
+.product-list { display: flex; flex-direction: column; gap: 8px; }
+.product-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 13px 14px;
+  display: flex; align-items: center; gap: 12px;
+  transition: all 0.2s;
+  cursor: default;
+}
+.product-card:hover { border-color: var(--border2); background: var(--surface2); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.product-card.highlight { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 4px 20px var(--accent-glow); }
+.prod-icon {
+  width: 42px; height: 42px; border-radius: 11px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.prod-info { flex: 1; min-width: 0; }
+.prod-name {
+  font-size: 14px; font-weight: 700; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.prod-cat { font-size: 11px; color: var(--text2); margin-top: 2px; }
+.prod-code {
+  font-size: 10px; color: var(--text3);
+  font-family: 'JetBrains Mono', monospace;
+  direction: ltr; text-align: right; margin-top: 2px;
+}
+.prod-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+.prod-count {
+  background: rgba(108,99,255,0.15); color: var(--accent2);
+  font-size: 12px; font-weight: 700;
+  padding: 3px 10px; border-radius: 99px;
+  border: 1px solid rgba(108,99,255,0.2);
+}
+.prod-sell { font-size: 13px; font-weight: 700; color: var(--green); }
+.prod-wholesale { font-size: 10px; color: var(--text3); }
+.prod-actions { display: flex; gap: 5px; margin-right: 4px; }
+.new-pulse {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--green-bg); color: var(--green);
+  font-size: 10px; font-weight: 700;
+  padding: 2px 8px; border-radius: 99px;
+  border: 1px solid rgba(16,217,160,0.25);
+}
+.new-pulse::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.7); } }
+
+/* ── FILTER BAR ── */
+.filter-bar { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 14px; scrollbar-width: none; }
+.filter-bar::-webkit-scrollbar { display: none; }
+.filter-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 13px; border-radius: 99px;
+  font-size: 12px; font-weight: 600; font-family: inherit;
+  cursor: pointer; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text2);
+  white-space: nowrap; transition: all 0.2s;
+}
+.filter-chip:hover { border-color: var(--border2); color: var(--text); }
+.filter-chip.active { background: rgba(108,99,255,0.15); border-color: rgba(108,99,255,0.3); color: var(--accent2); }
+
+/* ── SEARCH ── */
+.search-wrap { position: relative; margin-bottom: 14px; }
+.search-field {
+  width: 100%; padding: 10px 14px 10px 40px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text); font-size: 13px; font-family: inherit;
+}
+.search-field:focus { outline: none; border-color: var(--accent); background: var(--surface2); }
+.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text3); pointer-events: none; }
+.search-icon svg { width: 15px; height: 15px; }
+
+/* ── MODAL ── */
+.modal-bg {
+  position: fixed; inset: 0; z-index: 400;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(6px);
+  display: none; align-items: flex-end; justify-content: center;
+  padding: 16px;
+}
+.modal-bg.open { display: flex; }
+.modal {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-lg) var(--radius-lg) var(--radius) var(--radius);
+  padding: 22px;
+  width: 100%; max-width: 480px;
+  max-height: 92vh; overflow-y: auto;
+  box-shadow: var(--shadow);
+  animation: slideUp 0.25s ease;
+}
+@keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-drag { width: 36px; height: 4px; background: var(--border2); border-radius: 99px; margin: 0 auto 18px; }
+.modal h2 { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+.modal h2 svg { width: 18px; height: 18px; color: var(--accent2); }
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 7px; display: block; }
+.form-input, .form-select {
+  width: 100%; padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: var(--bg3);
+  color: var(--text); font-size: 14px; font-family: inherit;
+  transition: border-color 0.2s;
+}
+.form-input:focus, .form-select:focus { outline: none; border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px var(--accent-glow); }
+.form-select option { background: var(--bg3); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.modal-actions { display: flex; gap: 8px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); justify-content: flex-end; }
+
+/* ── BARCODE PREVIEW ── */
+.bc-preview {
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 14px; text-align: center; margin-top: 12px;
+}
+.bc-tag { font-size: 10px; color: var(--text3); margin-bottom: 8px; }
+.bc-bars { display: flex; gap: 1.5px; justify-content: center; align-items: flex-end; height: 44px; margin-bottom: 6px; overflow: hidden; }
+.bc-num { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text2); letter-spacing: 2px; direction: ltr; }
+.bc-badge {
+  display: inline-flex; align-items: center; gap: 5px; margin-top: 8px;
+  background: var(--accent-glow); color: var(--accent2);
+  font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 99px;
+  border: 1px solid rgba(108,99,255,0.2);
+}
+.bc-badge svg { width: 12px; height: 12px; }
+
+/* ── REPORT PAGE ── */
+.report-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px; margin-bottom: 14px; overflow: hidden;
+}
+.report-card h3 { font-size: 13px; font-weight: 700; color: var(--text2); margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+.report-card h3 svg { width: 14px; height: 14px; color: var(--accent2); }
+.rtable { width: 100%; border-collapse: collapse; font-size: 12px; }
+.rtable th {
+  text-align: right; padding: 9px 12px;
+  background: var(--bg3); color: var(--text3);
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+}
+.rtable td { padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--text); }
+.rtable tr:last-child td { border-bottom: none; }
+.rtable tr:hover td { background: var(--bg3); }
+.rtable .mono { font-family: 'JetBrains Mono', monospace; font-size: 10px; direction: ltr; }
+.profit-pos { color: var(--green); font-weight: 700; }
+.profit-neg { color: var(--red); font-weight: 700; }
+
+/* ── EMPTY STATE ── */
+.empty {
+  text-align: center; padding: 48px 20px; color: var(--text3);
+}
+.empty-icon {
+  width: 56px; height: 56px; border-radius: 16px;
+  background: var(--surface); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 14px;
+}
+.empty-icon svg { width: 24px; height: 24px; color: var(--text3); }
+.empty h3 { font-size: 14px; font-weight: 600; color: var(--text2); margin-bottom: 4px; }
+.empty p { font-size: 12px; color: var(--text3); }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--surface2); color: var(--text);
+  border: 1px solid var(--border2);
+  padding: 10px 18px; border-radius: var(--radius);
+  font-size: 13px; font-weight: 600;
+  z-index: 600; opacity: 0;
+  transition: all 0.3s;
+  white-space: nowrap;
+  box-shadow: var(--shadow);
+  display: flex; align-items: center; gap: 8px;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast svg { width: 15px; height: 15px; }
+.toast.t-green { border-color: rgba(16,217,160,0.3); }
+.toast.t-green svg { color: var(--green); }
+.toast.t-red { border-color: rgba(255,92,108,0.3); }
+.toast.t-red svg { color: var(--red); }
+
+/* ── SETTINGS PAGE ── */
+.settings-section { margin-bottom: 20px; }
+.settings-section h3 { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+.settings-item {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 6px;
+}
+.settings-item-info { display: flex; align-items: center; gap: 10px; }
+.settings-item-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.settings-item-icon svg { width: 15px; height: 15px; }
+.settings-item-label { font-size: 13px; font-weight: 600; color: var(--text); }
+.settings-item-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+
+/* ── COUNT BADGE ── */
+.badge-count-sm {
+  background: var(--accent-glow);
+  color: var(--accent2);
+  font-size: 10px; font-weight: 700;
+  padding: 1px 7px; border-radius: 99px;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 480px) {
+  .header { padding: 10px 14px; }
+  .page { padding: 12px; padding-bottom: 90px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .form-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-brand">
+    <div class="header-logo">
+      <i data-lucide="shirt" style="width:18px;height:18px;color:#fff"></i>
+    </div>
+    <div>
+      <div class="header-title">سنتر الملابس</div>
+      <div class="header-sub">نظام الجرد الذكي</div>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-ghost" onclick="exportData()">
+      <i data-lucide="download"></i> تصدير
+    </button>
+    <button class="btn btn-red" onclick="confirmClear()">
+      <i data-lucide="trash-2"></i>
+    </button>
+  </div>
+</header>
+
+<!-- PAGES -->
+<!-- SCAN PAGE -->
+<div class="page active" id="page-scan">
+  <div class="scan-hero">
+    <div class="scan-hero-title">
+      <i data-lucide="scan-barcode"></i> مسح الباركود أو إدخاله يدوياً
+    </div>
+    <div class="scan-input-row">
+      <div class="scan-field-wrap">
+        <div class="scan-field-icon"><i data-lucide="hash"></i></div>
+        <input class="scan-field" id="scanInput" placeholder="امسح أو اكتب الباركود..." autocomplete="off">
+      </div>
+      <button class="btn btn-accent" onclick="processScan()">
+        <i data-lucide="corner-down-left"></i> إدخال
+      </button>
+    </div>
+    <div class="scan-actions">
+      <button class="btn btn-green" onclick="openCamera()" style="flex:1">
+        <i data-lucide="camera"></i> فتح الكاميرا لمسح الباركود
+      </button>
+    </div>
+    <div class="scan-result" id="scanResult"></div>
+  </div>
+
+  <div class="stats-grid" id="statsGrid"></div>
+
+  <div class="section-head">
+    <h2><i data-lucide="clock-4"></i> آخر المسحوبات</h2>
+    <span class="badge-count-sm" id="recentCount">0</span>
+  </div>
+  <div class="product-list" id="recentList"></div>
+</div>
+
+<!-- PRODUCTS PAGE -->
+<div class="page" id="page-products">
+  <div class="search-wrap">
+    <div class="search-icon"><i data-lucide="search"></i></div>
+    <input class="search-field" id="searchField" placeholder="ابحث عن منتج..." oninput="renderProducts()">
+  </div>
+  <div class="filter-bar" id="filterBar"></div>
+  <div class="section-head">
+    <h2><i data-lucide="package"></i> المنتجات</h2>
+    <span class="badge-count-sm" id="productCount">0</span>
+  </div>
+  <div class="product-list" id="productList"></div>
+</div>
+
+<!-- REPORT PAGE -->
+<div class="page" id="page-report">
+  <div class="stats-grid" id="reportStats"></div>
+  <div class="report-card">
+    <h3><i data-lucide="pie-chart"></i> تقرير حسب الفئة</h3>
+    <div style="overflow-x:auto">
+      <table class="rtable">
+        <thead><tr><th>الفئة</th><th>الأصناف</th><th>القطع</th><th>رأس المال</th><th>البيع</th><th>الربح</th></tr></thead>
+        <tbody id="catBody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="report-card">
+    <h3><i data-lucide="list"></i> تفاصيل المنتجات</h3>
+    <div style="overflow-x:auto">
+      <table class="rtable">
+        <thead><tr><th>المنتج</th><th>الفئة</th><th>العدد</th><th>الجملة</th><th>البيع</th><th>الإجمالي</th><th>الباركود</th></tr></thead>
+        <tbody id="allBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS PAGE -->
+<div class="page" id="page-settings">
+  <div class="settings-section">
+    <h3>البيانات</h3>
+    <div class="settings-item">
+      <div class="settings-item-info">
+        <div class="settings-item-icon" style="background:var(--green-bg)">
+          <i data-lucide="download" style="color:var(--green)"></i>
+        </div>
+        <div>
+          <div class="settings-item-label">تصدير البيانات CSV</div>
+          <div class="settings-item-sub">لفتحه في Excel</div>
+        </div>
+      </div>
+      <button class="btn btn-green" onclick="exportData()"><i data-lucide="download"></i> تصدير</button>
+    </div>
+    <div class="settings-item">
+      <div class="settings-item-info">
+        <div class="settings-item-icon" style="background:var(--amber-bg)">
+          <i data-lucide="upload" style="color:var(--amber)"></i>
+        </div>
+        <div>
+          <div class="settings-item-label">استيراد نسخة احتياطية</div>
+          <div class="settings-item-sub">ملف JSON</div>
+        </div>
+      </div>
+      <label class="btn btn-ghost" style="cursor:pointer">
+        <i data-lucide="upload"></i> استيراد
+        <input type="file" accept=".json" style="display:none" onchange="importData(event)">
+      </label>
+    </div>
+    <div class="settings-item">
+      <div class="settings-item-info">
+        <div class="settings-item-icon" style="background:var(--blue-bg)">
+          <i data-lucide="save" style="color:var(--blue)"></i>
+        </div>
+        <div>
+          <div class="settings-item-label">حفظ نسخة احتياطية</div>
+          <div class="settings-item-sub">ملف JSON للحفظ</div>
+        </div>
+      </div>
+      <button class="btn btn-ghost" onclick="backupData()"><i data-lucide="save"></i> حفظ</button>
+    </div>
+    <div class="settings-item">
+      <div class="settings-item-info">
+        <div class="settings-item-icon" style="background:var(--red-bg)">
+          <i data-lucide="trash-2" style="color:var(--red)"></i>
+        </div>
+        <div>
+          <div class="settings-item-label">مسح جميع البيانات</div>
+          <div class="settings-item-sub">لا يمكن التراجع</div>
+        </div>
+      </div>
+      <button class="btn btn-red" onclick="confirmClear()"><i data-lucide="trash-2"></i> مسح</button>
+    </div>
+  </div>
+  <div class="settings-section">
+    <h3>معلومات التطبيق</h3>
+    <div class="settings-item">
+      <div class="settings-item-info">
+        <div class="settings-item-icon" style="background:rgba(108,99,255,0.15)">
+          <i data-lucide="info" style="color:var(--accent2)"></i>
+        </div>
+        <div>
+          <div class="settings-item-label">نظام الجرد الذكي</div>
+          <div class="settings-item-sub">الإصدار 2.0 — سنتر الملابس</div>
+        </div>
+      </div>
+    </div>
+    <div class="settings-item" style="margin-top:6px">
+      <div class="settings-item-info">
+        <div class="settings-item-icon" style="background:var(--green-bg)">
+          <i data-lucide="database" style="color:var(--green)"></i>
+        </div>
+        <div>
+          <div class="settings-item-label">إجمالي الأصناف</div>
+          <div class="settings-item-sub" id="settingsInfo">جارٍ الحساب...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-item active" id="nav-scan" onclick="switchPage('scan')">
+    <i data-lucide="scan-line"></i>
+    <span>مسح</span>
+  </button>
+  <button class="nav-item" id="nav-products" onclick="switchPage('products')">
+    <i data-lucide="package"></i>
+    <span>منتجات</span>
+  </button>
+  <button class="nav-scan-btn" onclick="openCamera()" title="مسح بالكاميرا">
+    <i data-lucide="camera"></i>
+  </button>
+  <button class="nav-item" id="nav-report" onclick="switchPage('report')">
+    <i data-lucide="bar-chart-2"></i>
+    <span>تقارير</span>
+  </button>
+  <button class="nav-item" id="nav-settings" onclick="switchPage('settings')">
+    <i data-lucide="settings-2"></i>
+    <span>إعدادات</span>
+  </button>
+</nav>
+
+<!-- CAMERA OVERLAY -->
+<div class="camera-overlay" id="cameraOverlay">
+  <div class="camera-box">
+    <div class="camera-header">
+      <h3><i data-lucide="camera" style="width:16px;height:16px;vertical-align:-3px;margin-left:6px"></i> مسح الباركود بالكاميرا</h3>
+      <button class="icon-btn" onclick="closeCamera()"><i data-lucide="x"></i></button>
+    </div>
+    <div class="camera-select-wrap" id="cameraSelectWrap" style="display:none">
+      <select class="camera-select" id="cameraSelect" onchange="switchCamera()">
+      </select>
+    </div>
+    <div class="camera-viewport">
+      <video id="cameraVideo" autoplay playsinline muted></video>
+      <div class="camera-frame">
+        <div class="camera-reticle">
+          <div class="camera-corners">
+            <div class="camera-corner tl"></div>
+            <div class="camera-corner tr"></div>
+            <div class="camera-corner bl"></div>
+            <div class="camera-corner br"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="camera-status" id="cameraStatus">تهيئة الكاميرا...</div>
+    <div class="camera-actions">
+      <button class="btn btn-ghost" style="flex:1" onclick="toggleFlash()" id="flashBtn">
+        <i data-lucide="zap"></i> الفلاش
+      </button>
+      <button class="btn btn-red" style="flex:1" onclick="closeCamera()">
+        <i data-lucide="x"></i> إغلاق
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD / EDIT MODAL -->
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <h2 id="modalTitle"></h2>
+    <div id="modalBody"></div>
+    <div class="modal-actions" id="modalActions"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <i data-lucide="check-circle" id="toastIcon"></i>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────
+const CATS = {
+  'ملابس نسائية':   ['بنطلون نسائي','قميص نسائي','صاية','جبة','فستان','بلوزة','تيشيرت نسائي','منوعات نسائية'],
+  'ملابس رجالية':   ['بنطلون رجالي','قميص رجالي','جبة','دشداشة','تيشيرت رجالي','بيجاما','منوعات رجالية'],
+  'ملابس أطفال':    ['بنطلون أطفال','قميص أطفال','قوط أطفال','فستان أطفال','تيشيرت أطفال','منوعات أطفال'],
+  'ملابس بيبي':     ['قوط بيبي','بدلة بيبي','قميص بيبي','رومبر','منوعات بيبي'],
+  'ملابس ولادة':    ['فستان ولادة','بلوزة ولادة','بنطلون ولادة','منوعات ولادة'],
+  'حقائب نسائية':  ['حقيبة يد','حقيبة ظهر','حقيبة سفر','محفظة نسائية','منوعات حقائب'],
+  'أحذية نسائية':  ['حذاء كعب عالي','حذاء رياضي نسائي','حذاء مفتوح','بوت نسائي','منوعات أحذية نسائية'],
+  'أحذية أطفال':   ['حذاء أطفال','حذاء رياضي أطفال','بوت أطفال','منوعات أحذية أطفال'],
+  'أحذية بيبي':    ['حذاء بيبي','سليبر بيبي','منوعات أحذية بيبي'],
+  'شحاطات رجالية': ['شحاطة رجالي','سليبر رجالي','بابوج رجالي','منوعات شحاطات رجالية'],
+  'شحاطات نسائية': ['شحاطة نسائي','سليبر نسائي','بابوج نسائي','منوعات شحاطات نسائية'],
+  'شحاطات أطفال':  ['شحاطة أطفال','سليبر أطفال','بابوج أطفال','منوعات شحاطات أطفال'],
+  'سليبرات':        ['سليبر ناعم','سليبر رياضي','سليبر بيت','سليبر بيبي','منوعات سليبرات']
+};
+const CAT_EMOJI = {
+  'ملابس نسائية':'👗','ملابس رجالية':'👔','ملابس أطفال':'🧒',
+  'ملابس بيبي':'👶','ملابس ولادة':'🤱','حقائب نسائية':'👜',
+  'أحذية نسائية':'👠','أحذية أطفال':'👟','أحذية بيبي':'🥿',
+  'شحاطات رجالية':'🩴','شحاطات نسائية':'🩴','شحاطات أطفال':'🩴','سليبرات':'🩴'
+};
+const CAT_BG = [
+  '#1e1030','#102030','#1e2810','#2e1010','#1e1030',
+  '#2e1830','#101830','#102820','#281020','#102028',
+  '#182810','#281810','#101828'
+];
+const CAT_KEYS = Object.keys(CATS);
+
+let db = {};
+let recentScans = [];
+let currentPage = 'scan';
+let filterCat = 'all';
+let codeReader = null;
+let videoStream = null;
+let availableCameras = [];
+let currentCameraIndex = 0;
+let flashTrack = null;
+let flashOn = false;
+
+try { db = JSON.parse(localStorage.getItem('inv_db_v3') || '{}'); } catch(e) { db = {}; }
+
+function save() {
+  try { localStorage.setItem('inv_db_v3', JSON.stringify(db)); } catch(e) {}
+}
+
+function genCode() {
+  const ts = Date.now().toString(36).toUpperCase();
+  const r = Math.random().toString(36).slice(2,5).toUpperCase();
+  return 'ITM-' + ts + '-' + r;
+}
+
+function drawBars(seed) {
+  let n = 0;
+  for(let i=0;i<seed.length;i++) n = (n*31 + seed.charCodeAt(i)) >>> 0;
+  let html = '';
+  for(let i=0;i<60;i++){
+    n = (n * 1664525 + 1013904223) >>> 0;
+    const w = (n % 3) + 1;
+    const h = 14 + (n % 26);
+    const dark = (n % 3) !== 1;
+    if(dark) html += `<div style="width:${w}px;background:var(--text2);height:${h}px;flex-shrink:0;border-radius:1px"></div>`;
+    else html += `<div style="width:${Math.max(1,w-1)}px;height:${h}px;flex-shrink:0"></div>`;
+  }
+  return html;
+}
+
+const fmt = n => Math.round(n).toLocaleString('ar-IQ');
+
+// ── TOAST ──────────────────────────────────────
+let toastTimer = null;
+function showToast(msg, type='green') {
+  clearTimeout(toastTimer);
+  const t = document.getElementById('toast');
+  const icon = document.getElementById('toastIcon');
+  document.getElementById('toastMsg').textContent = msg;
+  t.className = 'toast t-' + type;
+  icon.setAttribute('data-lucide', type==='green' ? 'check-circle' : type==='red' ? 'alert-circle' : 'info');
+  lucide.createIcons();
+  t.classList.add('show');
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── SCAN ──────────────────────────────────────
+function processScan() {
+  const inp = document.getElementById('scanInput');
+  const code = inp.value.trim();
+  if (!code) { inp.focus(); return; }
+  inp.value = '';
+  inp.focus();
+  handleCode(code);
+}
+
+function handleCode(code) {
+  const res = document.getElementById('scanResult');
+  if (db[code]) {
+    db[code].count++;
+    db[code].totalWholesale += db[code].wholesalePrice;
+    db[code].totalSell += db[code].sellPrice;
+    save();
+    const p = db[code];
+    recentScans.unshift({ ...p, code, time: new Date().toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'}) });
+    if (recentScans.length > 12) recentScans.pop();
+    res.style.display = 'flex';
+    res.className = 'scan-result success';
+    res.innerHTML = `<i data-lucide="check-circle"></i> <b>${p.name}</b> — تمت الإضافة، العدد الآن: <b>${p.count} قطعة</b>`;
+    lucide.createIcons({ nodes: [res] });
+    renderStats(); renderRecent();
+    showToast(`✓ ${p.name} — ${p.count} قطعة`);
+    // highlight the card
+    setTimeout(() => { const c = document.querySelector(`[data-code="${code}"]`); if(c) { c.classList.add('highlight'); setTimeout(()=>c.classList.remove('highlight'),2000); } }, 100);
+  } else {
+    res.style.display = 'flex';
+    res.className = 'scan-result info';
+    res.innerHTML = `<i data-lucide="info"></i> باركود جديد — سيتم إنشاء سجل للمنتج`;
+    lucide.createIcons({ nodes: [res] });
+    showAddModal(code);
+  }
+}
+
+// ── CAMERA ──────────────────────────────────────
+async function openCamera() {
+  const overlay = document.getElementById('cameraOverlay');
+  overlay.classList.add('open');
+  document.getElementById('cameraStatus').textContent = 'جارٍ تهيئة الكاميرا...';
+  try {
+    // Get available cameras
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    availableCameras = devices.filter(d => d.kind === 'videoinput');
+    const sel = document.getElementById('cameraSelect');
+    const wrap = document.getElementById('cameraSelectWrap');
+    if (availableCameras.length > 1) {
+      sel.innerHTML = availableCameras.map((d,i) => `<option value="${d.deviceId}">${d.label || 'كاميرا ' + (i+1)}</option>`).join('');
+      // Default to back camera
+      const backIdx = availableCameras.findIndex(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('rear') || d.label.toLowerCase().includes('environment'));
+      if (backIdx >= 0) { sel.selectedIndex = backIdx; currentCameraIndex = backIdx; }
+      wrap.style.display = 'block';
+    }
+    await startCameraStream();
+  } catch(err) {
+    document.getElementById('cameraStatus').textContent = '⚠️ تعذر الوصول للكاميرا: ' + err.message;
+  }
+}
+
+async function startCameraStream() {
+  if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); }
+  const video = document.getElementById('cameraVideo');
+  const sel = document.getElementById('cameraSelect');
+  const deviceId = sel.value || undefined;
+
+  const constraints = {
+    video: deviceId
+      ? { deviceId: { exact: deviceId }, facingMode: { ideal: 'environment' } }
+      : { facingMode: { ideal: 'environment' } }
+  };
+
+  try {
+    videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+    video.srcObject = videoStream;
+    flashTrack = videoStream.getVideoTracks()[0];
+    document.getElementById('cameraStatus').textContent = 'وجّه الكاميرا نحو الباركود...';
+    startZxingDecode();
+  } catch(err) {
+    document.getElementById('cameraStatus').textContent = '⚠️ ' + err.message;
+  }
+}
+
+function switchCamera() {
+  startCameraStream();
+}
+
+let decodeInterval = null;
+function startZxingDecode() {
+  clearInterval(decodeInterval);
+  const video = document.getElementById('cameraVideo');
+  // Use ZXing if available
+  if (typeof ZXing !== 'undefined') {
+    try {
+      const hints = new Map();
+      const formats = [
+        ZXing.BarcodeFormat.QR_CODE,
+        ZXing.BarcodeFormat.CODE_128,
+        ZXing.BarcodeFormat.CODE_39,
+        ZXing.BarcodeFormat.EAN_13,
+        ZXing.BarcodeFormat.EAN_8,
+        ZXing.BarcodeFormat.UPC_A,
+        ZXing.BarcodeFormat.UPC_E,
+        ZXing.BarcodeFormat.DATA_MATRIX,
+        ZXing.BarcodeFormat.ITF,
+        ZXing.BarcodeFormat.CODABAR,
+      ];
+      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, formats);
+      hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+      codeReader = new ZXing.BrowserMultiFormatReader(hints);
+      codeReader.decodeFromVideoDevice(
+        document.getElementById('cameraSelect').value || undefined,
+        'cameraVideo',
+        (result, err) => {
+          if (result) {
+            const code = result.getText();
+            document.getElementById('cameraStatus').innerHTML = `<span style="color:var(--green)">✓ تم قراءة: ${code}</span>`;
+            closeCamera();
+            handleCode(code);
+          }
+        }
+      );
+    } catch(e) {
+      fallbackDecode(video);
+    }
+  } else {
+    fallbackDecode(video);
+  }
+}
+
+function fallbackDecode(video) {
+  // Canvas-based fallback with BarcodeDetector API
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if ('BarcodeDetector' in window) {
+    const detector = new BarcodeDetector({ formats: ['qr_code','code_128','code_39','ean_13','ean_8','upc_a','upc_e','itf','codabar','data_matrix'] });
+    decodeInterval = setInterval(async () => {
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0);
+        try {
+          const codes = await detector.detect(canvas);
+          if (codes.length > 0) {
+            clearInterval(decodeInterval);
+            const code = codes[0].rawValue;
+            document.getElementById('cameraStatus').innerHTML = `<span style="color:var(--green)">✓ تم قراءة: ${code}</span>`;
+            closeCamera();
+            handleCode(code);
+          }
+        } catch(e) {}
+      }
+    }, 300);
+    document.getElementById('cameraStatus').textContent = 'وجّه الكاميرا نحو الباركود...';
+  } else {
+    document.getElementById('cameraStatus').innerHTML = 'المتصفح لا يدعم مسح الباركود تلقائياً.<br>يرجى إدخال الباركود يدوياً أعلاه.';
+  }
+}
+
+async function toggleFlash() {
+  if (!flashTrack) return;
+  try {
+    flashOn = !flashOn;
+    await flashTrack.applyConstraints({ advanced: [{ torch: flashOn }] });
+    const btn = document.getElementById('flashBtn');
+    btn.style.color = flashOn ? 'var(--amber)' : '';
+    btn.style.borderColor = flashOn ? 'var(--amber)' : '';
+  } catch(e) { showToast('الفلاش غير متاح', 'red'); flashOn = false; }
+}
+
+function closeCamera() {
+  clearInterval(decodeInterval);
+  if (codeReader) { try { codeReader.reset(); } catch(e){} codeReader = null; }
+  if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
+  flashOn = false; flashTrack = null;
+  document.getElementById('cameraVideo').srcObject = null;
+  document.getElementById('cameraOverlay').classList.remove('open');
+  document.getElementById('cameraSelectWrap').style.display = 'none';
+}
+
+// ── MODAL ──────────────────────────────────────
+function showAddModal(origCode) {
+  const newCode = genCode();
+  document.getElementById('modalTitle').innerHTML = `<i data-lucide="plus-circle"></i> إضافة منتج جديد`;
+  const catOpts = CAT_KEYS.map(c => `<option value="${c}">${c}</option>`).join('');
+  document.getElementById('modalBody').innerHTML = `
+    <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:16px;font-size:11px;color:var(--text2);display:flex;align-items:center;gap:8px">
+      <i data-lucide="scan-barcode" style="width:14px;height:14px;color:var(--accent2);flex-shrink:0"></i>
+      <span>الباركود الممسوح: <span style="font-family:JetBrains Mono,monospace;color:var(--text);direction:ltr;display:inline-block">${origCode}</span></span>
+    </div>
+    <div class="form-group">
+      <label class="form-label">اسم المنتج *</label>
+      <input class="form-input" id="fName" placeholder="مثال: قميص رجالي كتان أبيض">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">الفئة الرئيسية</label>
+        <select class="form-select" id="fCat" onchange="updateSubCat()">${catOpts}</select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">الفئة الفرعية</label>
+        <select class="form-select" id="fSubCat"></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">سعر الجملة (د.ع)</label>
+        <input class="form-input" id="fWp" type="number" placeholder="0" min="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">سعر البيع (د.ع)</label>
+        <input class="form-input" id="fSp" type="number" placeholder="0" min="0">
+      </div>
+    </div>
+    <div class="bc-preview">
+      <div class="bc-tag">الباركود الجديد للمنتج بعد الحفظ</div>
+      <div class="bc-bars">${drawBars(newCode)}</div>
+      <div class="bc-num">${newCode}</div>
+      <div class="bc-badge"><i data-lucide="shield-check"></i> باركود فريد تلقائي</div>
+    </div>
+  `;
+  document.getElementById('modalActions').innerHTML = `
+    <button class="btn btn-ghost" onclick="closeModal()"><i data-lucide="x"></i> إلغاء</button>
+    <button class="btn btn-accent" onclick="saveNew('${origCode}','${newCode}')"><i data-lucide="save"></i> حفظ وإضافة</button>
+  `;
+  updateSubCat();
+  openModal();
+  lucide.createIcons();
+  setTimeout(() => document.getElementById('fName').focus(), 200);
+}
+
+function updateSubCat() {
+  const cat = document.getElementById('fCat').value;
+  document.getElementById('fSubCat').innerHTML = (CATS[cat]||[]).map(s=>`<option>${s}</option>`).join('');
+}
+
+function saveNew(origCode, newCode) {
+  const name = document.getElementById('fName').value.trim();
+  if (!name) { document.getElementById('fName').focus(); showToast('أدخل اسم المنتج', 'red'); return; }
+  const cat = document.getElementById('fCat').value;
+  const sub = document.getElementById('fSubCat').value;
+  const wp = parseFloat(document.getElementById('fWp').value) || 0;
+  const sp = parseFloat(document.getElementById('fSp').value) || 0;
+  db[newCode] = { name, cat, sub, wholesalePrice: wp, sellPrice: sp, count: 1, totalWholesale: wp, totalSell: sp, origCode, createdAt: new Date().toISOString() };
+  save();
+  recentScans.unshift({ ...db[newCode], code: newCode, time: new Date().toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'}) });
+  if (recentScans.length > 12) recentScans.pop();
+  closeModal();
+  renderStats(); renderRecent();
+  showToast(`تمت إضافة: ${name}`);
+  const res = document.getElementById('scanResult');
+  res.style.display = 'flex';
+  res.className = 'scan-result success';
+  res.innerHTML = `<i data-lucide="check-circle"></i> تمت إضافة <b>${name}</b> بباركود: <b style="font-family:JetBrains Mono,monospace;font-size:10px">${newCode}</b>`;
+  lucide.createIcons({nodes:[res]});
+}
+
+function showEditModal(code) {
+  const p = db[code]; if (!p) return;
+  document.getElementById('modalTitle').innerHTML = `<i data-lucide="edit-3"></i> تعديل المنتج`;
+  const catOpts = CAT_KEYS.map(c => `<option value="${c}"${c===p.cat?' selected':''}>${c}</option>`).join('');
+  const subOpts = (CATS[p.cat]||[]).map(s => `<option${s===p.sub?' selected':''}>${s}</option>`).join('');
+  document.getElementById('modalBody').innerHTML = `
+    <div class="form-group"><label class="form-label">اسم المنتج</label><input class="form-input" id="eName" value="${p.name}"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">الفئة</label><select class="form-select" id="eCat" onchange="editSub()">${catOpts}</select></div>
+      <div class="form-group"><label class="form-label">الفئة الفرعية</label><select class="form-select" id="eSubCat">${subOpts}</select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">سعر الجملة (د.ع)</label><input class="form-input" id="eWp" type="number" value="${p.wholesalePrice}" min="0"></div>
+      <div class="form-group"><label class="form-label">سعر البيع (د.ع)</label><input class="form-input" id="eSp" type="number" value="${p.sellPrice}" min="0"></div>
+    </div>
+    <div class="form-group"><label class="form-label">العدد (القطع)</label><input class="form-input" id="eCnt" type="number" value="${p.count}" min="0"></div>
+  `;
+  document.getElementById('modalActions').innerHTML = `
+    <button class="btn btn-ghost" onclick="closeModal()"><i data-lucide="x"></i> إلغاء</button>
+    <button class="btn btn-accent" onclick="saveEdit('${code}')"><i data-lucide="save"></i> حفظ</button>
+  `;
+  openModal(); lucide.createIcons();
+}
+
+function editSub() {
+  const cat = document.getElementById('eCat').value;
+  document.getElementById('eSubCat').innerHTML = (CATS[cat]||[]).map(s=>`<option>${s}</option>`).join('');
+}
+
+function saveEdit(code) {
+  const p = db[code]; if (!p) return;
+  p.name = document.getElementById('eName').value.trim() || p.name;
+  p.cat = document.getElementById('eCat').value;
+  p.sub = document.getElementById('eSubCat').value;
+  p.wholesalePrice = parseFloat(document.getElementById('eWp').value) || 0;
+  p.sellPrice = parseFloat(document.getElementById('eSp').value) || 0;
+  p.count = parseInt(document.getElementById('eCnt').value) || 0;
+  p.totalWholesale = p.wholesalePrice * p.count;
+  p.totalSell = p.sellPrice * p.count;
+  save(); closeModal();
+  renderStats(); renderProducts(); renderRecent();
+  showToast('تم حفظ التعديلات');
+}
+
+function deleteProduct(code) {
+  if (!db[code]) return;
+  if (!confirm(`حذف "${db[code].name}"؟`)) return;
+  delete db[code]; save();
+  renderStats(); renderProducts(); renderRecent();
+  showToast('تم الحذف', 'red');
+}
+
+function regenBarcode(code) {
+  const p = db[code]; if (!p) return;
+  if (!confirm(`إنشاء باركود جديد لـ "${p.name}"؟`)) return;
+  const nc = genCode();
+  db[nc] = { ...p, origCode: code };
+  delete db[code]; save();
+  renderProducts(); renderRecent(); renderStats();
+  showToast('تم إنشاء باركود جديد');
+}
+
+function openModal() { document.getElementById('modalBg').classList.add('open'); }
+function closeModal() { document.getElementById('modalBg').classList.remove('open'); }
+
+// ── RENDER ──────────────────────────────────────
+function renderStats() {
+  const items = Object.values(db);
+  const totalPcs = items.reduce((a,b)=>a+b.count,0);
+  const tw = items.reduce((a,b)=>a+b.totalWholesale,0);
+  const ts = items.reduce((a,b)=>a+b.totalSell,0);
+  const profit = ts - tw;
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card c-purple">
+      <div class="stat-icon"><i data-lucide="package-2"></i></div>
+      <div class="stat-label">إجمالي القطع</div>
+      <div class="stat-value">${totalPcs.toLocaleString()}</div>
+      <div class="stat-sub">${items.length} صنف</div>
+    </div>
+    <div class="stat-card c-blue">
+      <div class="stat-icon"><i data-lucide="banknote"></i></div>
+      <div class="stat-label">رأس المال</div>
+      <div class="stat-value small">${fmt(tw)}</div>
+      <div class="stat-sub">د.ع جملة</div>
+    </div>
+    <div class="stat-card c-green">
+      <div class="stat-icon"><i data-lucide="tag"></i></div>
+      <div class="stat-label">إجمالي البيع</div>
+      <div class="stat-value small">${fmt(ts)}</div>
+      <div class="stat-sub">د.ع</div>
+    </div>
+    <div class="stat-card ${profit>=0?'c-amber':'c-red'}">
+      <div class="stat-icon"><i data-lucide="trending-up"></i></div>
+      <div class="stat-label">الربح المتوقع</div>
+      <div class="stat-value small">${fmt(profit)}</div>
+      <div class="stat-sub">د.ع</div>
+    </div>
+  `;
+  lucide.createIcons({ nodes: [document.getElementById('statsGrid')] });
+}
+
+function productCardHTML(code, p, isRecent) {
+  const catIdx = CAT_KEYS.indexOf(p.cat);
+  const bg = CAT_BG[Math.max(0, catIdx) % CAT_BG.length];
+  const em = CAT_EMOJI[p.cat] || '📦';
+  return `<div class="product-card" data-code="${code}">
+    <div class="prod-icon" style="background:${bg}">${em}</div>
+    <div class="prod-info">
+      <div class="prod-name">${p.name}</div>
+      <div class="prod-cat">${p.cat}${p.sub?' · '+p.sub:''}</div>
+      <div class="prod-code">${code}</div>
+    </div>
+    <div class="prod-right">
+      ${isRecent ? '<div class="new-pulse">+1 قطعة</div>' : `<div class="prod-count">${p.count} قطعة</div>`}
+      <div class="prod-sell">${fmt(p.sellPrice)} د.ع</div>
+      <div class="prod-wholesale">جملة: ${fmt(p.wholesalePrice)}</div>
+    </div>
+    ${!isRecent ? `<div class="prod-actions">
+      <button class="icon-btn" onclick="showEditModal('${code}')" title="تعديل"><i data-lucide="edit-3"></i></button>
+      <button class="icon-btn success" onclick="regenBarcode('${code}')" title="باركود جديد"><i data-lucide="refresh-cw"></i></button>
+      <button class="icon-btn danger" onclick="deleteProduct('${code}')" title="حذف"><i data-lucide="trash-2"></i></button>
+    </div>` : ''}
+  </div>`;
+}
+
+function renderRecent() {
+  const el = document.getElementById('recentList');
+  document.getElementById('recentCount').textContent = recentScans.length;
+  if (!recentScans.length) {
+    el.innerHTML = `<div class="empty">
+      <div class="empty-icon"><i data-lucide="scan-line"></i></div>
+      <h3>لا توجد مسحوبات بعد</h3>
+      <p>امسح باركود للبدء</p>
+    </div>`;
+    lucide.createIcons({ nodes: [el] }); return;
+  }
+  el.innerHTML = recentScans.map(p => productCardHTML(p.code, p, true)).join('');
+  lucide.createIcons({ nodes: [el] });
+}
+
+function renderProducts() {
+  const el = document.getElementById('productList');
+  const fb = document.getElementById('filterBar');
+  const q = (document.getElementById('searchField')?.value || '').trim().toLowerCase();
+  fb.innerHTML = `<button class="filter-chip${filterCat==='all'?' active':''}" onclick="setFilter('all')">الكل</button>` +
+    CAT_KEYS.map(c => `<button class="filter-chip${filterCat===c?' active':''}" onclick="setFilter('${c}')">${CAT_EMOJI[c]||''} ${c}</button>`).join('');
+  let entries = Object.entries(db);
+  if (filterCat !== 'all') entries = entries.filter(([k,v]) => v.cat === filterCat);
+  if (q) entries = entries.filter(([k,v]) => v.name.toLowerCase().includes(q) || v.cat.includes(q) || k.toLowerCase().includes(q));
+  document.getElementById('productCount').textContent = entries.length;
+  if (!entries.length) {
+    el.innerHTML = `<div class="empty">
+      <div class="empty-icon"><i data-lucide="package-x"></i></div>
+      <h3>لا توجد منتجات</h3>
+      <p>${q ? 'لا نتائج للبحث' : 'ابدأ بمسح باركود'}</p>
+    </div>`;
+    lucide.createIcons({ nodes: [el] }); return;
+  }
+  el.innerHTML = entries.map(([code,p]) => productCardHTML(code, p, false)).join('');
+  lucide.createIcons({ nodes: [el] });
+}
+
+function setFilter(cat) { filterCat = cat; renderProducts(); }
+
+function renderReport() {
+  const items = Object.values(db);
+  const entries = Object.entries(db);
+  const tw = items.reduce((a,b)=>a+b.totalWholesale,0);
+  const ts = items.reduce((a,b)=>a+b.totalSell,0);
+  const total = items.reduce((a,b)=>a+b.count,0);
+  document.getElementById('reportStats').innerHTML = `
+    <div class="stat-card c-purple">
+      <div class="stat-icon"><i data-lucide="layers"></i></div>
+      <div class="stat-label">إجمالي القطع</div>
+      <div class="stat-value">${total.toLocaleString()}</div>
+    </div>
+    <div class="stat-card c-blue">
+      <div class="stat-icon"><i data-lucide="archive"></i></div>
+      <div class="stat-label">الأصناف</div>
+      <div class="stat-value">${items.length}</div>
+    </div>
+    <div class="stat-card c-green">
+      <div class="stat-icon"><i data-lucide="trending-up"></i></div>
+      <div class="stat-label">الربح المتوقع</div>
+      <div class="stat-value small">${fmt(ts-tw)}</div>
+      <div class="stat-sub">د.ع</div>
+    </div>
+    <div class="stat-card c-amber">
+      <div class="stat-icon"><i data-lucide="percent"></i></div>
+      <div class="stat-label">هامش الربح</div>
+      <div class="stat-value">${tw>0?Math.round((ts-tw)/tw*100):0}%</div>
+    </div>
+  `;
+  lucide.createIcons({ nodes: [document.getElementById('reportStats')] });
+  const bycat = {};
+  items.forEach(p => {
+    if (!bycat[p.cat]) bycat[p.cat] = { items: 0, count: 0, w: 0, s: 0 };
+    bycat[p.cat].items++; bycat[p.cat].count += p.count;
+    bycat[p.cat].w += p.totalWholesale; bycat[p.cat].s += p.totalSell;
+  });
+  document.getElementById('catBody').innerHTML = Object.entries(bycat).map(([cat,v]) =>
+    `<tr>
+      <td>${CAT_EMOJI[cat]||''} ${cat}</td>
+      <td>${v.items}</td><td>${v.count.toLocaleString()}</td>
+      <td>${fmt(v.w)}</td><td>${fmt(v.s)}</td>
+      <td class="${v.s-v.w>=0?'profit-pos':'profit-neg'}">${fmt(v.s-v.w)}</td>
+    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text3)">لا توجد بيانات</td></tr>';
+  document.getElementById('allBody').innerHTML = entries.map(([code,p]) =>
+    `<tr>
+      <td style="font-weight:600;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</td>
+      <td style="font-size:11px;color:var(--text2)">${p.cat}</td>
+      <td>${p.count}</td>
+      <td>${fmt(p.wholesalePrice)}</td>
+      <td style="color:var(--green);font-weight:600">${fmt(p.sellPrice)}</td>
+      <td>${fmt(p.totalSell)}</td>
+      <td class="mono">${code.slice(-14)}</td>
+    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text3)">لا توجد بيانات</td></tr>';
+}
+
+function renderSettings() {
+  const items = Object.values(db);
+  const total = items.reduce((a,b)=>a+b.count,0);
+  document.getElementById('settingsInfo').textContent = `${items.length} صنف — ${total.toLocaleString()} قطعة`;
+}
+
+// ── PAGE SWITCH ──────────────────────────────────────
+function switchPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.getElementById('nav-'+page)?.classList.add('active');
+  currentPage = page;
+  if (page === 'products') renderProducts();
+  if (page === 'report') renderReport();
+  if (page === 'scan') { renderStats(); renderRecent(); }
+  if (page === 'settings') renderSettings();
+}
+
+// ── EXPORT / IMPORT / BACKUP ──────────────────────────────────────
+function exportData() {
+  const rows = [['اسم المنتج','الفئة','الفئة الفرعية','الباركود','العدد','سعر الجملة','سعر البيع','إجمالي الجملة','إجمالي البيع','الربح المتوقع']];
+  Object.entries(db).forEach(([code,p]) =>
+    rows.push([p.name,p.cat,p.sub||'',code,p.count,p.wholesalePrice,p.sellPrice,p.totalWholesale,p.totalSell,(p.totalSell-p.totalWholesale)])
+  );
+  const csv = '\uFEFF' + rows.map(r => r.map(c => '"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'جرد_' + new Date().toLocaleDateString('ar-IQ').replace(/\//g,'-') + '.csv';
+  a.click();
+  showToast('تم تصدير ملف CSV');
+}
+
+function backupData() {
+  const a = document.createElement('a');
+  a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(db, null, 2));
+  a.download = 'backup_inventory_' + Date.now() + '.json';
+  a.click();
+  showToast('تم حفظ النسخة الاحتياطية');
+}
+
+function importData(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      if (typeof imported === 'object') {
+        Object.assign(db, imported);
+        save(); renderStats(); renderRecent();
+        showToast('تم الاستيراد بنجاح — ' + Object.keys(imported).length + ' صنف');
+      }
+    } catch(err) { showToast('خطأ في ملف الاستيراد', 'red'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+function confirmClear() {
+  if (!confirm('⚠️ مسح جميع بيانات الجرد؟\nلا يمكن التراجع عن هذه العملية.')) return;
+  db = {}; save(); recentScans = [];
+  document.getElementById('scanResult').style.display = 'none';
+  renderStats(); renderRecent();
+  showToast('تم مسح جميع البيانات', 'red');
+}
+
+// ── KEYBOARD ──────────────────────────────────────
+document.getElementById('scanInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') processScan();
+});
+
+// ── INIT ──────────────────────────────────────
+lucide.createIcons();
+renderStats();
+renderRecent();
+</script>
+</body>
+</html>
