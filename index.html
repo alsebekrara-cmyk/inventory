@@ -407,6 +407,7 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
   </div>
   <button class="ni" id="ni-labels" onclick="switchPg('labels')"><i data-lucide="tag"></i><span>بطاقات</span></button>
   <button class="ni" id="ni-report" onclick="switchPg('report')"><i data-lucide="bar-chart-2"></i><span>تقارير</span></button>
+  <button class="ni" id="ni-settings" onclick="switchPg('settings')"><i data-lucide="settings"></i><span>إعدادات</span></button>
 </nav>
 
 </div><!-- /app -->
@@ -449,6 +450,43 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
   </div>
 </div>
 
+<!-- PRINT MODAL -->
+<div class="mbg" id="printMbg" onclick="if(event.target===this)closePrintModal()">
+  <div class="mdl">
+    <div class="mhnd"></div>
+    <div class="mtit"><i data-lucide="printer"></i> طباعة الملصقات</div>
+    <div style="margin-bottom:12px">
+      <label class="fl">اختر نوع الطابعة</label>
+      <select class="fsl" id="printerType" onchange="updatePrintPreview()">
+        <option value="thermal">طابعة حرارية (80 ملم)</option>
+        <option value="thermal58">طابعة حرارية (58 ملم)</option>
+        <option value="standard">طابعة عادية A4</option>
+      </select>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div>
+        <label class="fl">عدد النسخ للمنتج</label>
+        <input class="fi" id="printerQty" type="number" value="1" min="1" max="100">
+      </div>
+      <div>
+        <label class="fl">حجم الخط</label>
+        <select class="fsl" id="printerFontSize">
+          <option value="small">صغير</option>
+          <option value="medium" selected>متوسط</option>
+          <option value="large">كبير</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-bottom:12px">
+      <label class="fl">المنتجات</label>
+      <div id="printProducts" style="max-height:40vh;overflow-y:auto;border:1px solid var(--bdr);border-radius:var(--rsm);padding:8px;background:var(--bg3)">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+    <div class="macts" id="printMacts"></div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"><i data-lucide="check-circle" id="toastIco"></i><span id="toastTxt"></span></div>
 
@@ -469,11 +507,18 @@ const CATS = {
   'شحاطات رجالية':['شحاطة رجالي','سليبر رجالي','بابوج رجالي','منوعات شحاطات رجالية'],
   'شحاطات نسائية':['شحاطة نسائي','سليبر نسائي','بابوج نسائي','منوعات شحاطات نسائية'],
   'شحاطات أطفال': ['شحاطة أطفال','سليبر أطفال','بابوج أطفال','منوعات شحاطات أطفال'],
-  'سليبرات':       ['سليبر ناعم','سليبر رياضي','سليبر بيت','سليبر بيبي','منوعات سليبرات']
+  'سليبرات':       ['سليبر ناعم','سليبر رياضي','سليبر بيت','سليبر بيبي','منوعات سليبرات'],
+  'تراكات رجالية': ['تراك قطن','تراك بولي','تراك رياضي','تراك مختلط','منوعات تراكات رجالية'],
+  'تراكات نسائية': ['تراك قطن نسائي','تراك بولي نسائي','تراك رياضي نسائي','تراك مختلط نسائي','منوعات تراكات نسائية'],
+  'شورتات رجالية': ['شورت قطن','شورت بولي','شورت رياضي','شورت جينز','منوعات شورتات رجالية'],
+  'شورتات نسائية': ['شورت قطن نسائي','شورت بولي نسائي','شورت رياضي نسائي','شورت جينز نسائي','منوعات شورتات نسائية'],
+  'ملابس داخلية': ['ملابس رجالية داخلية','ملابس نسائية داخلية','حمالات صدرية','جوارب','منوعات ملابس داخلية'],
+  'اكسسوارات': ['حزام','قبعة','وشاح','قفازات','نظارات شمسية','ساعة','منوعات اكسسوارات'],
+  'ملابس الرياضة': ['بدلة رياضية','حذاء رياضي','جوارب رياضية','قميص رياضي','منوعات رياضية']
 };
 const CK = Object.keys(CATS);
-const CEM = {'ملابس نسائية':'👗','ملابس رجالية':'👔','ملابس أطفال':'🧒','ملابس بيبي':'👶','ملابس ولادة':'🤱','حقائب نسائية':'👜','أحذية نسائية':'👠','أحذية أطفال':'👟','أحذية بيبي':'🥿','شحاطات رجالية':'🩴','شحاطات نسائية':'🩴','شحاطات أطفال':'🩴','سليبرات':'🩴'};
-const CBG = ['#180d30','#0d1e30','#1a280a','#2a0d0d','#180d30','#280d1a','#0d1a30','#0d2818','#1e1428','#0d1e28','#1e280a','#281a0a','#0d2018'];
+const CEM = {'ملابس نسائية':'👗','ملابس رجالية':'👔','ملابس أطفال':'🧒','ملابس بيبي':'👶','ملابس ولادة':'🤱','حقائب نسائية':'👜','أحذية نسائية':'👠','أحذية أطفال':'👟','أحذية بيبي':'🥿','شحاطات رجالية':'🩴','شحاطات نسائية':'🩴','شحاطات أطفال':'🩴','سليبرات':'🩴','تراكات رجالية':'🩳','تراكات نسائية':'🩳','شورتات رجالية':'🩳','شورتات نسائية':'🩳','ملابس داخلية':'🧥','اكسسوارات':'👝','ملابس الرياضة':'⚽'};
+const CBG = ['#180d30','#0d1e30','#1a280a','#2a0d0d','#180d30','#280d1a','#0d1a30','#0d2818','#1e1428','#0d1e28','#1e280a','#281a0a','#0d2018','#2a1a0d','#0d2a1a','#1a0d2a','#0d1a2a','#2a0d1a','#1a2a0d','#0d2a0d'];
 
 let DB = {}, recent = [], curPg = 'scan', fCat = 'all', isLight = false;
 let camStream = null, detCamStream = null, decTimer = null, detDecTimer = null;
@@ -683,17 +728,67 @@ async function toggleFlash() {
 // ══ IN-DETAIL CAMERA (scans QR/barcode to add quantity to THIS product) ══
 let detCamCode = ''; // which product code this detail cam is for
 let detDetector = null;
+let detKeyboardListener = null; // For device barcode reader support
 
 function openDetCam(productCode) {
   detCamCode = productCode;
   const body = document.getElementById('detCamBody');
   if(!body) return;
   body.classList.add('open');
+  
+  // Add keyboard listener for device barcode reader
+  let detBarcodeBuffer = '';
+  let detBarcodeTimeout = null;
+  let detLastKeyTime = 0;
+  
+  detKeyboardListener = (e) => {
+    const now = Date.now();
+    const timeSinceLastKey = now - detLastKeyTime;
+    detLastKeyTime = now;
+    
+    if (/[\w-]/.test(e.key) && e.key.length === 1 && timeSinceLastKey < 100 && timeSinceLastKey > 0) {
+      e.preventDefault();
+      detBarcodeBuffer += e.key;
+      clearTimeout(detBarcodeTimeout);
+      detBarcodeTimeout = setTimeout(() => {
+        if (detBarcodeBuffer.length >= 4) {
+          const code = detBarcodeBuffer.trim();
+          const p = DB[productCode];
+          if(!p) return;
+          
+          // Check if scanned code matches this product's barcode
+          if(code === productCode || code === p.origCode) {
+            // Same product — add quantity
+            p.count++;
+            p.totalWholesale += p.wholesalePrice;
+            p.totalSell += p.sellPrice;
+            p.lastScan = new Date().toISOString();
+            save();
+            document.getElementById('detCamSt').innerHTML = `<span style="color:var(--grn)">✓ تمت الإضافة — العدد: ${p.count}</span>`;
+            toast(`✓ ${p.name} | ${p.count} قطعة`);
+            renderStats(); renderRecent();
+            refreshDetailValues(productCode);
+            setTimeout(()=>{ 
+              if(document.getElementById('detCamSt')) 
+                document.getElementById('detCamSt').textContent='وجّه الكاميرا أو الجهاز — تبقى مفتوحة حتى تُغلقها يدوياً'; 
+            }, 2000);
+          }
+        }
+        detBarcodeBuffer = '';
+      }, 150);
+    }
+  };
+  
+  document.addEventListener('keydown', detKeyboardListener);
   startDetStream(productCode);
 }
 
 function closeDetCam() {
   stopDetStream();
+  if(detKeyboardListener) {
+    document.removeEventListener('keydown', detKeyboardListener);
+    detKeyboardListener = null;
+  }
   const body = document.getElementById('detCamBody');
   if(body) body.classList.remove('open');
   detCamCode = '';
@@ -707,7 +802,7 @@ async function startDetStream(productCode) {
   try {
     detCamStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280}}});
     video.srcObject = detCamStream;
-    document.getElementById('detCamSt').textContent = 'وجّه الكاميرا — تبقى مفتوحة حتى تُغلقها يدوياً';
+    document.getElementById('detCamSt').textContent = 'وجّه الكاميرا أو الجهاز — تبقى مفتوحة حتى تُغلقها يدوياً';
     startDetDecode(video, productCode);
   } catch(err) {
     document.getElementById('detCamSt').textContent = '⚠️ ' + err.message;
@@ -956,7 +1051,7 @@ function showDetail(code) {
     <!-- IN-DETAIL CAMERA SECTION -->
     <div class="det-cam-sec">
       <div class="det-cam-hdr" onclick="toggleDetCam('${code}')">
-        <span style="display:flex;align-items:center;gap:6px"><i data-lucide="camera" style="width:12px;height:12px;color:var(--grn)"></i> مسح بالكاميرا لزيادة العدد</span>
+        <span style="display:flex;align-items:center;gap:6px"><i data-lucide="camera" style="width:12px;height:12px;color:var(--grn)"></i> مسح بالكاميرا أو جهاز الباركود</span>
         <span style="font-size:9px;color:var(--txt3)">اضغط للفتح/الإغلاق</span>
       </div>
       <div class="det-cam-body" id="detCamBody">
@@ -968,12 +1063,13 @@ function showDetail(code) {
         <div class="det-cam-acts">
           <button class="btn btn-red btn-sm" style="flex:1" onclick="closeDetCam()"><i data-lucide="x"></i> إيقاف الكاميرا</button>
         </div>
-        <div style="font-size:9px;color:var(--txt3);margin-top:6px;text-align:center">امسح باركود المنتج (${code}) لزيادة العدد تلقائياً</div>
+        <div style="font-size:9px;color:var(--txt3);margin-top:6px;text-align:center">امسح باركود المنتج (${code}) أو استخدم جهاز الباركود مباشرة — سيتم إضافة العدد تلقائياً</div>
       </div>
     </div>
     <div style="font-size:9px;color:var(--txt3);text-align:center;margin-bottom:10px">تاريخ الإضافة: ${created}</div>
     <div class="det-acts">
       <button class="btn btn-gh" onclick="closeDet();showEditModal('${code}')"><i data-lucide="edit-3"></i> تعديل</button>
+      <button class="btn btn-amb" onclick="printSingleProduct('${code}')"><i data-lucide="printer"></i> طباعة</button>
       <button class="btn btn-amb" onclick="regenCode('${code}')"><i data-lucide="refresh-cw"></i> باركود جديد</button>
       <button class="btn btn-red" onclick="closeDet();delProd('${code}')"><i data-lucide="trash-2"></i> حذف</button>
     </div>
@@ -1187,16 +1283,262 @@ function confirmClear() {
   document.getElementById('sres').style.display='none';
   renderStats(); renderRecent(); toast('تم المسح','r');
 }
+
+function printSingleProduct(code) {
+  const p = DB[code];
+  if(!p) return;
+  
+  // Show quick print dialog for single product
+  const qty = prompt('عدد النسخ للطباعة:', '1');
+  if(!qty || isNaN(qty) || parseInt(qty) < 1) return;
+  
+  const numCopies = parseInt(qty);
+  let html = `<html><head><meta charset="UTF-8">
+    <style>
+      * { margin:0; padding:0; box-sizing:border-box; }
+      body { font-family:Arial,sans-serif; direction:rtl; background:#fff; }
+      .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:10px; }
+      .label { 
+        border:1px solid #ccc; 
+        border-radius:5px; 
+        padding:8px; 
+        text-align:center; 
+        break-inside:avoid;
+      }
+      .name { font-size:11px; font-weight:700; margin-bottom:2px; word-wrap:break-word; }
+      .price { font-size:14px; font-weight:700; margin-bottom:2px; font-family:monospace; }
+      .bars { height:35px; display:flex; gap:1px; justify-content:center; align-items:flex-end; margin:2px 0; }
+      .code { font-size:9px; font-family:monospace; direction:ltr; color:#666; }
+      @media print { body { margin:0; } }
+    </style>
+  </head><body><div class="grid">`;
+  
+  for(let i=0; i<numCopies; i++) {
+    const bars = drawBars(code).split('<div').slice(1);
+    let barsSvg = bars.map(b=>`<div${b}`).join('');
+    html += `
+      <div class="label">
+        <div class="name">${p.name}</div>
+        <div class="price">${fmtP(p.sellPrice)}</div>
+        <div class="bars">${barsSvg}</div>
+        <div class="code">${code}</div>
+      </div>
+    `;
+  }
+  
+  html += '</div></body></html>';
+  const w=window.open('','_blank');
+  w.document.write(html);
+  w.document.close();
+  w.print();
+  
+  toast(`جاهز للطباعة: ${numCopies} نسخة`);
+}
+
 function printLabels() {
   const entries=Object.entries(DB);
   if(!entries.length){ toast('لا منتجات للطباعة','a'); return; }
-  let html=`<html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;direction:rtl;background:#fff}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:8px}.lbl{border:1px solid #ccc;border-radius:5px;padding:8px;text-align:center;break-inside:avoid}.n{font-size:10px;font-weight:700;margin-bottom:2px}.p{font-size:18px;font-weight:700;font-family:monospace}.c{font-size:8px;color:#666;font-family:monospace;direction:ltr}@media print{body{margin:0}}</style></head><body><div class="grid">`;
-  entries.forEach(([code,p])=>{ html+=`<div class="lbl"><div class="n">${p.name}</div><div class="p">${fmtP(p.sellPrice)}</div><div class="c">${code}</div></div>`; });
-  html+='</div></body></html>';
-  const w=window.open('','_blank'); w.document.write(html); w.document.close(); w.print();
+  
+  // Populate products list
+  let html = '';
+  entries.forEach(([code,p])=>{
+    html += `
+      <label style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:var(--rsm);background:var(--sur2);margin-bottom:4px;cursor:pointer;user-select:none">
+        <input type="checkbox" class="product-checkbox" value="${code}" checked style="width:16px;height:16px;cursor:pointer">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
+          <div style="font-size:9px;color:var(--txt3);font-family:'JetBrains Mono',monospace">${code}</div>
+        </div>
+        <div style="text-align:center;font-weight:600;font-size:12px;color:var(--grn)">${fmt(p.sellPrice)} د.ع</div>
+      </label>
+    `;
+  });
+  document.getElementById('printProducts').innerHTML = html;
+  
+  document.getElementById('printMacts').innerHTML = `
+    <button class="btn btn-gh" onclick="closePrintModal()"><i data-lucide="x"></i> إلغاء</button>
+    <button class="btn btn-acc" onclick="executePrint()"><i data-lucide="printer"></i> طباعة</button>
+  `;
+  
+  document.getElementById('printMbg').classList.add('open');
+  lucide.createIcons();
+}
+
+function closePrintModal() {
+  document.getElementById('printMbg').classList.remove('open');
+}
+
+function updatePrintPreview() {
+  // Can add preview updates here if needed
+}
+
+function executePrint() {
+  const entries=Object.entries(DB);
+  if(!entries.length){ toast('لا منتجات للطباعة','a'); return; }
+  
+  // Get selected products
+  const selectedCodes = Array.from(document.querySelectorAll('.product-checkbox:checked')).map(el=>el.value);
+  if(!selectedCodes.length){ toast('اختر منتج واحد على الأقل','a'); return; }
+  
+  const printerType = document.getElementById('printerType').value;
+  const qty = parseInt(document.getElementById('printerQty').value)||1;
+  const fontSize = document.getElementById('printerFontSize').value;
+  
+  let html = '';
+  
+  if(printerType.includes('thermal')) {
+    const width = printerType === 'thermal' ? '80mm' : '58mm';
+    html = getThermalPrintHTML(selectedCodes, qty, fontSize, width);
+  } else {
+    html = getStandardPrintHTML(selectedCodes, qty, fontSize);
+  }
+  
+  const w=window.open('','_blank');
+  w.document.write(html);
+  w.document.close();
+  w.print();
+  
+  closePrintModal();
+  toast('تم فتح نافذة الطباعة');
+}
+
+function getThermalPrintHTML(codes, qty, fontSize, width) {
+  const fontSizeMap = {small:10, medium:12, large:14};
+  const fs = fontSizeMap[fontSize]||12;
+  const barHeight = fontSize === 'small' ? 30 : fontSize === 'large' ? 40 : 35;
+  
+  let html = `<html><head><meta charset="UTF-8">
+    <style>
+      * { margin:0; padding:0; box-sizing:border-box; }
+      body { font-family:Arial,sans-serif; direction:rtl; background:#fff; width:${width}; }
+      .label { 
+        width:${width}; 
+        page-break-inside:avoid; 
+        border:1px dashed #ccc; 
+        padding:6px; 
+        text-align:center; 
+        break-inside:avoid;
+      }
+      .name { font-size:${fs-1}px; font-weight:700; margin-bottom:3px; word-wrap:break-word; }
+      .price { font-size:${fs+2}px; font-weight:700; margin-bottom:2px; }
+      .bars { height:${barHeight}px; display:flex; gap:1px; justify-content:center; align-items:flex-end; margin:3px 0; }
+      .bar { background:#000; flex-shrink:0; }
+      .code { font-size:${fs-3}px; font-family:monospace; direction:ltr; color:#666; }
+      @media print { body { margin:0; } .label { border:none; } }
+    </style>
+  </head><body>`;
+  
+  codes.forEach(code=>{
+    const p = DB[code];
+    if(!p) return;
+    
+    for(let i=0; i<qty; i++) {
+      const bars = drawBars(code).split('<div').slice(1);
+      let barsSvg = bars.map(b=>`<div${b}`).join('');
+      html += `
+        <div class="label">
+          <div class="name">${p.name}</div>
+          <div class="price">${fmtP(p.sellPrice)}</div>
+          <div class="bars">${barsSvg}</div>
+          <div class="code">${code}</div>
+        </div>
+      `;
+    }
+  });
+  
+  html += '</body></html>';
+  return html;
+}
+
+function getStandardPrintHTML(codes, qty, fontSize) {
+  const fontSizeMap = {small:9, medium:11, large:13};
+  const fs = fontSizeMap[fontSize]||11;
+  
+  let html = `<html><head><meta charset="UTF-8">
+    <style>
+      * { margin:0; padding:0; box-sizing:border-box; }
+      body { font-family:Arial,sans-serif; direction:rtl; background:#fff; }
+      .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:10px; }
+      .label { 
+        border:1px solid #ccc; 
+        border-radius:5px; 
+        padding:8px; 
+        text-align:center; 
+        break-inside:avoid;
+      }
+      .name { font-size:${fs}px; font-weight:700; margin-bottom:2px; word-wrap:break-word; }
+      .price { font-size:${fs+3}px; font-weight:700; margin-bottom:2px; }
+      .bars { height:${fs*2}px; display:flex; gap:1px; justify-content:center; align-items:flex-end; margin:2px 0; }
+      .bar { background:#000; flex-shrink:0; }
+      .code { font-size:${fs-2}px; font-family:monospace; direction:ltr; color:#666; }
+      @media print { body { margin:0; } }
+    </style>
+  </head><body><div class="grid">`;
+  
+  codes.forEach(code=>{
+    const p = DB[code];
+    if(!p) return;
+    
+    for(let i=0; i<qty; i++) {
+      const bars = drawBars(code).split('<div').slice(1);
+      let barsSvg = bars.map(b=>`<div${b}`).join('');
+      html += `
+        <div class="label">
+          <div class="name">${p.name}</div>
+          <div class="price">${fmtP(p.sellPrice)}</div>
+          <div class="bars">${barsSvg}</div>
+          <div class="code">${code}</div>
+        </div>
+      `;
+    }
+  });
+  
+  html += '</div></body></html>';
+  return html;
 }
 
 // ══ KEYBOARD ══
+let barcodeBuffer = '';
+let barcodeTimeout = null;
+let lastKeyTime = 0;
+
+// Global barcode reader detection - works anywhere in the app
+document.addEventListener('keydown', (e) => {
+  const now = Date.now();
+  const timeSinceLastKey = now - lastKeyTime;
+  lastKeyTime = now;
+  
+  // Detect barcode reader pattern: rapid input (under 100ms between keys) with printable characters
+  if (timeSinceLastKey < 100 && timeSinceLastKey > 0) {
+    if (/[\w-]/.test(e.key) && e.key.length === 1) {
+      e.preventDefault();
+      barcodeBuffer += e.key;
+      clearTimeout(barcodeTimeout);
+      barcodeTimeout = setTimeout(() => {
+        if (barcodeBuffer.length >= 4) {
+          const code = barcodeBuffer.trim();
+          handleBarcode(code);
+          // Focus on scan page if not already there
+          if (curPg !== 'scan') {
+            switchPg('scan');
+            setTimeout(() => {
+              const res = document.getElementById('sres');
+              if (res) res.scrollIntoView({ behavior: 'smooth' });
+            }, 200);
+          }
+        }
+        barcodeBuffer = '';
+      }, 150);
+      return;
+    }
+  }
+  
+  // Manual input only when focus is on scan input
+  if (document.activeElement === document.getElementById('scanInp')) {
+    if (e.key === 'Enter') processScan();
+  }
+});
+
 document.getElementById('scanInp').addEventListener('keydown',e=>{ if(e.key==='Enter') processScan(); });
 
 // ══ INIT ══
