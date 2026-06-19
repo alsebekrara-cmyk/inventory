@@ -2,549 +2,330 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>سنتر الملابس — نظام الجرد الذكي</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-<script src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
 <style>
-:root {
-  --bg: #0f1117;
-  --bg2: #161822;
-  --bg3: #1e2030;
-  --bg4: #252740;
-  --surface: #1a1c2e;
-  --surface2: #222438;
-  --border: rgba(255,255,255,0.07);
-  --border2: rgba(255,255,255,0.12);
-  --accent: #6c63ff;
-  --accent2: #8b85ff;
-  --accent-glow: rgba(108,99,255,0.25);
-  --green: #10d9a0;
-  --green2: #0fb888;
-  --green-bg: rgba(16,217,160,0.1);
-  --red: #ff5c6c;
-  --red-bg: rgba(255,92,108,0.1);
-  --amber: #fbbf24;
-  --amber-bg: rgba(251,191,36,0.1);
-  --blue: #38bdf8;
-  --blue-bg: rgba(56,189,248,0.1);
-  --pink: #f472b6;
-  --pink-bg: rgba(244,114,182,0.1);
-  --text: #e8eaf6;
-  --text2: #9092b0;
-  --text3: #5c5e7a;
-  --radius: 14px;
-  --radius-sm: 8px;
-  --radius-lg: 20px;
-  --shadow: 0 8px 32px rgba(0,0,0,0.4);
-  --shadow-sm: 0 2px 12px rgba(0,0,0,0.3);
+:root{
+  --bg:#0b0d14;--bg2:#111320;--bg3:#161928;--surface:#1a1d2e;--surface2:#1f2235;--surface3:#252840;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);--border3:rgba(255,255,255,0.18);
+  --accent:#7c6dfa;--accent2:#a394ff;--accent-dim:rgba(124,109,250,0.18);--accent-glow:rgba(124,109,250,0.3);
+  --green:#0ecb8a;--green-dim:rgba(14,203,138,0.12);--green-glow:rgba(14,203,138,0.3);
+  --red:#ff4d6d;--red-dim:rgba(255,77,109,0.12);
+  --amber:#f59e0b;--amber-dim:rgba(245,158,11,0.12);
+  --blue:#38bdf8;--blue-dim:rgba(56,189,248,0.12);
+  --pink:#f472b6;--pink-dim:rgba(244,114,182,0.12);
+  --cyan:#22d3ee;--cyan-dim:rgba(34,211,238,0.12);
+  --text:#e4e6f5;--text2:#8b8fa8;--text3:#4a4d66;
+  --r:12px;--r-sm:8px;--r-lg:18px;--r-xl:24px;
+  --shadow:0 8px 32px rgba(0,0,0,0.5);--shadow-sm:0 2px 12px rgba(0,0,0,0.4);
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; }
-body {
-  font-family: 'IBM Plex Sans Arabic', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  direction: rtl;
-  overflow-x: hidden;
-}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:var(--text);direction:rtl}
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
 
-/* ── SCROLLBAR ── */
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+/* ══ LAYOUT ══ */
+.app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.header{
+  background:linear-gradient(180deg,var(--bg2) 0%,rgba(17,19,32,0.95) 100%);
+  border-bottom:1px solid var(--border);
+  padding:12px 16px;display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;backdrop-filter:blur(20px);position:relative;z-index:50;
+}
+.header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent-dim),transparent)}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-logo{
+  width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,var(--accent),#a394ff);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 16px var(--accent-glow);flex-shrink:0;
+}
+.brand-logo svg{width:18px;height:18px;color:#fff}
+.brand-text{line-height:1.2}
+.brand-name{font-size:14px;font-weight:700;color:var(--text)}
+.brand-ver{font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace}
+.header-right{display:flex;gap:6px;align-items:center}
 
-/* ── LAYOUT ── */
-.app { display: flex; flex-direction: column; min-height: 100vh; }
+/* ══ BUTTONS ══ */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 13px;border-radius:var(--r-sm);font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;border:none;transition:all .18s;white-space:nowrap}
+.btn svg{width:13px;height:13px;flex-shrink:0}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--surface3);color:var(--text);border-color:var(--border2)}
+.btn-accent{background:linear-gradient(135deg,var(--accent),#a394ff);color:#fff;box-shadow:0 4px 14px var(--accent-glow)}
+.btn-accent:hover{transform:translateY(-1px);box-shadow:0 6px 20px var(--accent-glow)}
+.btn-accent:active{transform:translateY(0)}
+.btn-green{background:var(--green-dim);color:var(--green);border:1px solid rgba(14,203,138,0.2)}
+.btn-green:hover{background:rgba(14,203,138,0.2)}
+.btn-red{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,77,109,0.2)}
+.btn-red:hover{background:rgba(255,77,109,0.22)}
+.btn-sm{padding:6px 10px;font-size:11px}
+.btn-sm svg{width:12px;height:12px}
+.icon-btn{width:30px;height:30px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .18s;flex-shrink:0}
+.icon-btn svg{width:13px;height:13px}
+.icon-btn:hover{background:var(--surface3);color:var(--text);border-color:var(--border2)}
+.icon-btn.g:hover{background:var(--green-dim);color:var(--green);border-color:rgba(14,203,138,0.3)}
+.icon-btn.r:hover{background:var(--red-dim);color:var(--red);border-color:rgba(255,77,109,0.3)}
+.icon-btn.b:hover{background:var(--blue-dim);color:var(--blue);border-color:rgba(56,189,248,0.3)}
 
-/* ── HEADER ── */
-.header {
-  background: linear-gradient(135deg, #1a1c2e 0%, #161828 100%);
-  border-bottom: 1px solid var(--border);
-  padding: 14px 20px;
-  display: flex; align-items: center; justify-content: space-between;
-  position: sticky; top: 0; z-index: 100;
-  backdrop-filter: blur(20px);
-}
-.header-brand { display: flex; align-items: center; gap: 10px; }
-.header-logo {
-  width: 38px; height: 38px; border-radius: 10px;
-  background: linear-gradient(135deg, var(--accent), #9c8fff);
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4px 16px var(--accent-glow);
-}
-.header-logo svg { color: #fff; }
-.header-title { font-size: 15px; font-weight: 700; color: var(--text); }
-.header-sub { font-size: 11px; color: var(--text2); margin-top: 1px; }
-.header-actions { display: flex; gap: 8px; }
+/* ══ SCROLLABLE BODY ══ */
+.pages{flex:1;overflow:hidden;position:relative}
+.page{position:absolute;inset:0;overflow-y:auto;padding:14px 14px 84px;display:none}
+.page.active{display:block}
 
-/* ── BUTTONS ── */
-.btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 8px 14px; border-radius: var(--radius-sm);
-  font-size: 12px; font-weight: 600; font-family: inherit;
-  cursor: pointer; border: none; transition: all 0.2s;
-  white-space: nowrap;
+/* ══ BOTTOM NAV ══ */
+.bottom-nav{
+  position:relative;z-index:50;
+  background:var(--bg2);border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-around;
+  padding:6px 0 max(6px,env(safe-area-inset-bottom));
+  flex-shrink:0;
 }
-.btn svg { width: 14px; height: 14px; }
-.btn-ghost {
-  background: var(--surface2); color: var(--text2);
-  border: 1px solid var(--border);
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 14px;border-radius:var(--r-sm);cursor:pointer;color:var(--text3);font-size:10px;font-weight:600;font-family:inherit;border:none;background:none;transition:all .2s;min-width:50px}
+.nav-item svg{width:19px;height:19px;transition:all .2s}
+.nav-item.active{color:var(--accent2)}
+.nav-item.active svg{filter:drop-shadow(0 0 5px var(--accent))}
+.nav-scan-center{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;color:var(--text3);font-size:10px;font-weight:600;font-family:inherit;border:none;background:none}
+.nav-scan-btn{
+  width:50px;height:50px;border-radius:14px;
+  background:linear-gradient(135deg,var(--accent),#a394ff);
+  display:flex;align-items:center;justify-content:center;
+  margin-top:-18px;box-shadow:0 4px 20px var(--accent-glow);
+  transition:all .2s;border:none;cursor:pointer;
 }
-.btn-ghost:hover { background: var(--bg4); color: var(--text); border-color: var(--border2); }
-.btn-accent {
-  background: linear-gradient(135deg, var(--accent), #8b85ff);
-  color: #fff; box-shadow: 0 4px 16px var(--accent-glow);
-}
-.btn-accent:hover { transform: translateY(-1px); box-shadow: 0 6px 24px var(--accent-glow); }
-.btn-green {
-  background: var(--green-bg); color: var(--green);
-  border: 1px solid rgba(16,217,160,0.2);
-}
-.btn-green:hover { background: rgba(16,217,160,0.18); }
-.btn-red {
-  background: var(--red-bg); color: var(--red);
-  border: 1px solid rgba(255,92,108,0.2);
-}
-.btn-red:hover { background: rgba(255,92,108,0.18); }
-.icon-btn {
-  width: 32px; height: 32px; border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: var(--surface2); color: var(--text2);
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; transition: all 0.2s; flex-shrink: 0;
-}
-.icon-btn svg { width: 14px; height: 14px; }
-.icon-btn:hover { background: var(--bg4); color: var(--text); border-color: var(--border2); }
-.icon-btn.danger:hover { background: var(--red-bg); color: var(--red); border-color: rgba(255,92,108,0.3); }
-.icon-btn.success:hover { background: var(--green-bg); color: var(--green); border-color: rgba(16,217,160,0.3); }
+.nav-scan-btn:hover{transform:scale(1.07);box-shadow:0 6px 28px var(--accent-glow)}
+.nav-scan-btn svg{width:22px;height:22px;color:#fff}
 
-/* ── BOTTOM NAV ── */
-.bottom-nav {
-  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
-  background: var(--bg2);
-  border-top: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-around;
-  padding: 8px 0 max(8px, env(safe-area-inset-bottom));
-  backdrop-filter: blur(20px);
+/* ══ STAT CARDS ══ */
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
+.stats-grid.cols3{grid-template-columns:repeat(3,1fr)}
+.stat-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);padding:12px 14px;position:relative;overflow:hidden;
 }
-.nav-item {
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
-  padding: 6px 18px; border-radius: var(--radius-sm);
-  cursor: pointer; transition: all 0.2s; color: var(--text3);
-  font-size: 10px; font-weight: 600; font-family: inherit; border: none; background: none;
-}
-.nav-item svg { width: 20px; height: 20px; transition: all 0.2s; }
-.nav-item.active { color: var(--accent2); }
-.nav-item.active svg { filter: drop-shadow(0 0 6px var(--accent)); }
-.nav-scan-btn {
-  width: 52px; height: 52px; border-radius: 16px;
-  background: linear-gradient(135deg, var(--accent), #8b85ff);
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; border: none; margin-top: -20px;
-  box-shadow: 0 4px 20px var(--accent-glow);
-  transition: all 0.2s;
-}
-.nav-scan-btn:hover { transform: scale(1.06); box-shadow: 0 6px 28px var(--accent-glow); }
-.nav-scan-btn svg { width: 24px; height: 24px; color: #fff; }
+.stat-card::before{content:'';position:absolute;top:-30px;right:-30px;width:80px;height:80px;border-radius:50%;opacity:.07}
+.stat-card.cp::before{background:var(--accent)}
+.stat-card.cg::before{background:var(--green)}
+.stat-card.cb::before{background:var(--blue)}
+.stat-card.ca::before{background:var(--amber)}
+.stat-card.cr::before{background:var(--red)}
+.stat-card.cc::before{background:var(--cyan)}
+.stat-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.stat-ico{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center}
+.stat-ico svg{width:13px;height:13px}
+.stat-card.cp .stat-ico{background:var(--accent-dim);color:var(--accent2)}
+.stat-card.cg .stat-ico{background:var(--green-dim);color:var(--green)}
+.stat-card.cb .stat-ico{background:var(--blue-dim);color:var(--blue)}
+.stat-card.ca .stat-ico{background:var(--amber-dim);color:var(--amber)}
+.stat-card.cr .stat-ico{background:var(--red-dim);color:var(--red)}
+.stat-card.cc .stat-ico{background:var(--cyan-dim);color:var(--cyan)}
+.stat-trend{font-size:10px;font-weight:600;padding:2px 6px;border-radius:99px}
+.stat-label{font-size:10px;color:var(--text3);margin-bottom:2px;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.stat-val{font-size:18px;font-weight:700;color:var(--text);line-height:1}
+.stat-val.sm{font-size:14px}
+.stat-sub{font-size:10px;color:var(--text3);margin-top:2px}
 
-/* ── PAGE CONTENT ── */
-.page { display: none; padding: 16px; padding-bottom: 90px; }
-.page.active { display: block; }
+/* ══ SECTION HEAD ══ */
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sec-title{font-size:12px;font-weight:700;color:var(--text2);display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:.4px}
+.sec-title svg{width:13px;height:13px;color:var(--accent2)}
+.badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--accent-dim);color:var(--accent2);border:1px solid rgba(124,109,250,0.2)}
 
-/* ── SCAN PAGE ── */
-.scan-hero {
-  background: linear-gradient(135deg, var(--surface) 0%, var(--bg3) 100%);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  margin-bottom: 16px;
-  position: relative;
-  overflow: hidden;
+/* ══ PRODUCT CARD ══ */
+.prod-list{display:flex;flex-direction:column;gap:7px}
+.prod-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);padding:11px 12px;
+  display:flex;align-items:center;gap:10px;
+  transition:all .18s;cursor:pointer;
 }
-.scan-hero::before {
-  content: '';
-  position: absolute; top: -60px; left: -60px;
-  width: 160px; height: 160px; border-radius: 50%;
-  background: var(--accent-glow);
-  filter: blur(40px);
-  pointer-events: none;
-}
-.scan-hero-title { font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
-.scan-hero-title svg { width: 14px; height: 14px; color: var(--accent2); }
-.scan-input-row { display: flex; gap: 8px; align-items: center; }
-.scan-field-wrap { flex: 1; position: relative; }
-.scan-field {
-  width: 100%;
-  padding: 12px 16px 12px 44px;
-  border-radius: var(--radius-sm);
-  border: 1.5px solid var(--border2);
-  background: var(--bg);
-  color: var(--text);
-  font-size: 14px;
-  font-family: 'JetBrains Mono', monospace;
-  direction: ltr;
-  letter-spacing: 1px;
-  transition: border-color 0.2s;
-}
-.scan-field:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
-.scan-field::placeholder { font-family: 'IBM Plex Sans Arabic', sans-serif; direction: rtl; letter-spacing: 0; color: var(--text3); font-size: 13px; }
-.scan-field-icon {
-  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-  color: var(--text3); pointer-events: none;
-}
-.scan-field-icon svg { width: 16px; height: 16px; }
-.scan-actions { display: flex; gap: 8px; margin-top: 10px; }
-.scan-result {
-  margin-top: 12px; padding: 10px 14px;
-  border-radius: var(--radius-sm);
-  font-size: 12px;
-  display: none;
-}
-.scan-result.success { background: var(--green-bg); color: var(--green); border: 1px solid rgba(16,217,160,0.2); }
-.scan-result.info { background: var(--blue-bg); color: var(--blue); border: 1px solid rgba(56,189,248,0.2); }
-.scan-result svg { width: 14px; height: 14px; vertical-align: -2px; margin-left: 4px; }
+.prod-card:hover{border-color:var(--border2);background:var(--surface2);transform:translateX(-2px)}
+.prod-card.highlight{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 4px 20px var(--accent-glow);animation:hlPulse 2s ease forwards}
+@keyframes hlPulse{0%{box-shadow:0 0 0 1px var(--accent),0 4px 24px var(--accent-glow)}100%{box-shadow:none;border-color:var(--border)}}
+.prod-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.prod-body{flex:1;min-width:0}
+.prod-name{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prod-meta{font-size:10px;color:var(--text2);margin-top:2px;display:flex;align-items:center;gap:6px}
+.prod-code-sm{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);direction:ltr;margin-top:2px}
+.prod-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.prod-count{font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px;background:var(--accent-dim);color:var(--accent2);border:1px solid rgba(124,109,250,0.2)}
+.prod-sell{font-size:13px;font-weight:700;color:var(--green)}
+.prod-wp{font-size:10px;color:var(--text3)}
+.prod-actions{display:flex;gap:4px;margin-right:2px}
+.pulse-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--green-dim);color:var(--green);border:1px solid rgba(14,203,138,0.25)}
+.pulse-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pdot 1.4s ease-in-out infinite}
+@keyframes pdot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.6)}}
 
-/* CAMERA MODAL */
-.camera-overlay {
-  position: fixed; inset: 0; z-index: 500;
-  background: rgba(0,0,0,0.9);
-  display: none; flex-direction: column;
-  align-items: center; justify-content: center;
-  backdrop-filter: blur(8px);
-}
-.camera-overlay.open { display: flex; }
-.camera-box {
-  background: var(--bg2);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border2);
-  padding: 20px;
-  width: min(420px, 95vw);
-  box-shadow: var(--shadow);
-}
-.camera-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-.camera-header h3 { font-size: 15px; font-weight: 700; }
-.camera-viewport {
-  width: 100%; aspect-ratio: 4/3;
-  border-radius: var(--radius);
-  overflow: hidden; background: #000;
-  position: relative;
-}
-#cameraVideo { width: 100%; height: 100%; object-fit: cover; }
-.camera-frame {
-  position: absolute; inset: 0; pointer-events: none;
-  display: flex; align-items: center; justify-content: center;
-}
-.camera-reticle {
-  width: 200px; height: 120px;
-  border: 2px solid var(--accent);
-  border-radius: 8px;
-  box-shadow: 0 0 0 9999px rgba(0,0,0,0.35);
-  position: relative;
-}
-.camera-reticle::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  animation: scanLine 2s ease-in-out infinite;
-}
-@keyframes scanLine {
-  0% { top: 0; opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { top: calc(100% - 2px); opacity: 0; }
-}
-.camera-corners { position: absolute; inset: -2px; }
-.camera-corner {
-  position: absolute; width: 16px; height: 16px;
-  border-color: #fff; border-style: solid;
-}
-.camera-corner.tl { top: 0; right: 0; border-width: 2px 0 0 2px; border-radius: 0 0 0 4px; }
-.camera-corner.tr { top: 0; left: 0; border-width: 2px 2px 0 0; border-radius: 0 0 4px 0; }
-.camera-corner.bl { bottom: 0; right: 0; border-width: 0 0 2px 2px; border-radius: 4px 0 0 0; }
-.camera-corner.br { bottom: 0; left: 0; border-width: 0 2px 2px 0; border-radius: 0 4px 0 0; }
-.camera-status { text-align: center; margin-top: 12px; font-size: 12px; color: var(--text2); }
-.camera-actions { display: flex; gap: 8px; margin-top: 14px; }
-.camera-select-wrap { margin-bottom: 12px; }
-.camera-select {
-  width: 100%; padding: 8px 12px; border-radius: var(--radius-sm);
-  background: var(--bg3); border: 1px solid var(--border2);
-  color: var(--text); font-family: inherit; font-size: 12px;
-}
-.camera-select:focus { outline: none; border-color: var(--accent); }
+/* ══ SEARCH ══ */
+.search-wrap{position:relative;margin-bottom:12px}
+.search-field{width:100%;padding:10px 14px 10px 38px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;font-family:inherit;transition:all .18s}
+.search-field:focus{outline:none;border-color:var(--accent);background:var(--surface2);box-shadow:0 0 0 3px var(--accent-dim)}
+.search-ico{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none}
+.search-ico svg{width:14px;height:14px}
 
-/* ── STATS GRID ── */
-.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
-.stat-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px 16px;
-  position: relative; overflow: hidden;
-}
-.stat-card::after {
-  content: '';
-  position: absolute; top: -20px; right: -20px;
-  width: 60px; height: 60px; border-radius: 50%;
-  opacity: 0.08;
-}
-.stat-card.c-purple::after { background: var(--accent); }
-.stat-card.c-green::after { background: var(--green); }
-.stat-card.c-blue::after { background: var(--blue); }
-.stat-card.c-amber::after { background: var(--amber); }
-.stat-card.c-red::after { background: var(--red); }
-.stat-icon {
-  width: 32px; height: 32px; border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  margin-bottom: 10px;
-}
-.stat-icon svg { width: 16px; height: 16px; }
-.stat-card.c-purple .stat-icon { background: rgba(108,99,255,0.15); color: var(--accent2); }
-.stat-card.c-green .stat-icon { background: var(--green-bg); color: var(--green); }
-.stat-card.c-blue .stat-icon { background: var(--blue-bg); color: var(--blue); }
-.stat-card.c-amber .stat-icon { background: var(--amber-bg); color: var(--amber); }
-.stat-card.c-red .stat-icon { background: var(--red-bg); color: var(--red); }
-.stat-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
-.stat-value { font-size: 20px; font-weight: 700; color: var(--text); }
-.stat-value.small { font-size: 15px; }
-.stat-sub { font-size: 10px; color: var(--text3); margin-top: 2px; }
+/* ══ FILTER BAR ══ */
+.filter-bar{display:flex;gap:6px;overflow-x:auto;padding-bottom:3px;margin-bottom:12px;scrollbar-width:none}
+.filter-bar::-webkit-scrollbar{display:none}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:5px 11px;border-radius:99px;font-size:11px;font-weight:600;font-family:inherit;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text2);white-space:nowrap;transition:all .18s}
+.chip:hover{border-color:var(--border2);color:var(--text)}
+.chip.active{background:var(--accent-dim);border-color:rgba(124,109,250,.3);color:var(--accent2)}
 
-/* ── SECTION HEADING ── */
-.section-head {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 12px;
+/* ══ SCAN PAGE ══ */
+.scan-hero{
+  background:linear-gradient(135deg,var(--surface) 0%,var(--bg3) 100%);
+  border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;margin-bottom:14px;
+  position:relative;overflow:hidden;
 }
-.section-head h2 { font-size: 13px; font-weight: 700; color: var(--text2); display: flex; align-items: center; gap: 6px; }
-.section-head h2 svg { width: 14px; height: 14px; color: var(--accent2); }
+.scan-hero::before{content:'';position:absolute;top:-60px;right:-60px;width:160px;height:160px;border-radius:50%;background:var(--accent-glow);filter:blur(40px);pointer-events:none;opacity:.4}
+.scan-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.scan-label svg{width:13px;height:13px;color:var(--accent2)}
+.scan-row{display:flex;gap:8px;align-items:center}
+.scan-inp-wrap{flex:1;position:relative}
+.scan-inp{
+  width:100%;padding:11px 14px 11px 40px;border-radius:var(--r-sm);
+  border:1.5px solid var(--border2);background:var(--bg);color:var(--text);
+  font-size:14px;font-family:'JetBrains Mono',monospace;direction:ltr;letter-spacing:1px;
+  transition:all .18s;
+}
+.scan-inp:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
+.scan-inp::placeholder{font-family:'IBM Plex Sans Arabic',sans-serif;direction:rtl;letter-spacing:0;color:var(--text3);font-size:12px}
+.scan-inp-ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none}
+.scan-inp-ico svg{width:15px;height:15px}
+.scan-btns{display:flex;gap:7px;margin-top:9px}
+.scan-result{margin-top:10px;padding:9px 13px;border-radius:var(--r-sm);font-size:12px;font-weight:600;display:none;align-items:center;gap:8px}
+.scan-result.ok{background:var(--green-dim);color:var(--green);border:1px solid rgba(14,203,138,.2)}
+.scan-result.info{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(56,189,248,.2)}
+.scan-result.warn{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(245,158,11,.2)}
+.scan-result svg{width:14px;height:14px;flex-shrink:0}
 
-/* ── PRODUCT CARDS ── */
-.product-list { display: flex; flex-direction: column; gap: 8px; }
-.product-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 13px 14px;
-  display: flex; align-items: center; gap: 12px;
-  transition: all 0.2s;
-  cursor: default;
-}
-.product-card:hover { border-color: var(--border2); background: var(--surface2); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
-.product-card.highlight { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 4px 20px var(--accent-glow); }
-.prod-icon {
-  width: 42px; height: 42px; border-radius: 11px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px; flex-shrink: 0;
-}
-.prod-info { flex: 1; min-width: 0; }
-.prod-name {
-  font-size: 14px; font-weight: 700; color: var(--text);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.prod-cat { font-size: 11px; color: var(--text2); margin-top: 2px; }
-.prod-code {
-  font-size: 10px; color: var(--text3);
-  font-family: 'JetBrains Mono', monospace;
-  direction: ltr; text-align: right; margin-top: 2px;
-}
-.prod-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
-.prod-count {
-  background: rgba(108,99,255,0.15); color: var(--accent2);
-  font-size: 12px; font-weight: 700;
-  padding: 3px 10px; border-radius: 99px;
-  border: 1px solid rgba(108,99,255,0.2);
-}
-.prod-sell { font-size: 13px; font-weight: 700; color: var(--green); }
-.prod-wholesale { font-size: 10px; color: var(--text3); }
-.prod-actions { display: flex; gap: 5px; margin-right: 4px; }
-.new-pulse {
-  display: inline-flex; align-items: center; gap: 4px;
-  background: var(--green-bg); color: var(--green);
-  font-size: 10px; font-weight: 700;
-  padding: 2px 8px; border-radius: 99px;
-  border: 1px solid rgba(16,217,160,0.25);
-}
-.new-pulse::before {
-  content: ''; width: 6px; height: 6px; border-radius: 50%;
-  background: var(--green);
-  animation: pulse 1.5s ease-in-out infinite;
-}
-@keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.7); } }
+/* ══ CAMERA OVERLAY ══ */
+.cam-overlay{position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.92);display:none;flex-direction:column;align-items:center;justify-content:center;backdrop-filter:blur(10px)}
+.cam-overlay.open{display:flex}
+.cam-box{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-xl);padding:18px;width:min(420px,96vw);box-shadow:var(--shadow);animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+.cam-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.cam-head h3{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+.cam-head h3 svg{width:16px;height:16px;color:var(--accent2)}
+.cam-port{width:100%;aspect-ratio:4/3;border-radius:var(--r);overflow:hidden;background:#000;position:relative}
+#cameraVideo{width:100%;height:100%;object-fit:cover;display:block}
+.cam-frame{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.cam-reticle{width:210px;height:110px;position:relative}
+.cam-reticle::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--green),transparent);animation:scanAnim 2s ease-in-out infinite}
+@keyframes scanAnim{0%{top:0;opacity:0}10%{opacity:1}90%{opacity:1}100%{top:calc(100% - 2px);opacity:0}}
+.cam-corner{position:absolute;width:18px;height:18px;border-style:solid;border-color:#fff}
+.cam-corner.tl{top:0;right:0;border-width:2px 0 0 2px;border-radius:0 0 0 5px}
+.cam-corner.tr{top:0;left:0;border-width:2px 2px 0 0;border-radius:0 0 5px 0}
+.cam-corner.bl{bottom:0;right:0;border-width:0 0 2px 2px;border-radius:5px 0 0 0}
+.cam-corner.br{bottom:0;left:0;border-width:0 2px 2px 0;border-radius:0 5px 0 0}
+.cam-status{text-align:center;margin-top:10px;font-size:12px;color:var(--text2);min-height:20px}
+.cam-selwrap{margin-bottom:10px}
+.cam-sel{width:100%;padding:8px 12px;border-radius:var(--r-sm);background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:inherit;font-size:12px}
+.cam-sel:focus{outline:none;border-color:var(--accent)}
+.cam-actions{display:flex;gap:8px;margin-top:12px}
 
-/* ── FILTER BAR ── */
-.filter-bar { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 14px; scrollbar-width: none; }
-.filter-bar::-webkit-scrollbar { display: none; }
-.filter-chip {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 6px 13px; border-radius: 99px;
-  font-size: 12px; font-weight: 600; font-family: inherit;
-  cursor: pointer; border: 1px solid var(--border);
-  background: var(--surface); color: var(--text2);
-  white-space: nowrap; transition: all 0.2s;
-}
-.filter-chip:hover { border-color: var(--border2); color: var(--text); }
-.filter-chip.active { background: rgba(108,99,255,0.15); border-color: rgba(108,99,255,0.3); color: var(--accent2); }
+/* ══ MODAL ══ */
+.modal-bg{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);display:none;align-items:flex-end;justify-content:center;padding:0}
+.modal-bg.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-xl) var(--r-xl) 0 0;padding:20px;width:100%;max-width:500px;max-height:94vh;overflow-y:auto;box-shadow:var(--shadow);animation:slideUp .25s ease}
+.modal-handle{width:36px;height:4px;background:var(--border2);border-radius:99px;margin:0 auto 16px}
+.modal-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.modal-title svg{width:17px;height:17px;color:var(--accent2)}
+.form-grp{margin-bottom:13px}
+.form-lbl{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:block}
+.form-inp,.form-sel{width:100%;padding:10px 13px;border-radius:var(--r-sm);border:1.5px solid var(--border);background:var(--bg3);color:var(--text);font-size:13px;font-family:inherit;transition:all .18s}
+.form-inp:focus,.form-sel:focus{outline:none;border-color:var(--accent);background:var(--surface);box-shadow:0 0 0 3px var(--accent-dim)}
+.form-sel option{background:var(--bg3)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-hint{font-size:10px;color:var(--text3);margin-top:4px}
+.modal-acts{display:flex;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border);justify-content:flex-end}
 
-/* ── SEARCH ── */
-.search-wrap { position: relative; margin-bottom: 14px; }
-.search-field {
-  width: 100%; padding: 10px 14px 10px 40px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text); font-size: 13px; font-family: inherit;
-}
-.search-field:focus { outline: none; border-color: var(--accent); background: var(--surface2); }
-.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text3); pointer-events: none; }
-.search-icon svg { width: 15px; height: 15px; }
+/* ══ PRODUCT DETAIL MODAL ══ */
+.detail-header{text-align:center;padding:16px 0;margin-bottom:16px;border-bottom:1px solid var(--border)}
+.detail-icon{width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 10px}
+.detail-name{font-size:18px;font-weight:700;margin-bottom:4px}
+.detail-cat{font-size:12px;color:var(--text2)}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.detail-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px}
+.detail-item-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;font-weight:700;margin-bottom:3px}
+.detail-item-val{font-size:16px;font-weight:700;color:var(--text)}
+.detail-item-val.green{color:var(--green)}
+.detail-item-val.accent{color:var(--accent2)}
+.detail-barcode{background:var(--bg);border:1px solid var(--border2);border-radius:var(--r-sm);padding:14px;text-align:center;margin-bottom:12px}
+.bc-tag{font-size:10px;color:var(--text3);margin-bottom:8px;font-weight:600}
+.bc-bars{display:flex;gap:1.5px;justify-content:center;align-items:flex-end;height:48px;margin-bottom:6px;overflow:hidden}
+.bc-num{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text2);letter-spacing:2px;direction:ltr}
+.bc-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px}
+.bc-price{font-size:18px;font-weight:700;color:var(--green);margin-bottom:2px}
+.bc-label{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;text-align:center;margin-bottom:12px}
 
-/* ── MODAL ── */
-.modal-bg {
-  position: fixed; inset: 0; z-index: 400;
-  background: rgba(0,0,0,0.6);
-  backdrop-filter: blur(6px);
-  display: none; align-items: flex-end; justify-content: center;
-  padding: 16px;
+/* ══ BARCODE LABELS PAGE ══ */
+.labels-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.label-card{
+  background:#fff;border-radius:var(--r-sm);padding:12px 10px 8px;
+  color:#111;text-align:center;cursor:pointer;
+  border:2px solid transparent;transition:all .18s;
+  box-shadow:0 2px 12px rgba(0,0,0,.3);
 }
-.modal-bg.open { display: flex; }
-.modal {
-  background: var(--bg2);
-  border: 1px solid var(--border2);
-  border-radius: var(--radius-lg) var(--radius-lg) var(--radius) var(--radius);
-  padding: 22px;
-  width: 100%; max-width: 480px;
-  max-height: 92vh; overflow-y: auto;
-  box-shadow: var(--shadow);
-  animation: slideUp 0.25s ease;
-}
-@keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-.modal-drag { width: 36px; height: 4px; background: var(--border2); border-radius: 99px; margin: 0 auto 18px; }
-.modal h2 { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
-.modal h2 svg { width: 18px; height: 18px; color: var(--accent2); }
-.form-group { margin-bottom: 14px; }
-.form-label { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 7px; display: block; }
-.form-input, .form-select {
-  width: 100%; padding: 10px 14px;
-  border-radius: var(--radius-sm);
-  border: 1.5px solid var(--border);
-  background: var(--bg3);
-  color: var(--text); font-size: 14px; font-family: inherit;
-  transition: border-color 0.2s;
-}
-.form-input:focus, .form-select:focus { outline: none; border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px var(--accent-glow); }
-.form-select option { background: var(--bg3); }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.modal-actions { display: flex; gap: 8px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); justify-content: flex-end; }
+.label-card:hover{border-color:var(--accent);transform:scale(1.02)}
+.label-card-name{font-size:10px;font-weight:700;color:#333;margin-bottom:4px;direction:rtl;line-height:1.3}
+.label-card-price{font-size:22px;font-weight:700;color:#111;margin-bottom:6px;font-family:'JetBrains Mono',monospace;direction:ltr}
+.label-card-bars{display:flex;gap:1px;justify-content:center;align-items:flex-end;height:36px;margin-bottom:3px;overflow:hidden}
+.label-card-num{font-family:'JetBrains Mono',monospace;font-size:9px;color:#555;letter-spacing:1px;direction:ltr}
 
-/* ── BARCODE PREVIEW ── */
-.bc-preview {
-  background: var(--bg);
-  border: 1px solid var(--border2);
-  border-radius: var(--radius-sm);
-  padding: 14px; text-align: center; margin-top: 12px;
-}
-.bc-tag { font-size: 10px; color: var(--text3); margin-bottom: 8px; }
-.bc-bars { display: flex; gap: 1.5px; justify-content: center; align-items: flex-end; height: 44px; margin-bottom: 6px; overflow: hidden; }
-.bc-num { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text2); letter-spacing: 2px; direction: ltr; }
-.bc-badge {
-  display: inline-flex; align-items: center; gap: 5px; margin-top: 8px;
-  background: var(--accent-glow); color: var(--accent2);
-  font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 99px;
-  border: 1px solid rgba(108,99,255,0.2);
-}
-.bc-badge svg { width: 12px; height: 12px; }
+/* ══ REPORT ══ */
+.report-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.report-card h3{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:12px;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:.4px}
+.report-card h3 svg{width:13px;height:13px;color:var(--accent2)}
+.rtable{width:100%;border-collapse:collapse;font-size:11px}
+.rtable th{text-align:right;padding:8px 10px;background:var(--bg3);color:var(--text3);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}
+.rtable td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text)}
+.rtable tr:last-child td{border-bottom:none}
+.rtable tr:hover td{background:var(--bg3)}
+.rtable .mono{font-family:'JetBrains Mono',monospace;font-size:9px;direction:ltr}
+.pos{color:var(--green);font-weight:700}
+.neg{color:var(--red);font-weight:700}
 
-/* ── REPORT PAGE ── */
-.report-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px; margin-bottom: 14px; overflow: hidden;
-}
-.report-card h3 { font-size: 13px; font-weight: 700; color: var(--text2); margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
-.report-card h3 svg { width: 14px; height: 14px; color: var(--accent2); }
-.rtable { width: 100%; border-collapse: collapse; font-size: 12px; }
-.rtable th {
-  text-align: right; padding: 9px 12px;
-  background: var(--bg3); color: var(--text3);
-  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
-  border-bottom: 1px solid var(--border);
-}
-.rtable td { padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--text); }
-.rtable tr:last-child td { border-bottom: none; }
-.rtable tr:hover td { background: var(--bg3); }
-.rtable .mono { font-family: 'JetBrains Mono', monospace; font-size: 10px; direction: ltr; }
-.profit-pos { color: var(--green); font-weight: 700; }
-.profit-neg { color: var(--red); font-weight: 700; }
+/* ══ SETTINGS ══ */
+.settings-group{margin-bottom:18px}
+.settings-group-title{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;padding-right:2px}
+.settings-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;transition:all .18s}
+.settings-item:hover{background:var(--surface2);border-color:var(--border2)}
+.settings-item-left{display:flex;align-items:center;gap:10px}
+.settings-ico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.settings-ico svg{width:14px;height:14px}
+.settings-item-name{font-size:13px;font-weight:600;color:var(--text)}
+.settings-item-sub{font-size:10px;color:var(--text3);margin-top:1px}
 
-/* ── EMPTY STATE ── */
-.empty {
-  text-align: center; padding: 48px 20px; color: var(--text3);
-}
-.empty-icon {
-  width: 56px; height: 56px; border-radius: 16px;
-  background: var(--surface); border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 14px;
-}
-.empty-icon svg { width: 24px; height: 24px; color: var(--text3); }
-.empty h3 { font-size: 14px; font-weight: 600; color: var(--text2); margin-bottom: 4px; }
-.empty p { font-size: 12px; color: var(--text3); }
+/* ══ EMPTY ══ */
+.empty{text-align:center;padding:44px 20px;color:var(--text3)}
+.empty-ico{width:52px;height:52px;border-radius:14px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+.empty-ico svg{width:22px;height:22px;color:var(--text3)}
+.empty h3{font-size:14px;font-weight:600;color:var(--text2);margin-bottom:4px}
+.empty p{font-size:12px}
 
-/* ── TOAST ── */
-.toast {
-  position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
-  background: var(--surface2); color: var(--text);
-  border: 1px solid var(--border2);
-  padding: 10px 18px; border-radius: var(--radius);
-  font-size: 13px; font-weight: 600;
-  z-index: 600; opacity: 0;
-  transition: all 0.3s;
-  white-space: nowrap;
-  box-shadow: var(--shadow);
-  display: flex; align-items: center; gap: 8px;
-  pointer-events: none;
+/* ══ TOAST ══ */
+.toast{
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(16px);
+  background:var(--surface2);color:var(--text);
+  border:1px solid var(--border2);padding:9px 16px;border-radius:var(--r);
+  font-size:12px;font-weight:600;z-index:900;opacity:0;transition:all .28s;
+  white-space:nowrap;box-shadow:var(--shadow);display:flex;align-items:center;gap:8px;pointer-events:none;
 }
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-.toast svg { width: 15px; height: 15px; }
-.toast.t-green { border-color: rgba(16,217,160,0.3); }
-.toast.t-green svg { color: var(--green); }
-.toast.t-red { border-color: rgba(255,92,108,0.3); }
-.toast.t-red svg { color: var(--red); }
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast svg{width:14px;height:14px;flex-shrink:0}
+.toast.tg{border-color:rgba(14,203,138,.3)}.toast.tg svg{color:var(--green)}
+.toast.tr{border-color:rgba(255,77,109,.3)}.toast.tr svg{color:var(--red)}
+.toast.ta{border-color:rgba(245,158,11,.3)}.toast.ta svg{color:var(--amber)}
 
-/* ── SETTINGS PAGE ── */
-.settings-section { margin-bottom: 20px; }
-.settings-section h3 { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
-.settings-item {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); padding: 12px 16px;
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 6px;
-}
-.settings-item-info { display: flex; align-items: center; gap: 10px; }
-.settings-item-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-.settings-item-icon svg { width: 15px; height: 15px; }
-.settings-item-label { font-size: 13px; font-weight: 600; color: var(--text); }
-.settings-item-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+/* ══ DIVIDER ══ */
+.divider{height:1px;background:var(--border);margin:12px 0}
 
-/* ── COUNT BADGE ── */
-.badge-count-sm {
-  background: var(--accent-glow);
-  color: var(--accent2);
-  font-size: 10px; font-weight: 700;
-  padding: 1px 7px; border-radius: 99px;
-}
-
-/* ── RESPONSIVE ── */
-@media (max-width: 480px) {
-  .header { padding: 10px 14px; }
-  .page { padding: 12px; padding-bottom: 90px; }
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
-  .form-row { grid-template-columns: 1fr; }
-}
+/* ══ RESPONSIVE ══ */
+@media(max-width:400px){.stats-grid{grid-template-columns:repeat(2,1fr)}.form-row{grid-template-columns:1fr}.labels-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -552,613 +333,605 @@ body {
 
 <!-- HEADER -->
 <header class="header">
-  <div class="header-brand">
-    <div class="header-logo">
-      <i data-lucide="shirt" style="width:18px;height:18px;color:#fff"></i>
-    </div>
-    <div>
-      <div class="header-title">سنتر الملابس</div>
-      <div class="header-sub">نظام الجرد الذكي</div>
+  <div class="brand">
+    <div class="brand-logo"><i data-lucide="shirt"></i></div>
+    <div class="brand-text">
+      <div class="brand-name">سنتر الملابس</div>
+      <div class="brand-ver">INVENTORY v3.0</div>
     </div>
   </div>
-  <div class="header-actions">
-    <button class="btn btn-ghost" onclick="exportData()">
-      <i data-lucide="download"></i> تصدير
-    </button>
-    <button class="btn btn-red" onclick="confirmClear()">
-      <i data-lucide="trash-2"></i>
-    </button>
+  <div class="header-right">
+    <button class="btn btn-ghost btn-sm" onclick="exportCSV()"><i data-lucide="download"></i> CSV</button>
+    <button class="icon-btn r" onclick="confirmClear()"><i data-lucide="trash-2"></i></button>
   </div>
 </header>
 
 <!-- PAGES -->
-<!-- SCAN PAGE -->
-<div class="page active" id="page-scan">
-  <div class="scan-hero">
-    <div class="scan-hero-title">
-      <i data-lucide="scan-barcode"></i> مسح الباركود أو إدخاله يدوياً
-    </div>
-    <div class="scan-input-row">
-      <div class="scan-field-wrap">
-        <div class="scan-field-icon"><i data-lucide="hash"></i></div>
-        <input class="scan-field" id="scanInput" placeholder="امسح أو اكتب الباركود..." autocomplete="off">
+<div class="pages">
+
+  <!-- ── PAGE: SCAN ── -->
+  <div class="page active" id="page-scan">
+    <div class="scan-hero">
+      <div class="scan-label"><i data-lucide="scan-barcode"></i> إدخال أو مسح الباركود</div>
+      <div class="scan-row">
+        <div class="scan-inp-wrap">
+          <div class="scan-inp-ico"><i data-lucide="hash"></i></div>
+          <input class="scan-inp" id="scanInp" placeholder="مثال: 777380" autocomplete="off" inputmode="text">
+        </div>
+        <button class="btn btn-accent" onclick="processScan()"><i data-lucide="corner-down-left"></i> إدخال</button>
       </div>
-      <button class="btn btn-accent" onclick="processScan()">
-        <i data-lucide="corner-down-left"></i> إدخال
-      </button>
+      <div class="scan-btns">
+        <button class="btn btn-green" style="flex:1" onclick="openCamera()"><i data-lucide="camera"></i> مسح بالكاميرا</button>
+        <button class="btn btn-ghost" onclick="clearLastScan()"><i data-lucide="x"></i> مسح</button>
+      </div>
+      <div class="scan-result" id="scanResult"></div>
     </div>
-    <div class="scan-actions">
-      <button class="btn btn-green" onclick="openCamera()" style="flex:1">
-        <i data-lucide="camera"></i> فتح الكاميرا لمسح الباركود
-      </button>
+
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <div class="sec-head">
+      <div class="sec-title"><i data-lucide="history"></i> آخر المسحوبات</div>
+      <span class="badge" id="recentBadge">0</span>
     </div>
-    <div class="scan-result" id="scanResult"></div>
+    <div class="prod-list" id="recentList"></div>
   </div>
 
-  <div class="stats-grid" id="statsGrid"></div>
-
-  <div class="section-head">
-    <h2><i data-lucide="clock-4"></i> آخر المسحوبات</h2>
-    <span class="badge-count-sm" id="recentCount">0</span>
+  <!-- ── PAGE: PRODUCTS ── -->
+  <div class="page" id="page-products">
+    <div class="search-wrap">
+      <div class="search-ico"><i data-lucide="search"></i></div>
+      <input class="search-field" id="searchInp" placeholder="ابحث بالاسم أو الباركود..." oninput="renderProducts()">
+    </div>
+    <div class="filter-bar" id="filterBar"></div>
+    <div class="sec-head">
+      <div class="sec-title"><i data-lucide="package"></i> جميع المنتجات</div>
+      <span class="badge" id="prodBadge">0</span>
+    </div>
+    <div class="prod-list" id="prodList"></div>
   </div>
-  <div class="product-list" id="recentList"></div>
-</div>
 
-<!-- PRODUCTS PAGE -->
-<div class="page" id="page-products">
-  <div class="search-wrap">
-    <div class="search-icon"><i data-lucide="search"></i></div>
-    <input class="search-field" id="searchField" placeholder="ابحث عن منتج..." oninput="renderProducts()">
+  <!-- ── PAGE: LABELS ── -->
+  <div class="page" id="page-labels">
+    <div class="sec-head">
+      <div class="sec-title"><i data-lucide="tag"></i> بطاقات الباركود</div>
+      <button class="btn btn-ghost btn-sm" onclick="printLabels()"><i data-lucide="printer"></i> طباعة</button>
+    </div>
+    <p style="font-size:11px;color:var(--text3);margin-bottom:12px">اضغط على أي بطاقة لعرض تفاصيلها · تنسيق مشابه لملصقاتك الحالية</p>
+    <div class="labels-grid" id="labelsGrid"></div>
   </div>
-  <div class="filter-bar" id="filterBar"></div>
-  <div class="section-head">
-    <h2><i data-lucide="package"></i> المنتجات</h2>
-    <span class="badge-count-sm" id="productCount">0</span>
-  </div>
-  <div class="product-list" id="productList"></div>
-</div>
 
-<!-- REPORT PAGE -->
-<div class="page" id="page-report">
-  <div class="stats-grid" id="reportStats"></div>
-  <div class="report-card">
-    <h3><i data-lucide="pie-chart"></i> تقرير حسب الفئة</h3>
-    <div style="overflow-x:auto">
-      <table class="rtable">
-        <thead><tr><th>الفئة</th><th>الأصناف</th><th>القطع</th><th>رأس المال</th><th>البيع</th><th>الربح</th></tr></thead>
+  <!-- ── PAGE: REPORT ── -->
+  <div class="page" id="page-report">
+    <div class="stats-grid cols3" id="reportStats"></div>
+    <div class="report-card">
+      <h3><i data-lucide="pie-chart"></i> حسب الفئة</h3>
+      <div style="overflow-x:auto"><table class="rtable">
+        <thead><tr><th>الفئة</th><th>أصناف</th><th>قطع</th><th>جملة</th><th>بيع</th><th>ربح</th></tr></thead>
         <tbody id="catBody"></tbody>
-      </table>
+      </table></div>
     </div>
-  </div>
-  <div class="report-card">
-    <h3><i data-lucide="list"></i> تفاصيل المنتجات</h3>
-    <div style="overflow-x:auto">
-      <table class="rtable">
-        <thead><tr><th>المنتج</th><th>الفئة</th><th>العدد</th><th>الجملة</th><th>البيع</th><th>الإجمالي</th><th>الباركود</th></tr></thead>
+    <div class="report-card">
+      <h3><i data-lucide="list"></i> كل المنتجات</h3>
+      <div style="overflow-x:auto"><table class="rtable">
+        <thead><tr><th>المنتج</th><th>فئة</th><th>عدد</th><th>جملة</th><th>بيع</th><th>إجمالي</th><th>باركود</th></tr></thead>
         <tbody id="allBody"></tbody>
-      </table>
+      </table></div>
     </div>
   </div>
-</div>
 
-<!-- SETTINGS PAGE -->
-<div class="page" id="page-settings">
-  <div class="settings-section">
-    <h3>البيانات</h3>
-    <div class="settings-item">
-      <div class="settings-item-info">
-        <div class="settings-item-icon" style="background:var(--green-bg)">
-          <i data-lucide="download" style="color:var(--green)"></i>
+  <!-- ── PAGE: SETTINGS ── -->
+  <div class="page" id="page-settings">
+    <div class="settings-group">
+      <div class="settings-group-title">البيانات والنسخ الاحتياطية</div>
+      <div class="settings-item" onclick="exportCSV()">
+        <div class="settings-item-left">
+          <div class="settings-ico" style="background:var(--green-dim)"><i data-lucide="file-spreadsheet" style="color:var(--green)"></i></div>
+          <div><div class="settings-item-name">تصدير Excel/CSV</div><div class="settings-item-sub">تصدير بيانات الجرد الكاملة</div></div>
         </div>
-        <div>
-          <div class="settings-item-label">تصدير البيانات CSV</div>
-          <div class="settings-item-sub">لفتحه في Excel</div>
-        </div>
+        <i data-lucide="chevron-left" style="width:14px;height:14px;color:var(--text3)"></i>
       </div>
-      <button class="btn btn-green" onclick="exportData()"><i data-lucide="download"></i> تصدير</button>
-    </div>
-    <div class="settings-item">
-      <div class="settings-item-info">
-        <div class="settings-item-icon" style="background:var(--amber-bg)">
-          <i data-lucide="upload" style="color:var(--amber)"></i>
+      <div class="settings-item" onclick="backupJSON()">
+        <div class="settings-item-left">
+          <div class="settings-ico" style="background:var(--blue-dim)"><i data-lucide="save" style="color:var(--blue)"></i></div>
+          <div><div class="settings-item-name">نسخة احتياطية JSON</div><div class="settings-item-sub">حفظ كامل البيانات</div></div>
         </div>
-        <div>
-          <div class="settings-item-label">استيراد نسخة احتياطية</div>
-          <div class="settings-item-sub">ملف JSON</div>
-        </div>
+        <i data-lucide="chevron-left" style="width:14px;height:14px;color:var(--text3)"></i>
       </div>
-      <label class="btn btn-ghost" style="cursor:pointer">
-        <i data-lucide="upload"></i> استيراد
-        <input type="file" accept=".json" style="display:none" onchange="importData(event)">
+      <label class="settings-item" style="cursor:pointer">
+        <div class="settings-item-left">
+          <div class="settings-ico" style="background:var(--amber-dim)"><i data-lucide="upload" style="color:var(--amber)"></i></div>
+          <div><div class="settings-item-name">استيراد نسخة احتياطية</div><div class="settings-item-sub">استيراد ملف JSON</div></div>
+        </div>
+        <i data-lucide="chevron-left" style="width:14px;height:14px;color:var(--text3)"></i>
+        <input type="file" accept=".json" style="display:none" onchange="importJSON(event)">
       </label>
-    </div>
-    <div class="settings-item">
-      <div class="settings-item-info">
-        <div class="settings-item-icon" style="background:var(--blue-bg)">
-          <i data-lucide="save" style="color:var(--blue)"></i>
+      <div class="settings-item" onclick="confirmClear()">
+        <div class="settings-item-left">
+          <div class="settings-ico" style="background:var(--red-dim)"><i data-lucide="trash-2" style="color:var(--red)"></i></div>
+          <div><div class="settings-item-name">مسح جميع البيانات</div><div class="settings-item-sub">لا يمكن التراجع</div></div>
         </div>
-        <div>
-          <div class="settings-item-label">حفظ نسخة احتياطية</div>
-          <div class="settings-item-sub">ملف JSON للحفظ</div>
-        </div>
+        <i data-lucide="chevron-left" style="width:14px;height:14px;color:var(--text3)"></i>
       </div>
-      <button class="btn btn-ghost" onclick="backupData()"><i data-lucide="save"></i> حفظ</button>
     </div>
-    <div class="settings-item">
-      <div class="settings-item-info">
-        <div class="settings-item-icon" style="background:var(--red-bg)">
-          <i data-lucide="trash-2" style="color:var(--red)"></i>
-        </div>
-        <div>
-          <div class="settings-item-label">مسح جميع البيانات</div>
-          <div class="settings-item-sub">لا يمكن التراجع</div>
-        </div>
-      </div>
-      <button class="btn btn-red" onclick="confirmClear()"><i data-lucide="trash-2"></i> مسح</button>
-    </div>
-  </div>
-  <div class="settings-section">
-    <h3>معلومات التطبيق</h3>
-    <div class="settings-item">
-      <div class="settings-item-info">
-        <div class="settings-item-icon" style="background:rgba(108,99,255,0.15)">
-          <i data-lucide="info" style="color:var(--accent2)"></i>
-        </div>
-        <div>
-          <div class="settings-item-label">نظام الجرد الذكي</div>
-          <div class="settings-item-sub">الإصدار 2.0 — سنتر الملابس</div>
+    <div class="settings-group">
+      <div class="settings-group-title">إحصائيات المخزن</div>
+      <div class="settings-item">
+        <div class="settings-item-left">
+          <div class="settings-ico" style="background:var(--accent-dim)"><i data-lucide="database" style="color:var(--accent2)"></i></div>
+          <div><div class="settings-item-name">إجمالي الأصناف</div><div class="settings-item-sub" id="settingsInfo">...</div></div>
         </div>
       </div>
     </div>
-    <div class="settings-item" style="margin-top:6px">
-      <div class="settings-item-info">
-        <div class="settings-item-icon" style="background:var(--green-bg)">
-          <i data-lucide="database" style="color:var(--green)"></i>
-        </div>
-        <div>
-          <div class="settings-item-label">إجمالي الأصناف</div>
-          <div class="settings-item-sub" id="settingsInfo">جارٍ الحساب...</div>
+    <div class="settings-group">
+      <div class="settings-group-title">حول التطبيق</div>
+      <div class="settings-item">
+        <div class="settings-item-left">
+          <div class="settings-ico" style="background:var(--accent-dim)"><i data-lucide="info" style="color:var(--accent2)"></i></div>
+          <div><div class="settings-item-name">نظام الجرد الذكي v3.0</div><div class="settings-item-sub">يدعم باركودات المتجر الحالية</div></div>
         </div>
       </div>
     </div>
   </div>
-</div>
+
+</div><!-- /pages -->
 
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
   <button class="nav-item active" id="nav-scan" onclick="switchPage('scan')">
-    <i data-lucide="scan-line"></i>
-    <span>مسح</span>
+    <i data-lucide="scan-line"></i><span>مسح</span>
   </button>
   <button class="nav-item" id="nav-products" onclick="switchPage('products')">
-    <i data-lucide="package"></i>
-    <span>منتجات</span>
+    <i data-lucide="package-2"></i><span>منتجات</span>
   </button>
-  <button class="nav-scan-btn" onclick="openCamera()" title="مسح بالكاميرا">
-    <i data-lucide="camera"></i>
+  <button class="nav-scan-center" onclick="openCamera()">
+    <button class="nav-scan-btn"><i data-lucide="camera"></i></button>
+    <span style="font-size:10px;font-weight:600;color:var(--text3)">كاميرا</span>
+  </button>
+  <button class="nav-item" id="nav-labels" onclick="switchPage('labels')">
+    <i data-lucide="tag"></i><span>بطاقات</span>
   </button>
   <button class="nav-item" id="nav-report" onclick="switchPage('report')">
-    <i data-lucide="bar-chart-2"></i>
-    <span>تقارير</span>
-  </button>
-  <button class="nav-item" id="nav-settings" onclick="switchPage('settings')">
-    <i data-lucide="settings-2"></i>
-    <span>إعدادات</span>
+    <i data-lucide="bar-chart-2"></i><span>تقارير</span>
   </button>
 </nav>
 
 <!-- CAMERA OVERLAY -->
-<div class="camera-overlay" id="cameraOverlay">
-  <div class="camera-box">
-    <div class="camera-header">
-      <h3><i data-lucide="camera" style="width:16px;height:16px;vertical-align:-3px;margin-left:6px"></i> مسح الباركود بالكاميرا</h3>
-      <button class="icon-btn" onclick="closeCamera()"><i data-lucide="x"></i></button>
+<div class="cam-overlay" id="camOverlay">
+  <div class="cam-box">
+    <div class="cam-head">
+      <h3><i data-lucide="camera"></i> مسح الباركود</h3>
+      <button class="icon-btn r" onclick="closeCamera()"><i data-lucide="x"></i></button>
     </div>
-    <div class="camera-select-wrap" id="cameraSelectWrap" style="display:none">
-      <select class="camera-select" id="cameraSelect" onchange="switchCamera()">
-      </select>
+    <div class="cam-selwrap" id="camSelWrap" style="display:none">
+      <select class="cam-sel" id="camSel" onchange="switchCam()"></select>
     </div>
-    <div class="camera-viewport">
+    <div class="cam-port">
       <video id="cameraVideo" autoplay playsinline muted></video>
-      <div class="camera-frame">
-        <div class="camera-reticle">
-          <div class="camera-corners">
-            <div class="camera-corner tl"></div>
-            <div class="camera-corner tr"></div>
-            <div class="camera-corner bl"></div>
-            <div class="camera-corner br"></div>
-          </div>
+      <div class="cam-frame">
+        <div class="cam-reticle">
+          <div class="cam-corner tl"></div><div class="cam-corner tr"></div>
+          <div class="cam-corner bl"></div><div class="cam-corner br"></div>
         </div>
       </div>
     </div>
-    <div class="camera-status" id="cameraStatus">تهيئة الكاميرا...</div>
-    <div class="camera-actions">
-      <button class="btn btn-ghost" style="flex:1" onclick="toggleFlash()" id="flashBtn">
-        <i data-lucide="zap"></i> الفلاش
-      </button>
-      <button class="btn btn-red" style="flex:1" onclick="closeCamera()">
-        <i data-lucide="x"></i> إغلاق
-      </button>
+    <div class="cam-status" id="camStatus">جارٍ تهيئة الكاميرا...</div>
+    <div class="cam-actions">
+      <button class="btn btn-ghost" style="flex:1" id="flashBtn" onclick="toggleFlash()"><i data-lucide="zap"></i> فلاش</button>
+      <button class="btn btn-ghost" style="flex:1" id="flipBtn" onclick="flipCamera()"><i data-lucide="flip-horizontal"></i> تبديل</button>
+      <button class="btn btn-red" style="flex:1" onclick="closeCamera()"><i data-lucide="x"></i> إغلاق</button>
     </div>
   </div>
 </div>
 
-<!-- ADD / EDIT MODAL -->
+<!-- ADD/EDIT MODAL -->
 <div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
   <div class="modal">
-    <div class="modal-drag"></div>
-    <h2 id="modalTitle"></h2>
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalTitle"></div>
     <div id="modalBody"></div>
-    <div class="modal-actions" id="modalActions"></div>
+    <div class="modal-acts" id="modalActs"></div>
+  </div>
+</div>
+
+<!-- PRODUCT DETAIL MODAL -->
+<div class="modal-bg" id="detailBg" onclick="if(event.target===this)closeDetail()">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div id="detailBody"></div>
   </div>
 </div>
 
 <!-- TOAST -->
-<div class="toast" id="toast">
-  <i data-lucide="check-circle" id="toastIcon"></i>
-  <span id="toastMsg"></span>
-</div>
+<div class="toast" id="toast"><i data-lucide="check-circle" id="toastIco"></i><span id="toastTxt"></span></div>
 
 <script>
-// ── DATA ──────────────────────────────────────
+// ═══════════════════════════════════════
+//  DATA & CONFIG
+// ═══════════════════════════════════════
 const CATS = {
-  'ملابس نسائية':   ['بنطلون نسائي','قميص نسائي','صاية','جبة','فستان','بلوزة','تيشيرت نسائي','منوعات نسائية'],
-  'ملابس رجالية':   ['بنطلون رجالي','قميص رجالي','جبة','دشداشة','تيشيرت رجالي','بيجاما','منوعات رجالية'],
-  'ملابس أطفال':    ['بنطلون أطفال','قميص أطفال','قوط أطفال','فستان أطفال','تيشيرت أطفال','منوعات أطفال'],
-  'ملابس بيبي':     ['قوط بيبي','بدلة بيبي','قميص بيبي','رومبر','منوعات بيبي'],
-  'ملابس ولادة':    ['فستان ولادة','بلوزة ولادة','بنطلون ولادة','منوعات ولادة'],
-  'حقائب نسائية':  ['حقيبة يد','حقيبة ظهر','حقيبة سفر','محفظة نسائية','منوعات حقائب'],
-  'أحذية نسائية':  ['حذاء كعب عالي','حذاء رياضي نسائي','حذاء مفتوح','بوت نسائي','منوعات أحذية نسائية'],
-  'أحذية أطفال':   ['حذاء أطفال','حذاء رياضي أطفال','بوت أطفال','منوعات أحذية أطفال'],
-  'أحذية بيبي':    ['حذاء بيبي','سليبر بيبي','منوعات أحذية بيبي'],
-  'شحاطات رجالية': ['شحاطة رجالي','سليبر رجالي','بابوج رجالي','منوعات شحاطات رجالية'],
-  'شحاطات نسائية': ['شحاطة نسائي','سليبر نسائي','بابوج نسائي','منوعات شحاطات نسائية'],
-  'شحاطات أطفال':  ['شحاطة أطفال','سليبر أطفال','بابوج أطفال','منوعات شحاطات أطفال'],
-  'سليبرات':        ['سليبر ناعم','سليبر رياضي','سليبر بيت','سليبر بيبي','منوعات سليبرات']
+  'ملابس نسائية':['بنطلون نسائي','قميص نسائي','صاية','جبة','فستان','بلوزة','تيشيرت نسائي','منوعات نسائية'],
+  'ملابس رجالية':['بنطلون رجالي','قميص رجالي','جبة رجالي','دشداشة','تيشيرت رجالي','بيجاما','منوعات رجالية'],
+  'ملابس أطفال': ['بنطلون أطفال','قميص أطفال','قوط أطفال','فستان أطفال','تيشيرت أطفال','منوعات أطفال'],
+  'ملابس بيبي':  ['قوط بيبي','بدلة بيبي','قميص بيبي','رومبر بيبي','منوعات بيبي'],
+  'ملابس ولادة': ['فستان ولادة','بلوزة ولادة','بنطلون ولادة','منوعات ولادة'],
+  'حقائب نسائية':['حقيبة يد','حقيبة ظهر','حقيبة سفر','محفظة','منوعات حقائب'],
+  'أحذية نسائية':['حذاء كعب','حذاء رياضي نسائي','حذاء مفتوح','بوت نسائي','منوعات أحذية نسائية'],
+  'أحذية أطفال': ['حذاء أطفال','حذاء رياضي أطفال','بوت أطفال','منوعات أحذية أطفال'],
+  'أحذية بيبي':  ['حذاء بيبي','سليبر بيبي','منوعات أحذية بيبي'],
+  'شحاطات رجالية':['شحاطة رجالي','سليبر رجالي','بابوج رجالي','منوعات شحاطات رجالية'],
+  'شحاطات نسائية':['شحاطة نسائي','سليبر نسائي','بابوج نسائي','منوعات شحاطات نسائية'],
+  'شحاطات أطفال': ['شحاطة أطفال','سليبر أطفال','بابوج أطفال','منوعات شحاطات أطفال'],
+  'سليبرات':      ['سليبر ناعم','سليبر رياضي','سليبر بيت','سليبر بيبي','منوعات سليبرات']
 };
-const CAT_EMOJI = {
-  'ملابس نسائية':'👗','ملابس رجالية':'👔','ملابس أطفال':'🧒',
-  'ملابس بيبي':'👶','ملابس ولادة':'🤱','حقائب نسائية':'👜',
-  'أحذية نسائية':'👠','أحذية أطفال':'👟','أحذية بيبي':'🥿',
-  'شحاطات رجالية':'🩴','شحاطات نسائية':'🩴','شحاطات أطفال':'🩴','سليبرات':'🩴'
-};
-const CAT_BG = [
-  '#1e1030','#102030','#1e2810','#2e1010','#1e1030',
-  '#2e1830','#101830','#102820','#281020','#102028',
-  '#182810','#281810','#101828'
-];
 const CAT_KEYS = Object.keys(CATS);
+const CAT_EM = {
+  'ملابس نسائية':'👗','ملابس رجالية':'👔','ملابس أطفال':'🧒','ملابس بيبي':'👶',
+  'ملابس ولادة':'🤱','حقائب نسائية':'👜','أحذية نسائية':'👠','أحذية أطفال':'👟',
+  'أحذية بيبي':'🥿','شحاطات رجالية':'🩴','شحاطات نسائية':'🩴','شحاطات أطفال':'🩴','سليبرات':'🩴'
+};
+const CAT_BG = ['#180d30','#0d1e30','#1a280a','#2a0d0d','#180d30','#280d1a',
+                '#0d1a30','#0d2818','#1e1428','#0d1e28','#1e280a','#281a0a','#0d2018'];
 
 let db = {};
-let recentScans = [];
-let currentPage = 'scan';
+let recent = [];
+let curPage = 'scan';
 let filterCat = 'all';
+let vidStream = null;
 let codeReader = null;
-let videoStream = null;
-let availableCameras = [];
-let currentCameraIndex = 0;
 let flashTrack = null;
 let flashOn = false;
+let cameras = [];
+let camIdx = 0;
+let decodeTimer = null;
+let lastScannedCode = '';
+let scanCooldown = false;
 
-try { db = JSON.parse(localStorage.getItem('inv_db_v3') || '{}'); } catch(e) { db = {}; }
+try { db = JSON.parse(localStorage.getItem('inv_v4') || '{}'); } catch(e) { db = {}; }
 
-function save() {
-  try { localStorage.setItem('inv_db_v3', JSON.stringify(db)); } catch(e) {}
-}
+const save = () => { try { localStorage.setItem('inv_v4', JSON.stringify(db)); } catch(e){} };
+const fmt = n => Math.round(n||0).toLocaleString('ar-IQ');
+const fmtPrice = n => (n||0).toLocaleString('ar-IQ', {minimumFractionDigits:3, maximumFractionDigits:3});
 
+// ═══════════════════════════════════════
+//  BARCODE GEN (format matching label: 6-digit style like 777380)
+// ═══════════════════════════════════════
 function genCode() {
-  const ts = Date.now().toString(36).toUpperCase();
-  const r = Math.random().toString(36).slice(2,5).toUpperCase();
-  return 'ITM-' + ts + '-' + r;
+  // Generates a 6-digit style numeric barcode similar to the user's existing labels
+  const prefix = 7; // starts with 7 like user's codes
+  const r = Math.floor(Math.random() * 99999) + 10000;
+  return String(prefix) + String(r);
 }
 
-function drawBars(seed) {
+function drawBars(seed, dark=false) {
   let n = 0;
-  for(let i=0;i<seed.length;i++) n = (n*31 + seed.charCodeAt(i)) >>> 0;
+  for(let i=0;i<seed.length;i++) n = ((n*31) + seed.charCodeAt(i)) >>> 0;
   let html = '';
-  for(let i=0;i<60;i++){
+  for(let i=0;i<64;i++) {
     n = (n * 1664525 + 1013904223) >>> 0;
     const w = (n % 3) + 1;
-    const h = 14 + (n % 26);
-    const dark = (n % 3) !== 1;
-    if(dark) html += `<div style="width:${w}px;background:var(--text2);height:${h}px;flex-shrink:0;border-radius:1px"></div>`;
+    const h = 16 + (n % 28);
+    const isBar = (n % 3) !== 1;
+    const color = dark ? '#111' : 'var(--text2)';
+    if(isBar) html += `<div style="width:${w}px;background:${color};height:${h}px;flex-shrink:0;border-radius:1px"></div>`;
     else html += `<div style="width:${Math.max(1,w-1)}px;height:${h}px;flex-shrink:0"></div>`;
   }
   return html;
 }
 
-const fmt = n => Math.round(n).toLocaleString('ar-IQ');
-
-// ── TOAST ──────────────────────────────────────
-let toastTimer = null;
-function showToast(msg, type='green') {
+// ═══════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════
+let toastTimer;
+function toast(msg, type='g') {
   clearTimeout(toastTimer);
-  const t = document.getElementById('toast');
-  const icon = document.getElementById('toastIcon');
-  document.getElementById('toastMsg').textContent = msg;
-  t.className = 'toast t-' + type;
-  icon.setAttribute('data-lucide', type==='green' ? 'check-circle' : type==='red' ? 'alert-circle' : 'info');
-  lucide.createIcons();
-  t.classList.add('show');
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+  const el = document.getElementById('toast');
+  const ico = document.getElementById('toastIco');
+  document.getElementById('toastTxt').textContent = msg;
+  el.className = 'toast t' + type;
+  const icons = {g:'check-circle',r:'alert-circle',a:'alert-triangle'};
+  ico.setAttribute('data-lucide', icons[type]||'info');
+  lucide.createIcons({nodes:[el]});
+  el.classList.add('show');
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
 }
 
-// ── SCAN ──────────────────────────────────────
+// ═══════════════════════════════════════
+//  SCAN LOGIC
+// ═══════════════════════════════════════
 function processScan() {
-  const inp = document.getElementById('scanInput');
-  const code = inp.value.trim();
-  if (!code) { inp.focus(); return; }
+  const inp = document.getElementById('scanInp');
+  const code = inp.value.trim().replace(/\s/g,'');
   inp.value = '';
   inp.focus();
-  handleCode(code);
+  if (!code) return;
+  handleBarcode(code);
 }
 
-function handleCode(code) {
+function handleBarcode(code) {
+  if (scanCooldown) return;
+  scanCooldown = true;
+  setTimeout(() => { scanCooldown = false; }, 800); // prevent double scan
+
   const res = document.getElementById('scanResult');
+
   if (db[code]) {
-    db[code].count++;
-    db[code].totalWholesale += db[code].wholesalePrice;
-    db[code].totalSell += db[code].sellPrice;
-    save();
+    // KNOWN product — just add count, NO popup
     const p = db[code];
-    recentScans.unshift({ ...p, code, time: new Date().toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'}) });
-    if (recentScans.length > 12) recentScans.pop();
+    p.count++;
+    p.totalWholesale += p.wholesalePrice;
+    p.totalSell += p.sellPrice;
+    p.lastScan = new Date().toISOString();
+    save();
+
+    recent.unshift({ ...p, code, time: new Date().toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'}) });
+    if (recent.length > 15) recent.pop();
+
     res.style.display = 'flex';
-    res.className = 'scan-result success';
-    res.innerHTML = `<i data-lucide="check-circle"></i> <b>${p.name}</b> — تمت الإضافة، العدد الآن: <b>${p.count} قطعة</b>`;
-    lucide.createIcons({ nodes: [res] });
+    res.className = 'scan-result ok';
+    res.innerHTML = `<i data-lucide="check-circle"></i> <b>${p.name}</b> — تم الإضافة · العدد: <b>${p.count} قطعة</b>`;
+    lucide.createIcons({nodes:[res]});
+
+    toast(`✓ ${p.name} | ${p.count} قطعة`);
     renderStats(); renderRecent();
-    showToast(`✓ ${p.name} — ${p.count} قطعة`);
-    // highlight the card
-    setTimeout(() => { const c = document.querySelector(`[data-code="${code}"]`); if(c) { c.classList.add('highlight'); setTimeout(()=>c.classList.remove('highlight'),2000); } }, 100);
+
+    // Highlight the card
+    setTimeout(() => {
+      const card = document.querySelector(`[data-code="${code}"]`);
+      if (card) { card.classList.add('highlight'); setTimeout(()=>card.classList.remove('highlight'), 2200); }
+    }, 80);
+
   } else {
+    // NEW product — show add modal
     res.style.display = 'flex';
     res.className = 'scan-result info';
-    res.innerHTML = `<i data-lucide="info"></i> باركود جديد — سيتم إنشاء سجل للمنتج`;
-    lucide.createIcons({ nodes: [res] });
+    res.innerHTML = `<i data-lucide="plus-circle"></i> باركود جديد — أدخل بيانات المنتج`;
+    lucide.createIcons({nodes:[res]});
     showAddModal(code);
   }
 }
 
-// ── CAMERA ──────────────────────────────────────
+function clearLastScan() {
+  document.getElementById('scanResult').style.display = 'none';
+  document.getElementById('scanInp').value = '';
+  document.getElementById('scanInp').focus();
+}
+
+// ═══════════════════════════════════════
+//  CAMERA
+// ═══════════════════════════════════════
 async function openCamera() {
-  const overlay = document.getElementById('cameraOverlay');
+  const overlay = document.getElementById('camOverlay');
   overlay.classList.add('open');
-  document.getElementById('cameraStatus').textContent = 'جارٍ تهيئة الكاميرا...';
+  document.getElementById('camStatus').textContent = 'جارٍ تهيئة الكاميرا...';
+  flashOn = false; flashTrack = null;
   try {
-    // Get available cameras
     const devices = await navigator.mediaDevices.enumerateDevices();
-    availableCameras = devices.filter(d => d.kind === 'videoinput');
-    const sel = document.getElementById('cameraSelect');
-    const wrap = document.getElementById('cameraSelectWrap');
-    if (availableCameras.length > 1) {
-      sel.innerHTML = availableCameras.map((d,i) => `<option value="${d.deviceId}">${d.label || 'كاميرا ' + (i+1)}</option>`).join('');
-      // Default to back camera
-      const backIdx = availableCameras.findIndex(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('rear') || d.label.toLowerCase().includes('environment'));
-      if (backIdx >= 0) { sel.selectedIndex = backIdx; currentCameraIndex = backIdx; }
+    cameras = devices.filter(d => d.kind === 'videoinput');
+    const sel = document.getElementById('camSel');
+    const wrap = document.getElementById('camSelWrap');
+    if (cameras.length > 1) {
+      sel.innerHTML = cameras.map((d,i) =>
+        `<option value="${d.deviceId}">${d.label || 'كاميرا ' + (i+1)}</option>`
+      ).join('');
+      // prefer back camera
+      const backIdx = cameras.findIndex(d => /back|rear|environment/i.test(d.label));
+      if (backIdx >= 0) { sel.selectedIndex = backIdx; camIdx = backIdx; }
       wrap.style.display = 'block';
     }
-    await startCameraStream();
+    await startStream();
   } catch(err) {
-    document.getElementById('cameraStatus').textContent = '⚠️ تعذر الوصول للكاميرا: ' + err.message;
+    document.getElementById('camStatus').textContent = '⚠️ تعذر الوصول: ' + err.message;
   }
 }
 
-async function startCameraStream() {
-  if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); }
+async function startStream() {
+  stopStream();
   const video = document.getElementById('cameraVideo');
-  const sel = document.getElementById('cameraSelect');
+  const sel = document.getElementById('camSel');
   const deviceId = sel.value || undefined;
-
   const constraints = {
-    video: deviceId
-      ? { deviceId: { exact: deviceId }, facingMode: { ideal: 'environment' } }
-      : { facingMode: { ideal: 'environment' } }
+    video: {
+      deviceId: deviceId ? { exact: deviceId } : undefined,
+      facingMode: deviceId ? undefined : { ideal: 'environment' },
+      width: { ideal: 1280 }, height: { ideal: 720 }
+    }
   };
-
   try {
-    videoStream = await navigator.mediaDevices.getUserMedia(constraints);
-    video.srcObject = videoStream;
-    flashTrack = videoStream.getVideoTracks()[0];
-    document.getElementById('cameraStatus').textContent = 'وجّه الكاميرا نحو الباركود...';
-    startZxingDecode();
+    vidStream = await navigator.mediaDevices.getUserMedia(constraints);
+    video.srcObject = vidStream;
+    const tracks = vidStream.getVideoTracks();
+    if (tracks.length) flashTrack = tracks[0];
+    document.getElementById('camStatus').textContent = 'وجّه الكاميرا نحو الباركود...';
+    startDecode(video);
   } catch(err) {
-    document.getElementById('cameraStatus').textContent = '⚠️ ' + err.message;
+    document.getElementById('camStatus').textContent = '⚠️ ' + err.message;
   }
 }
 
-function switchCamera() {
-  startCameraStream();
-}
-
-let decodeInterval = null;
-function startZxingDecode() {
-  clearInterval(decodeInterval);
-  const video = document.getElementById('cameraVideo');
-  // Use ZXing if available
+function startDecode(video) {
+  clearInterval(decodeTimer);
+  // Try BarcodeDetector API first (works on Android Chrome)
+  if ('BarcodeDetector' in window) {
+    const formats = ['code_128','code_39','ean_13','ean_8','upc_a','upc_e','itf','codabar','qr_code','data_matrix','pdf417','aztec'];
+    let detector;
+    try { detector = new BarcodeDetector({ formats }); } catch(e) { detector = new BarcodeDetector(); }
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    let scanning = true;
+    decodeTimer = setInterval(async () => {
+      if (!scanning || video.readyState < 2 || video.videoWidth === 0) return;
+      canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0);
+      try {
+        const codes = await detector.detect(canvas);
+        if (codes.length > 0 && scanning) {
+          scanning = false;
+          clearInterval(decodeTimer);
+          const code = codes[0].rawValue;
+          document.getElementById('camStatus').innerHTML = `<span style="color:var(--green)">✓ تم قراءة: ${code}</span>`;
+          setTimeout(() => { closeCamera(); handleBarcode(code); }, 400);
+        }
+      } catch(e) {}
+    }, 250);
+    return;
+  }
+  // Fallback: ZXing if loaded
   if (typeof ZXing !== 'undefined') {
     try {
       const hints = new Map();
-      const formats = [
-        ZXing.BarcodeFormat.QR_CODE,
-        ZXing.BarcodeFormat.CODE_128,
-        ZXing.BarcodeFormat.CODE_39,
-        ZXing.BarcodeFormat.EAN_13,
-        ZXing.BarcodeFormat.EAN_8,
-        ZXing.BarcodeFormat.UPC_A,
-        ZXing.BarcodeFormat.UPC_E,
-        ZXing.BarcodeFormat.DATA_MATRIX,
-        ZXing.BarcodeFormat.ITF,
-        ZXing.BarcodeFormat.CODABAR,
-      ];
-      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, formats);
       hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
       codeReader = new ZXing.BrowserMultiFormatReader(hints);
-      codeReader.decodeFromVideoDevice(
-        document.getElementById('cameraSelect').value || undefined,
-        'cameraVideo',
-        (result, err) => {
-          if (result) {
-            const code = result.getText();
-            document.getElementById('cameraStatus').innerHTML = `<span style="color:var(--green)">✓ تم قراءة: ${code}</span>`;
-            closeCamera();
-            handleCode(code);
-          }
+      const deviceId = document.getElementById('camSel').value || undefined;
+      codeReader.decodeFromVideoDevice(deviceId, 'cameraVideo', (result, err) => {
+        if (result) {
+          const code = result.getText();
+          document.getElementById('camStatus').innerHTML = `<span style="color:var(--green)">✓ ${code}</span>`;
+          setTimeout(() => { closeCamera(); handleBarcode(code); }, 300);
         }
-      );
-    } catch(e) {
-      fallbackDecode(video);
-    }
-  } else {
-    fallbackDecode(video);
+      });
+    } catch(e) { document.getElementById('camStatus').textContent = 'المتصفح لا يدعم المسح التلقائي — أدخل الرقم يدوياً'; }
+    return;
   }
+  document.getElementById('camStatus').innerHTML = 'أدخل رقم الباركود يدوياً في الحقل أعلاه<br><small style="color:var(--text3)">المتصفح لا يدعم المسح التلقائي</small>';
 }
 
-function fallbackDecode(video) {
-  // Canvas-based fallback with BarcodeDetector API
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-  if ('BarcodeDetector' in window) {
-    const detector = new BarcodeDetector({ formats: ['qr_code','code_128','code_39','ean_13','ean_8','upc_a','upc_e','itf','codabar','data_matrix'] });
-    decodeInterval = setInterval(async () => {
-      if (video.readyState === video.HAVE_ENOUGH_DATA) {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        ctx.drawImage(video, 0, 0);
-        try {
-          const codes = await detector.detect(canvas);
-          if (codes.length > 0) {
-            clearInterval(decodeInterval);
-            const code = codes[0].rawValue;
-            document.getElementById('cameraStatus').innerHTML = `<span style="color:var(--green)">✓ تم قراءة: ${code}</span>`;
-            closeCamera();
-            handleCode(code);
-          }
-        } catch(e) {}
-      }
-    }, 300);
-    document.getElementById('cameraStatus').textContent = 'وجّه الكاميرا نحو الباركود...';
-  } else {
-    document.getElementById('cameraStatus').innerHTML = 'المتصفح لا يدعم مسح الباركود تلقائياً.<br>يرجى إدخال الباركود يدوياً أعلاه.';
-  }
+function stopStream() {
+  clearInterval(decodeTimer);
+  if (codeReader) { try { codeReader.reset(); } catch(e){} codeReader = null; }
+  if (vidStream) { vidStream.getTracks().forEach(t => t.stop()); vidStream = null; }
+  flashOn = false; flashTrack = null;
+  document.getElementById('cameraVideo').srcObject = null;
 }
+
+function closeCamera() {
+  stopStream();
+  document.getElementById('camOverlay').classList.remove('open');
+  document.getElementById('camSelWrap').style.display = 'none';
+  document.getElementById('flashBtn').style.color = '';
+}
+
+function flipCamera() {
+  const sel = document.getElementById('camSel');
+  if (cameras.length <= 1) { toast('كاميرا واحدة فقط', 'a'); return; }
+  camIdx = (camIdx + 1) % cameras.length;
+  sel.selectedIndex = camIdx;
+  startStream();
+}
+
+function switchCam() { startStream(); }
 
 async function toggleFlash() {
-  if (!flashTrack) return;
+  if (!flashTrack) { toast('الفلاش غير متاح', 'a'); return; }
   try {
     flashOn = !flashOn;
     await flashTrack.applyConstraints({ advanced: [{ torch: flashOn }] });
     const btn = document.getElementById('flashBtn');
     btn.style.color = flashOn ? 'var(--amber)' : '';
-    btn.style.borderColor = flashOn ? 'var(--amber)' : '';
-  } catch(e) { showToast('الفلاش غير متاح', 'red'); flashOn = false; }
+  } catch(e) { toast('الفلاش غير مدعوم', 'a'); flashOn = false; }
 }
 
-function closeCamera() {
-  clearInterval(decodeInterval);
-  if (codeReader) { try { codeReader.reset(); } catch(e){} codeReader = null; }
-  if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
-  flashOn = false; flashTrack = null;
-  document.getElementById('cameraVideo').srcObject = null;
-  document.getElementById('cameraOverlay').classList.remove('open');
-  document.getElementById('cameraSelectWrap').style.display = 'none';
-}
-
-// ── MODAL ──────────────────────────────────────
+// ═══════════════════════════════════════
+//  ADD MODAL
+// ═══════════════════════════════════════
 function showAddModal(origCode) {
   const newCode = genCode();
   document.getElementById('modalTitle').innerHTML = `<i data-lucide="plus-circle"></i> إضافة منتج جديد`;
   const catOpts = CAT_KEYS.map(c => `<option value="${c}">${c}</option>`).join('');
   document.getElementById('modalBody').innerHTML = `
-    <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:16px;font-size:11px;color:var(--text2);display:flex;align-items:center;gap:8px">
-      <i data-lucide="scan-barcode" style="width:14px;height:14px;color:var(--accent2);flex-shrink:0"></i>
-      <span>الباركود الممسوح: <span style="font-family:JetBrains Mono,monospace;color:var(--text);direction:ltr;display:inline-block">${origCode}</span></span>
+    <div style="background:var(--bg3);border-radius:var(--r-sm);padding:9px 13px;margin-bottom:14px;font-size:11px;color:var(--text2);display:flex;align-items:center;gap:8px">
+      <i data-lucide="scan-barcode" style="width:13px;height:13px;color:var(--accent2);flex-shrink:0"></i>
+      الباركود الممسوح:
+      <span style="font-family:'JetBrains Mono',monospace;color:var(--text);direction:ltr;display:inline-block">${origCode}</span>
     </div>
-    <div class="form-group">
-      <label class="form-label">اسم المنتج *</label>
-      <input class="form-input" id="fName" placeholder="مثال: قميص رجالي كتان أبيض">
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">الفئة الرئيسية</label>
-        <select class="form-select" id="fCat" onchange="updateSubCat()">${catOpts}</select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">الفئة الفرعية</label>
-        <select class="form-select" id="fSubCat"></select>
-      </div>
+    <div class="form-grp">
+      <label class="form-lbl">اسم المنتج</label>
+      <input class="form-inp" id="fName" placeholder="مثال: قميص أبيض رجالي">
+      <div class="form-hint">اختياري — يمكن تركه فارغاً</div>
     </div>
     <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">سعر الجملة (د.ع)</label>
-        <input class="form-input" id="fWp" type="number" placeholder="0" min="0">
+      <div class="form-grp">
+        <label class="form-lbl">الفئة الرئيسية</label>
+        <select class="form-sel" id="fCat" onchange="updSubCat()">${catOpts}</select>
       </div>
-      <div class="form-group">
-        <label class="form-label">سعر البيع (د.ع)</label>
-        <input class="form-input" id="fSp" type="number" placeholder="0" min="0">
+      <div class="form-grp">
+        <label class="form-lbl">الفئة الفرعية</label>
+        <select class="form-sel" id="fSub"></select>
       </div>
     </div>
-    <div class="bc-preview">
-      <div class="bc-tag">الباركود الجديد للمنتج بعد الحفظ</div>
-      <div class="bc-bars">${drawBars(newCode)}</div>
-      <div class="bc-num">${newCode}</div>
-      <div class="bc-badge"><i data-lucide="shield-check"></i> باركود فريد تلقائي</div>
+    <div class="form-row">
+      <div class="form-grp">
+        <label class="form-lbl">سعر الجملة (د.ع)</label>
+        <input class="form-inp" id="fWp" type="number" placeholder="0.000" min="0" step="0.001">
+      </div>
+      <div class="form-grp">
+        <label class="form-lbl">سعر البيع (د.ع)</label>
+        <input class="form-inp" id="fSp" type="number" placeholder="0.000" min="0" step="0.001">
+        <div class="form-hint">السعر الظاهر على البطاقة</div>
+      </div>
+    </div>
+    <div style="background:var(--bg);border:1px solid var(--border2);border-radius:var(--r-sm);padding:12px;text-align:center;margin-top:4px">
+      <div style="font-size:10px;color:var(--text3);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:.4px">الباركود الجديد للمنتج</div>
+      <div class="bc-bars" style="justify-content:center;align-items:flex-end;height:44px;display:flex;gap:1.5px;overflow:hidden;margin-bottom:5px">${drawBars(newCode)}</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text2);letter-spacing:3px;direction:ltr">${newCode}</div>
     </div>
   `;
-  document.getElementById('modalActions').innerHTML = `
+  document.getElementById('modalActs').innerHTML = `
     <button class="btn btn-ghost" onclick="closeModal()"><i data-lucide="x"></i> إلغاء</button>
     <button class="btn btn-accent" onclick="saveNew('${origCode}','${newCode}')"><i data-lucide="save"></i> حفظ وإضافة</button>
   `;
-  updateSubCat();
+  updSubCat();
   openModal();
   lucide.createIcons();
   setTimeout(() => document.getElementById('fName').focus(), 200);
 }
 
-function updateSubCat() {
+function updSubCat() {
   const cat = document.getElementById('fCat').value;
-  document.getElementById('fSubCat').innerHTML = (CATS[cat]||[]).map(s=>`<option>${s}</option>`).join('');
+  document.getElementById('fSub').innerHTML = (CATS[cat]||[]).map(s => `<option>${s}</option>`).join('');
 }
 
 function saveNew(origCode, newCode) {
-  const name = document.getElementById('fName').value.trim();
-  if (!name) { document.getElementById('fName').focus(); showToast('أدخل اسم المنتج', 'red'); return; }
+  const name = document.getElementById('fName').value.trim() || ('منتج ' + newCode);
   const cat = document.getElementById('fCat').value;
-  const sub = document.getElementById('fSubCat').value;
+  const sub = document.getElementById('fSub').value;
   const wp = parseFloat(document.getElementById('fWp').value) || 0;
   const sp = parseFloat(document.getElementById('fSp').value) || 0;
-  db[newCode] = { name, cat, sub, wholesalePrice: wp, sellPrice: sp, count: 1, totalWholesale: wp, totalSell: sp, origCode, createdAt: new Date().toISOString() };
+  db[newCode] = { name, cat, sub, wholesalePrice: wp, sellPrice: sp, count: 1,
+    totalWholesale: wp, totalSell: sp, origCode, createdAt: new Date().toISOString(), lastScan: new Date().toISOString() };
   save();
-  recentScans.unshift({ ...db[newCode], code: newCode, time: new Date().toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'}) });
-  if (recentScans.length > 12) recentScans.pop();
+  recent.unshift({ ...db[newCode], code: newCode, time: new Date().toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'}) });
+  if (recent.length > 15) recent.pop();
   closeModal();
   renderStats(); renderRecent();
-  showToast(`تمت إضافة: ${name}`);
   const res = document.getElementById('scanResult');
-  res.style.display = 'flex';
-  res.className = 'scan-result success';
-  res.innerHTML = `<i data-lucide="check-circle"></i> تمت إضافة <b>${name}</b> بباركود: <b style="font-family:JetBrains Mono,monospace;font-size:10px">${newCode}</b>`;
+  res.style.display = 'flex'; res.className = 'scan-result ok';
+  res.innerHTML = `<i data-lucide="check-circle"></i> تمت إضافة <b>${name}</b> · باركود: <b style="font-family:'JetBrains Mono',monospace">${newCode}</b>`;
   lucide.createIcons({nodes:[res]});
+  toast(`تمت إضافة: ${name}`);
 }
 
-function showEditModal(code) {
+// ═══════════════════════════════════════
+//  EDIT MODAL
+// ═══════════════════════════════════════
+function showEditModal(code, e) {
+  if (e) e.stopPropagation();
   const p = db[code]; if (!p) return;
   document.getElementById('modalTitle').innerHTML = `<i data-lucide="edit-3"></i> تعديل المنتج`;
   const catOpts = CAT_KEYS.map(c => `<option value="${c}"${c===p.cat?' selected':''}>${c}</option>`).join('');
   const subOpts = (CATS[p.cat]||[]).map(s => `<option${s===p.sub?' selected':''}>${s}</option>`).join('');
   document.getElementById('modalBody').innerHTML = `
-    <div class="form-group"><label class="form-label">اسم المنتج</label><input class="form-input" id="eName" value="${p.name}"></div>
+    <div class="form-grp"><label class="form-lbl">اسم المنتج</label><input class="form-inp" id="eName" value="${p.name}"></div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">الفئة</label><select class="form-select" id="eCat" onchange="editSub()">${catOpts}</select></div>
-      <div class="form-group"><label class="form-label">الفئة الفرعية</label><select class="form-select" id="eSubCat">${subOpts}</select></div>
+      <div class="form-grp"><label class="form-lbl">الفئة</label><select class="form-sel" id="eCat" onchange="editSub()">${catOpts}</select></div>
+      <div class="form-grp"><label class="form-lbl">الفئة الفرعية</label><select class="form-sel" id="eSub">${subOpts}</select></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">سعر الجملة (د.ع)</label><input class="form-input" id="eWp" type="number" value="${p.wholesalePrice}" min="0"></div>
-      <div class="form-group"><label class="form-label">سعر البيع (د.ع)</label><input class="form-input" id="eSp" type="number" value="${p.sellPrice}" min="0"></div>
+      <div class="form-grp"><label class="form-lbl">سعر الجملة</label><input class="form-inp" id="eWp" type="number" value="${p.wholesalePrice}" step="0.001"></div>
+      <div class="form-grp"><label class="form-lbl">سعر البيع</label><input class="form-inp" id="eSp" type="number" value="${p.sellPrice}" step="0.001"></div>
     </div>
-    <div class="form-group"><label class="form-label">العدد (القطع)</label><input class="form-input" id="eCnt" type="number" value="${p.count}" min="0"></div>
+    <div class="form-grp"><label class="form-lbl">العدد (القطع)</label><input class="form-inp" id="eCnt" type="number" value="${p.count}" min="0"></div>
   `;
-  document.getElementById('modalActions').innerHTML = `
+  document.getElementById('modalActs').innerHTML = `
     <button class="btn btn-ghost" onclick="closeModal()"><i data-lucide="x"></i> إلغاء</button>
     <button class="btn btn-accent" onclick="saveEdit('${code}')"><i data-lucide="save"></i> حفظ</button>
   `;
@@ -1167,271 +940,411 @@ function showEditModal(code) {
 
 function editSub() {
   const cat = document.getElementById('eCat').value;
-  document.getElementById('eSubCat').innerHTML = (CATS[cat]||[]).map(s=>`<option>${s}</option>`).join('');
+  document.getElementById('eSub').innerHTML = (CATS[cat]||[]).map(s=>`<option>${s}</option>`).join('');
 }
 
 function saveEdit(code) {
   const p = db[code]; if (!p) return;
   p.name = document.getElementById('eName').value.trim() || p.name;
   p.cat = document.getElementById('eCat').value;
-  p.sub = document.getElementById('eSubCat').value;
+  p.sub = document.getElementById('eSub').value;
   p.wholesalePrice = parseFloat(document.getElementById('eWp').value) || 0;
   p.sellPrice = parseFloat(document.getElementById('eSp').value) || 0;
   p.count = parseInt(document.getElementById('eCnt').value) || 0;
   p.totalWholesale = p.wholesalePrice * p.count;
   p.totalSell = p.sellPrice * p.count;
   save(); closeModal();
-  renderStats(); renderProducts(); renderRecent();
-  showToast('تم حفظ التعديلات');
+  renderStats(); renderProducts(); renderRecent(); renderLabels();
+  toast('تم حفظ التعديلات');
 }
 
-function deleteProduct(code) {
+// ═══════════════════════════════════════
+//  PRODUCT DETAIL MODAL (click on card)
+// ═══════════════════════════════════════
+function showDetail(code) {
+  const p = db[code]; if (!p) return;
+  const catIdx = CAT_KEYS.indexOf(p.cat);
+  const em = CAT_EM[p.cat] || '📦';
+  const bg = CAT_BG[Math.max(0,catIdx) % CAT_BG.length];
+  const profit = (p.sellPrice - p.wholesalePrice);
+  const profitTotal = p.totalSell - p.totalWholesale;
+  const created = p.createdAt ? new Date(p.createdAt).toLocaleDateString('ar-IQ') : '—';
+  document.getElementById('detailBody').innerHTML = `
+    <div class="detail-header">
+      <div class="detail-icon" style="background:${bg}">${em}</div>
+      <div class="detail-name">${p.name}</div>
+      <div class="detail-cat">${p.cat}${p.sub ? ' · ' + p.sub : ''}</div>
+    </div>
+    <div class="detail-grid">
+      <div class="detail-item"><div class="detail-item-label">عدد القطع</div><div class="detail-item-val accent">${p.count.toLocaleString()}</div></div>
+      <div class="detail-item"><div class="detail-item-label">سعر البيع</div><div class="detail-item-val green">${fmt(p.sellPrice)} د.ع</div></div>
+      <div class="detail-item"><div class="detail-item-label">سعر الجملة</div><div class="detail-item-val">${fmt(p.wholesalePrice)} د.ع</div></div>
+      <div class="detail-item"><div class="detail-item-label">ربح القطعة</div><div class="detail-item-val ${profit>=0?'green':''}">${fmt(profit)} د.ع</div></div>
+      <div class="detail-item"><div class="detail-item-label">إجمالي المخزون</div><div class="detail-item-val">${fmt(p.totalSell)} د.ع</div></div>
+      <div class="detail-item"><div class="detail-item-label">الربح الكلي</div><div class="detail-item-val green">${fmt(profitTotal)} د.ع</div></div>
+    </div>
+    <div class="detail-barcode">
+      <div class="bc-tag">الباركود الخاص بهذا المنتج</div>
+      <div class="bc-bars" style="display:flex;gap:1.5px;justify-content:center;align-items:flex-end;height:44px;margin-bottom:6px;overflow:hidden">${drawBars(code)}</div>
+      <div class="bc-num">${code}</div>
+    </div>
+    <div class="bc-label">
+      <div style="font-size:10px;color:#666;margin-bottom:3px;direction:rtl">معاينة الملصق</div>
+      <div class="bc-name">${p.name}</div>
+      <div class="bc-price">${fmtPrice(p.sellPrice)}</div>
+      <div style="display:flex;gap:1px;justify-content:center;align-items:flex-end;height:32px;margin-bottom:3px;overflow:hidden">${drawBars(code, true)}</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#555;direction:ltr">${code}</div>
+    </div>
+    <div style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:12px">تاريخ الإضافة: ${created}</div>
+    <div style="display:flex;gap:7px">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeDetail();showEditModal('${code}')"><i data-lucide="edit-3"></i> تعديل</button>
+      <button class="btn btn-green" style="flex:1" onclick="regenCode('${code}')"><i data-lucide="refresh-cw"></i> باركود جديد</button>
+      <button class="btn btn-red" onclick="closeDetail();delProduct('${code}')"><i data-lucide="trash-2"></i></button>
+    </div>
+  `;
+  document.getElementById('detailBg').classList.add('open');
+  lucide.createIcons();
+}
+function closeDetail() { document.getElementById('detailBg').classList.remove('open'); }
+
+// ═══════════════════════════════════════
+//  DELETE & REGEN
+// ═══════════════════════════════════════
+function delProduct(code, e) {
+  if (e) e.stopPropagation();
   if (!db[code]) return;
   if (!confirm(`حذف "${db[code].name}"؟`)) return;
   delete db[code]; save();
-  renderStats(); renderProducts(); renderRecent();
-  showToast('تم الحذف', 'red');
+  renderStats(); renderProducts(); renderRecent(); renderLabels();
+  toast('تم الحذف', 'r');
 }
 
-function regenBarcode(code) {
+function regenCode(code, e) {
+  if (e) e.stopPropagation();
   const p = db[code]; if (!p) return;
   if (!confirm(`إنشاء باركود جديد لـ "${p.name}"؟`)) return;
   const nc = genCode();
   db[nc] = { ...p, origCode: code };
   delete db[code]; save();
-  renderProducts(); renderRecent(); renderStats();
-  showToast('تم إنشاء باركود جديد');
+  closeDetail();
+  renderStats(); renderProducts(); renderRecent(); renderLabels();
+  toast('باركود جديد: ' + nc);
 }
 
-function openModal() { document.getElementById('modalBg').classList.add('open'); }
-function closeModal() { document.getElementById('modalBg').classList.remove('open'); }
-
-// ── RENDER ──────────────────────────────────────
+// ═══════════════════════════════════════
+//  RENDER: STATS
+// ═══════════════════════════════════════
 function renderStats() {
   const items = Object.values(db);
-  const totalPcs = items.reduce((a,b)=>a+b.count,0);
-  const tw = items.reduce((a,b)=>a+b.totalWholesale,0);
-  const ts = items.reduce((a,b)=>a+b.totalSell,0);
+  const totalPcs = items.reduce((a,b) => a+b.count, 0);
+  const tw = items.reduce((a,b) => a+b.totalWholesale, 0);
+  const ts = items.reduce((a,b) => a+b.totalSell, 0);
   const profit = ts - tw;
+  const margin = tw > 0 ? Math.round((profit/tw)*100) : 0;
   document.getElementById('statsGrid').innerHTML = `
-    <div class="stat-card c-purple">
-      <div class="stat-icon"><i data-lucide="package-2"></i></div>
+    <div class="stat-card cp">
+      <div class="stat-top"><div class="stat-ico"><i data-lucide="layers"></i></div></div>
       <div class="stat-label">إجمالي القطع</div>
-      <div class="stat-value">${totalPcs.toLocaleString()}</div>
+      <div class="stat-val">${totalPcs.toLocaleString()}</div>
       <div class="stat-sub">${items.length} صنف</div>
     </div>
-    <div class="stat-card c-blue">
-      <div class="stat-icon"><i data-lucide="banknote"></i></div>
-      <div class="stat-label">رأس المال</div>
-      <div class="stat-value small">${fmt(tw)}</div>
-      <div class="stat-sub">د.ع جملة</div>
+    <div class="stat-card cg">
+      <div class="stat-top"><div class="stat-ico"><i data-lucide="trending-up"></i></div></div>
+      <div class="stat-label">الربح المتوقع</div>
+      <div class="stat-val sm">${fmt(profit)}</div>
+      <div class="stat-sub">هامش ${margin}%</div>
     </div>
-    <div class="stat-card c-green">
-      <div class="stat-icon"><i data-lucide="tag"></i></div>
-      <div class="stat-label">إجمالي البيع</div>
-      <div class="stat-value small">${fmt(ts)}</div>
+    <div class="stat-card cb">
+      <div class="stat-top"><div class="stat-ico"><i data-lucide="banknote"></i></div></div>
+      <div class="stat-label">رأس المال</div>
+      <div class="stat-val sm">${fmt(tw)}</div>
       <div class="stat-sub">د.ع</div>
     </div>
-    <div class="stat-card ${profit>=0?'c-amber':'c-red'}">
-      <div class="stat-icon"><i data-lucide="trending-up"></i></div>
-      <div class="stat-label">الربح المتوقع</div>
-      <div class="stat-value small">${fmt(profit)}</div>
+    <div class="stat-card ca">
+      <div class="stat-top"><div class="stat-ico"><i data-lucide="tag"></i></div></div>
+      <div class="stat-label">إجمالي البيع</div>
+      <div class="stat-val sm">${fmt(ts)}</div>
       <div class="stat-sub">د.ع</div>
     </div>
   `;
-  lucide.createIcons({ nodes: [document.getElementById('statsGrid')] });
+  lucide.createIcons({ nodes:[document.getElementById('statsGrid')] });
 }
 
-function productCardHTML(code, p, isRecent) {
+// ═══════════════════════════════════════
+//  RENDER: RECENT
+// ═══════════════════════════════════════
+function renderRecent() {
+  const el = document.getElementById('recentList');
+  document.getElementById('recentBadge').textContent = recent.length;
+  if (!recent.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-ico"><i data-lucide="scan-line"></i></div><h3>لا توجد مسحوبات بعد</h3><p>امسح باركود للبدء</p></div>`;
+    lucide.createIcons({nodes:[el]}); return;
+  }
+  el.innerHTML = recent.map(p => prodCardHTML(p.code, p, true)).join('');
+  lucide.createIcons({nodes:[el]});
+}
+
+function prodCardHTML(code, p, isRecent) {
   const catIdx = CAT_KEYS.indexOf(p.cat);
-  const bg = CAT_BG[Math.max(0, catIdx) % CAT_BG.length];
-  const em = CAT_EMOJI[p.cat] || '📦';
-  return `<div class="product-card" data-code="${code}">
+  const bg = CAT_BG[Math.max(0,catIdx) % CAT_BG.length];
+  const em = CAT_EM[p.cat] || '📦';
+  return `<div class="prod-card" data-code="${code}" onclick="showDetail('${code}')">
     <div class="prod-icon" style="background:${bg}">${em}</div>
-    <div class="prod-info">
+    <div class="prod-body">
       <div class="prod-name">${p.name}</div>
-      <div class="prod-cat">${p.cat}${p.sub?' · '+p.sub:''}</div>
-      <div class="prod-code">${code}</div>
+      <div class="prod-meta"><span>${p.cat}</span>${p.sub?`<span>·</span><span>${p.sub}</span>`:''}</div>
+      <div class="prod-code-sm">${code}</div>
     </div>
     <div class="prod-right">
-      ${isRecent ? '<div class="new-pulse">+1 قطعة</div>' : `<div class="prod-count">${p.count} قطعة</div>`}
+      ${isRecent
+        ? `<div class="pulse-badge"><div class="pulse-dot"></div>+1</div>`
+        : `<div class="prod-count">${p.count} قطعة</div>`
+      }
       <div class="prod-sell">${fmt(p.sellPrice)} د.ع</div>
-      <div class="prod-wholesale">جملة: ${fmt(p.wholesalePrice)}</div>
+      <div class="prod-wp">جملة: ${fmt(p.wholesalePrice)}</div>
     </div>
-    ${!isRecent ? `<div class="prod-actions">
-      <button class="icon-btn" onclick="showEditModal('${code}')" title="تعديل"><i data-lucide="edit-3"></i></button>
-      <button class="icon-btn success" onclick="regenBarcode('${code}')" title="باركود جديد"><i data-lucide="refresh-cw"></i></button>
-      <button class="icon-btn danger" onclick="deleteProduct('${code}')" title="حذف"><i data-lucide="trash-2"></i></button>
+    ${!isRecent ? `<div class="prod-actions" onclick="event.stopPropagation()">
+      <button class="icon-btn b" onclick="showEditModal('${code}',event)" title="تعديل"><i data-lucide="edit-3"></i></button>
+      <button class="icon-btn g" onclick="regenCode('${code}',event)" title="باركود جديد"><i data-lucide="refresh-cw"></i></button>
+      <button class="icon-btn r" onclick="delProduct('${code}',event)" title="حذف"><i data-lucide="trash-2"></i></button>
     </div>` : ''}
   </div>`;
 }
 
-function renderRecent() {
-  const el = document.getElementById('recentList');
-  document.getElementById('recentCount').textContent = recentScans.length;
-  if (!recentScans.length) {
-    el.innerHTML = `<div class="empty">
-      <div class="empty-icon"><i data-lucide="scan-line"></i></div>
-      <h3>لا توجد مسحوبات بعد</h3>
-      <p>امسح باركود للبدء</p>
-    </div>`;
-    lucide.createIcons({ nodes: [el] }); return;
-  }
-  el.innerHTML = recentScans.map(p => productCardHTML(p.code, p, true)).join('');
-  lucide.createIcons({ nodes: [el] });
-}
-
+// ═══════════════════════════════════════
+//  RENDER: PRODUCTS
+// ═══════════════════════════════════════
 function renderProducts() {
-  const el = document.getElementById('productList');
+  const el = document.getElementById('prodList');
   const fb = document.getElementById('filterBar');
-  const q = (document.getElementById('searchField')?.value || '').trim().toLowerCase();
-  fb.innerHTML = `<button class="filter-chip${filterCat==='all'?' active':''}" onclick="setFilter('all')">الكل</button>` +
-    CAT_KEYS.map(c => `<button class="filter-chip${filterCat===c?' active':''}" onclick="setFilter('${c}')">${CAT_EMOJI[c]||''} ${c}</button>`).join('');
+  const q = (document.getElementById('searchInp')?.value||'').toLowerCase().trim();
+  fb.innerHTML = `<button class="chip${filterCat==='all'?' active':''}" onclick="setFilter('all')">الكل</button>` +
+    CAT_KEYS.map(c =>
+      `<button class="chip${filterCat===c?' active':''}" onclick="setFilter('${c}')">${CAT_EM[c]||''} ${c}</button>`
+    ).join('');
   let entries = Object.entries(db);
   if (filterCat !== 'all') entries = entries.filter(([k,v]) => v.cat === filterCat);
-  if (q) entries = entries.filter(([k,v]) => v.name.toLowerCase().includes(q) || v.cat.includes(q) || k.toLowerCase().includes(q));
-  document.getElementById('productCount').textContent = entries.length;
+  if (q) entries = entries.filter(([k,v]) => v.name.toLowerCase().includes(q) || k.toLowerCase().includes(q) || (v.sub||'').includes(q));
+  // sort by name
+  entries.sort((a,b) => a[1].name.localeCompare(b[1].name, 'ar'));
+  document.getElementById('prodBadge').textContent = entries.length;
   if (!entries.length) {
-    el.innerHTML = `<div class="empty">
-      <div class="empty-icon"><i data-lucide="package-x"></i></div>
-      <h3>لا توجد منتجات</h3>
-      <p>${q ? 'لا نتائج للبحث' : 'ابدأ بمسح باركود'}</p>
-    </div>`;
-    lucide.createIcons({ nodes: [el] }); return;
+    el.innerHTML = `<div class="empty"><div class="empty-ico"><i data-lucide="package-x"></i></div><h3>${q?'لا نتائج للبحث':'لا توجد منتجات'}</h3><p>${q?'جرب كلمة مختلفة':'ابدأ بمسح باركود'}</p></div>`;
+    lucide.createIcons({nodes:[el]}); return;
   }
-  el.innerHTML = entries.map(([code,p]) => productCardHTML(code, p, false)).join('');
-  lucide.createIcons({ nodes: [el] });
+  el.innerHTML = entries.map(([code,p]) => prodCardHTML(code,p,false)).join('');
+  lucide.createIcons({nodes:[el]});
 }
 
 function setFilter(cat) { filterCat = cat; renderProducts(); }
 
+// ═══════════════════════════════════════
+//  RENDER: LABELS PAGE
+// ═══════════════════════════════════════
+function renderLabels() {
+  const el = document.getElementById('labelsGrid');
+  const entries = Object.entries(db);
+  if (!entries.length) {
+    el.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-ico"><i data-lucide="tag-off"></i></div><h3>لا توجد منتجات بعد</h3><p>أضف منتجات لتظهر هنا</p></div>`;
+    lucide.createIcons({nodes:[el]}); return;
+  }
+  el.innerHTML = entries.map(([code, p]) =>
+    `<div class="label-card" onclick="showDetail('${code}')">
+      <div class="label-card-name">${p.name}</div>
+      <div class="label-card-price">${fmtPrice(p.sellPrice)}</div>
+      <div class="label-card-bars">${drawBars(code, true)}</div>
+      <div class="label-card-num">${code}</div>
+    </div>`
+  ).join('');
+}
+
+// ═══════════════════════════════════════
+//  RENDER: REPORT
+// ═══════════════════════════════════════
 function renderReport() {
   const items = Object.values(db);
   const entries = Object.entries(db);
   const tw = items.reduce((a,b)=>a+b.totalWholesale,0);
   const ts = items.reduce((a,b)=>a+b.totalSell,0);
   const total = items.reduce((a,b)=>a+b.count,0);
+  const margin = tw>0?Math.round((ts-tw)/tw*100):0;
+
   document.getElementById('reportStats').innerHTML = `
-    <div class="stat-card c-purple">
-      <div class="stat-icon"><i data-lucide="layers"></i></div>
+    <div class="stat-card cp">
+      <div class="stat-top"><div class="stat-ico"><i data-lucide="layers"></i></div></div>
       <div class="stat-label">إجمالي القطع</div>
-      <div class="stat-value">${total.toLocaleString()}</div>
+      <div class="stat-val">${total.toLocaleString()}</div>
     </div>
-    <div class="stat-card c-blue">
-      <div class="stat-icon"><i data-lucide="archive"></i></div>
+    <div class="stat-card cb">
+      <div class="stat-top"><div class="stat-ico"><i data-lucide="archive"></i></div></div>
       <div class="stat-label">الأصناف</div>
-      <div class="stat-value">${items.length}</div>
+      <div class="stat-val">${items.length}</div>
     </div>
-    <div class="stat-card c-green">
-      <div class="stat-icon"><i data-lucide="trending-up"></i></div>
-      <div class="stat-label">الربح المتوقع</div>
-      <div class="stat-value small">${fmt(ts-tw)}</div>
-      <div class="stat-sub">د.ع</div>
-    </div>
-    <div class="stat-card c-amber">
-      <div class="stat-icon"><i data-lucide="percent"></i></div>
+    <div class="stat-card cg">
+      <div class="stat-top"><div class="stat-ico"><i data-lucide="trending-up"></i></div></div>
       <div class="stat-label">هامش الربح</div>
-      <div class="stat-value">${tw>0?Math.round((ts-tw)/tw*100):0}%</div>
+      <div class="stat-val">${margin}%</div>
+    </div>
+    <div class="stat-card ca">
+      <div class="stat-top"><div class="stat-ico"><i data-lucide="banknote"></i></div></div>
+      <div class="stat-label">رأس المال</div>
+      <div class="stat-val sm">${fmt(tw)}</div>
+    </div>
+    <div class="stat-card cc">
+      <div class="stat-top"><div class="stat-ico"><i data-lucide="tag"></i></div></div>
+      <div class="stat-label">إجمالي البيع</div>
+      <div class="stat-val sm">${fmt(ts)}</div>
+    </div>
+    <div class="stat-card cg">
+      <div class="stat-top"><div class="stat-ico"><i data-lucide="dollar-sign"></i></div></div>
+      <div class="stat-label">الربح المتوقع</div>
+      <div class="stat-val sm">${fmt(ts-tw)}</div>
     </div>
   `;
-  lucide.createIcons({ nodes: [document.getElementById('reportStats')] });
+  lucide.createIcons({nodes:[document.getElementById('reportStats')]});
+
   const bycat = {};
   items.forEach(p => {
-    if (!bycat[p.cat]) bycat[p.cat] = { items: 0, count: 0, w: 0, s: 0 };
+    if (!bycat[p.cat]) bycat[p.cat] = { items:0, count:0, w:0, s:0 };
     bycat[p.cat].items++; bycat[p.cat].count += p.count;
     bycat[p.cat].w += p.totalWholesale; bycat[p.cat].s += p.totalSell;
   });
   document.getElementById('catBody').innerHTML = Object.entries(bycat).map(([cat,v]) =>
     `<tr>
-      <td>${CAT_EMOJI[cat]||''} ${cat}</td>
+      <td>${CAT_EM[cat]||''} ${cat}</td>
       <td>${v.items}</td><td>${v.count.toLocaleString()}</td>
       <td>${fmt(v.w)}</td><td>${fmt(v.s)}</td>
-      <td class="${v.s-v.w>=0?'profit-pos':'profit-neg'}">${fmt(v.s-v.w)}</td>
-    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text3)">لا توجد بيانات</td></tr>';
+      <td class="${v.s-v.w>=0?'pos':'neg'}">${fmt(v.s-v.w)}</td>
+    </tr>`
+  ).join('') || '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text3)">لا توجد بيانات</td></tr>';
+
   document.getElementById('allBody').innerHTML = entries.map(([code,p]) =>
     `<tr>
-      <td style="font-weight:600;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</td>
-      <td style="font-size:11px;color:var(--text2)">${p.cat}</td>
+      <td style="font-weight:600;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</td>
+      <td style="font-size:10px;color:var(--text2)">${p.cat}</td>
       <td>${p.count}</td>
       <td>${fmt(p.wholesalePrice)}</td>
-      <td style="color:var(--green);font-weight:600">${fmt(p.sellPrice)}</td>
+      <td style="color:var(--green);font-weight:700">${fmt(p.sellPrice)}</td>
       <td>${fmt(p.totalSell)}</td>
-      <td class="mono">${code.slice(-14)}</td>
-    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text3)">لا توجد بيانات</td></tr>';
+      <td class="mono">${code}</td>
+    </tr>`
+  ).join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text3)">لا توجد بيانات</td></tr>';
 }
 
+// ═══════════════════════════════════════
+//  RENDER: SETTINGS
+// ═══════════════════════════════════════
 function renderSettings() {
   const items = Object.values(db);
   const total = items.reduce((a,b)=>a+b.count,0);
-  document.getElementById('settingsInfo').textContent = `${items.length} صنف — ${total.toLocaleString()} قطعة`;
+  const el = document.getElementById('settingsInfo');
+  if (el) el.textContent = `${items.length} صنف · ${total.toLocaleString()} قطعة إجمالية`;
 }
 
-// ── PAGE SWITCH ──────────────────────────────────────
+// ═══════════════════════════════════════
+//  PAGE SWITCH
+// ═══════════════════════════════════════
 function switchPage(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-'+page).classList.add('active');
-  document.getElementById('nav-'+page)?.classList.add('active');
-  currentPage = page;
+  document.getElementById('page-' + page).classList.add('active');
+  const navBtn = document.getElementById('nav-' + page);
+  if (navBtn) navBtn.classList.add('active');
+  curPage = page;
   if (page === 'products') renderProducts();
+  if (page === 'labels') renderLabels();
   if (page === 'report') renderReport();
-  if (page === 'scan') { renderStats(); renderRecent(); }
   if (page === 'settings') renderSettings();
+  if (page === 'scan') { renderStats(); renderRecent(); }
 }
 
-// ── EXPORT / IMPORT / BACKUP ──────────────────────────────────────
-function exportData() {
-  const rows = [['اسم المنتج','الفئة','الفئة الفرعية','الباركود','العدد','سعر الجملة','سعر البيع','إجمالي الجملة','إجمالي البيع','الربح المتوقع']];
+// ═══════════════════════════════════════
+//  MODAL
+// ═══════════════════════════════════════
+function openModal() { document.getElementById('modalBg').classList.add('open'); }
+function closeModal() { document.getElementById('modalBg').classList.remove('open'); }
+
+// ═══════════════════════════════════════
+//  EXPORT / IMPORT / BACKUP
+// ═══════════════════════════════════════
+function exportCSV() {
+  const rows = [['\uFEFFاسم المنتج','الفئة','الفئة الفرعية','الباركود','العدد','سعر الجملة','سعر البيع','إجمالي الجملة','إجمالي البيع','الربح']];
   Object.entries(db).forEach(([code,p]) =>
-    rows.push([p.name,p.cat,p.sub||'',code,p.count,p.wholesalePrice,p.sellPrice,p.totalWholesale,p.totalSell,(p.totalSell-p.totalWholesale)])
+    rows.push([p.name,p.cat,p.sub||'',code,p.count,p.wholesalePrice,p.sellPrice,p.totalWholesale,p.totalSell,p.totalSell-p.totalWholesale])
   );
-  const csv = '\uFEFF' + rows.map(r => r.map(c => '"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\r\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
   a.download = 'جرد_' + new Date().toLocaleDateString('ar-IQ').replace(/\//g,'-') + '.csv';
   a.click();
-  showToast('تم تصدير ملف CSV');
+  toast('تم تصدير ملف CSV');
 }
 
-function backupData() {
+function backupJSON() {
   const a = document.createElement('a');
-  a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(db, null, 2));
-  a.download = 'backup_inventory_' + Date.now() + '.json';
+  a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(db,null,2));
+  a.download = 'backup_inv_' + Date.now() + '.json';
   a.click();
-  showToast('تم حفظ النسخة الاحتياطية');
+  toast('تم حفظ النسخة الاحتياطية');
 }
 
-function importData(e) {
+function importJSON(e) {
   const file = e.target.files[0]; if (!file) return;
   const reader = new FileReader();
   reader.onload = ev => {
     try {
-      const imported = JSON.parse(ev.target.result);
-      if (typeof imported === 'object') {
-        Object.assign(db, imported);
-        save(); renderStats(); renderRecent();
-        showToast('تم الاستيراد بنجاح — ' + Object.keys(imported).length + ' صنف');
+      const data = JSON.parse(ev.target.result);
+      if (typeof data === 'object') {
+        Object.assign(db, data); save();
+        renderStats(); renderRecent();
+        toast('تم الاستيراد: ' + Object.keys(data).length + ' صنف');
       }
-    } catch(err) { showToast('خطأ في ملف الاستيراد', 'red'); }
+    } catch(err) { toast('خطأ في الملف', 'r'); }
   };
   reader.readAsText(file);
   e.target.value = '';
 }
 
 function confirmClear() {
-  if (!confirm('⚠️ مسح جميع بيانات الجرد؟\nلا يمكن التراجع عن هذه العملية.')) return;
-  db = {}; save(); recentScans = [];
+  if (!confirm('⚠️ مسح جميع بيانات الجرد؟\nلا يمكن التراجع.')) return;
+  db = {}; save(); recent = [];
   document.getElementById('scanResult').style.display = 'none';
   renderStats(); renderRecent();
-  showToast('تم مسح جميع البيانات', 'red');
+  toast('تم مسح جميع البيانات', 'r');
 }
 
-// ── KEYBOARD ──────────────────────────────────────
-document.getElementById('scanInput').addEventListener('keydown', e => {
+function printLabels() {
+  const entries = Object.entries(db);
+  if (!entries.length) { toast('لا توجد منتجات للطباعة', 'a'); return; }
+  let html = `<html><head><meta charset="UTF-8"><style>
+    body{font-family:Arial,sans-serif;direction:rtl;background:#fff}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:10px}
+    .lbl{border:1px solid #ccc;border-radius:6px;padding:10px;text-align:center;break-inside:avoid}
+    .n{font-size:11px;font-weight:700;margin-bottom:3px}
+    .p{font-size:20px;font-weight:700;font-family:monospace}
+    .c{font-size:9px;color:#666;font-family:monospace;direction:ltr}
+    @media print{body{margin:0}}
+  </style></head><body><div class="grid">`;
+  entries.forEach(([code, p]) => {
+    html += `<div class="lbl"><div class="n">${p.name}</div><div class="p">${fmtPrice(p.sellPrice)}</div><div class="c">${code}</div></div>`;
+  });
+  html += '</div></body></html>';
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+  w.print();
+}
+
+// ═══════════════════════════════════════
+//  KEYBOARD
+// ═══════════════════════════════════════
+document.getElementById('scanInp').addEventListener('keydown', e => {
   if (e.key === 'Enter') processScan();
 });
 
-// ── INIT ──────────────────────────────────────
+// ═══════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════
 lucide.createIcons();
 renderStats();
 renderRecent();
