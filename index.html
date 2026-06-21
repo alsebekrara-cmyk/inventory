@@ -200,6 +200,16 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
 .di-lbl{font-size:9px;color:var(--txt3);text-transform:uppercase;letter-spacing:.4px;font-weight:700;margin-bottom:2px}
 .di-val{font-size:14px;font-weight:700;color:var(--txt)}
 .di-val.grn{color:var(--grn)}.di-val.acc{color:var(--acc2)}
+.di-cnt{grid-column:1/-1}
+.di-cnt-row{display:flex;align-items:center;justify-content:space-between}
+.di-cnt-btns{display:flex;gap:5px}
+.di-qbtn{width:26px;height:26px;border-radius:7px;border:1px solid var(--bdr2);background:var(--sur2);color:var(--txt);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
+.di-qbtn svg{width:13px;height:13px}
+.di-qbtn.plus{background:var(--grn-d);color:var(--grn);border-color:rgba(14,203,138,.3)}
+.di-qbtn.plus:hover{background:rgba(14,203,138,.22)}
+.di-qbtn.minus{background:var(--red-d);color:var(--red);border-color:rgba(255,77,109,.3)}
+.di-qbtn.minus:hover{background:rgba(255,77,109,.22)}
+.di-qbtn:active{transform:scale(.9)}
 
 /* ── IN-DETAIL SCAN SECTION ── */
 .det-scan-sec{background:var(--sur);border:1px solid var(--bdr2);border-radius:var(--r);overflow:hidden;margin-bottom:10px}
@@ -228,9 +238,10 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
 /* ── LABELS PAGE ── */
 .lgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 @media(min-width:500px){.lgrid{grid-template-columns:repeat(3,1fr)}}
-.lcard{background:#fff;border-radius:var(--rsm);padding:8px 8px 6px;color:#111;text-align:center;cursor:pointer;border:2px solid transparent;transition:all .15s;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.lcard{background:#fff;border-radius:var(--rsm);padding:8px 8px 6px;color:#111;text-align:center;cursor:pointer;border:2px solid transparent;transition:all .15s;box-shadow:0 2px 8px rgba(0,0,0,.25);position:relative}
 .lcard:hover{border-color:var(--acc);transform:scale(1.02)}
-.lcard-nm{font-size:10px;font-weight:700;color:#333;margin-bottom:2px;direction:rtl}
+.lcard-qty{position:absolute;top:-6px;left:-6px;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-size:9px;font-weight:700;padding:3px 8px;border-radius:99px;box-shadow:0 2px 8px var(--acc-g);z-index:2;white-space:nowrap}
+.lcard-nm{font-size:10px;font-weight:700;color:#333;margin-bottom:2px;direction:rtl;margin-top:4px}
 .lcard-pr{font-size:17px;font-weight:700;color:#111;margin-bottom:4px;font-family:'JetBrains Mono',monospace;direction:ltr}
 .lcard-bc{display:flex;justify-content:center;margin-bottom:2px}
 .lcard-bc svg{max-width:100%;height:28px}
@@ -879,6 +890,37 @@ function refreshDetailLive(code) {
 }
 
 // ══════════════════════════════════════
+//  MANUAL QUANTITY BUMP (+1 / -1 buttons in detail view)
+// ══════════════════════════════════════
+function bumpQty(code, delta) {
+  const p = DB[code]; if(!p) return;
+  if(delta < 0 && p.count <= 0) { toast('العدد صفر بالفعل','a'); return; }
+  p.count = Math.max(0, p.count + delta);
+  if(delta > 0) {
+    p.totalWholesale += p.wholesalePrice;
+    p.totalSell += p.sellPrice;
+  } else {
+    p.totalWholesale = Math.max(0, p.totalWholesale - p.wholesalePrice);
+    p.totalSell = Math.max(0, p.totalSell - p.sellPrice);
+  }
+  p.lastScan = new Date().toISOString();
+  save();
+  refreshDetailLive(code);
+  renderStats(); renderRecent();
+  // update product list / labels badges live if visible
+  if(curPg==='products') renderProds();
+  if(curPg==='labels') renderLabels();
+  toast(delta>0 ? `✓ ${p.name} | ${p.count} قطعة` : `${p.name} | ${p.count} قطعة`, delta>0?'g':'a');
+  // pulse animation on the count value
+  const cntEl = document.getElementById('dv-cnt');
+  if(cntEl) {
+    cntEl.style.transform = 'scale(1.15)';
+    cntEl.style.transition = 'transform .15s ease';
+    setTimeout(()=>{ cntEl.style.transform = 'scale(1)'; }, 150);
+  }
+}
+
+// ══════════════════════════════════════
 //  ADD MODAL
 // ══════════════════════════════════════
 function showAddModal(origCode) {
@@ -1036,13 +1078,25 @@ function showDetail(code) {
       <div class="det-cat">${p.cat}${p.sub?' · '+p.sub:''}</div>
     </div>
     <div class="det-grid">
-      <div class="di"><div class="di-lbl">العدد</div><div class="di-val acc" id="dv-cnt">${p.count.toLocaleString()}</div></div>
+      <div class="di di-cnt">
+        <div class="di-lbl">العدد</div>
+        <div class="di-cnt-row">
+          <div class="di-val acc" id="dv-cnt">${p.count.toLocaleString()}</div>
+          <div class="di-cnt-btns">
+            <button class="di-qbtn minus" onclick="bumpQty('${code}',-1)" title="إنقاص قطعة"><i data-lucide="minus"></i></button>
+            <button class="di-qbtn plus" onclick="bumpQty('${code}',1)" title="إضافة قطعة"><i data-lucide="plus"></i></button>
+          </div>
+        </div>
+      </div>
       <div class="di"><div class="di-lbl">سعر البيع</div><div class="di-val grn">${fmt(p.sellPrice)} د.ع</div></div>
       <div class="di"><div class="di-lbl">سعر الجملة</div><div class="di-val">${fmt(p.wholesalePrice)} د.ع</div></div>
       <div class="di"><div class="di-lbl">ربح القطعة</div><div class="di-val ${profit>=0?'grn':''}">${fmt(profit)} د.ع</div></div>
       <div class="di"><div class="di-lbl">إجمالي المخزون</div><div class="di-val" id="dv-tot">${fmt(p.totalSell)} د.ع</div></div>
       <div class="di"><div class="di-lbl">الربح الكلي</div><div class="di-val grn" id="dv-prf">${fmt(profitTot)} د.ع</div></div>
     </div>
+    <button class="btn btn-acc" style="width:100%;justify-content:center;margin-bottom:10px;padding:10px" onclick="bumpQty('${code}',1)">
+      <i data-lucide="plus-circle"></i> إضافة قطعة واحدة يدوياً (+1)
+    </button>
     <!-- BARCODE DISPLAY (real) -->
     <div class="bc-display">
       <div style="font-size:9px;color:var(--txt3);margin-bottom:6px;font-weight:700;text-transform:uppercase">الباركود</div>
@@ -1264,6 +1318,7 @@ function renderLabels() {
   }
   el.innerHTML=entries.map(([code,p])=>
     `<div class="lcard" onclick="showPrintModal('${code}')">
+      <div class="lcard-qty">${p.count} قطعة</div>
       <div class="lcard-nm">${p.name}</div>
       <div class="lcard-pr">${fmtP(p.sellPrice)}</div>
       <div class="lcard-bc"><svg id="lbc-${code}" style="width:100%;max-width:120px;height:28px"></svg></div>
