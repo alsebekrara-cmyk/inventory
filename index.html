@@ -241,6 +241,7 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
 .lcard{background:#fff;border-radius:var(--rsm);padding:8px 8px 6px;color:#111;text-align:center;cursor:pointer;border:2px solid transparent;transition:all .15s;box-shadow:0 2px 8px rgba(0,0,0,.25);position:relative}
 .lcard:hover{border-color:var(--acc);transform:scale(1.02)}
 .lcard-qty{position:absolute;top:-6px;left:-6px;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-size:9px;font-weight:700;padding:3px 8px;border-radius:99px;box-shadow:0 2px 8px var(--acc-g);z-index:2;white-space:nowrap}
+.lcard-seq{position:absolute;top:-6px;right:-6px;background:#111;color:#fff;font-size:9px;font-weight:700;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:2;font-family:'JetBrains Mono',monospace}
 .lcard-nm{font-size:10px;font-weight:700;color:#333;margin-bottom:2px;direction:rtl;margin-top:4px}
 .lcard-pr{font-size:17px;font-weight:700;color:#111;margin-bottom:4px;font-family:'JetBrains Mono',monospace;direction:ltr}
 .lcard-bc{display:flex;justify-content:center;margin-bottom:2px}
@@ -371,10 +372,25 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
   <div class="sh">
     <div class="sh-t"><i data-lucide="tag"></i> بطاقات الباركود</div>
     <div style="display:flex;gap:5px">
+      <button class="btn btn-grn" style="font-size:10px;padding:5px 9px" id="lblCamBtn" onclick="toggleLabelCam()"><i data-lucide="camera"></i> مسح لزيادة العدد</button>
       <button class="btn btn-amb" style="font-size:10px;padding:5px 9px" onclick="printAllLabels()"><i data-lucide="printer"></i> طباعة الكل</button>
     </div>
   </div>
-  <p style="font-size:10px;color:var(--txt3);margin-bottom:8px">انقر على بطاقة لطباعتها · تنسيق متطابق مع ملصقاتك الحالية</p>
+  <!-- LABEL PAGE CAMERA -->
+  <div id="lblCamWrap" style="display:none;margin-bottom:10px">
+    <div style="background:var(--sur);border:1px solid var(--bdr2);border-radius:var(--r);overflow:hidden">
+      <div style="background:var(--grn-d);border-bottom:1px solid rgba(14,203,138,.2);padding:8px 12px;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:11px;font-weight:700;color:var(--grn);display:flex;align-items:center;gap:6px"><i data-lucide="scan-barcode" style="width:13px;height:13px"></i> وجّه الكاميرا لباركود أي منتج لزيادة عدده</span>
+        <button class="ibtn r" onclick="closeLabelCam()"><i data-lucide="x"></i></button>
+      </div>
+      <div style="position:relative;width:100%;aspect-ratio:16/9;max-height:28vh;background:#000">
+        <video id="lblVid" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover;display:block"></video>
+        <div class="cam-frame"><div class="cam-ret"><div class="cc tl"></div><div class="cc tr"></div><div class="cc bl"></div><div class="cc br"></div></div></div>
+      </div>
+      <div id="lblCamSt" style="text-align:center;padding:7px;font-size:11px;color:var(--txt2)">جارٍ تهيئة الكاميرا...</div>
+    </div>
+  </div>
+  <p style="font-size:10px;color:var(--txt3);margin-bottom:8px">انقر على بطاقة لطباعتها · الترقيم تسلسلي ١، ٢، ٣...</p>
   <div class="lgrid" id="labelsGrid"></div>
 </div>
 
@@ -538,11 +554,15 @@ const fmt = n => Math.round(n||0).toLocaleString('ar-IQ');
 const fmtP = n => (n||0).toLocaleString('ar-IQ',{minimumFractionDigits:3,maximumFractionDigits:3});
 
 // ══════════════════════════════════════
-//  BARCODE GENERATION & RENDERING
+//  BARCODE GENERATION — Sequential (1, 2, 3...)
 // ══════════════════════════════════════
 function genCode() {
-  // 6-digit numeric like user's labels: 111823, 777380
-  return String(100000 + Math.floor(Math.random() * 899999));
+  // Sequential: find the highest existing sequential code and increment
+  const codes = Object.keys(DB)
+    .map(k => parseInt(k))
+    .filter(n => !isNaN(n) && n >= 1 && n <= 999999);
+  const nextNum = codes.length > 0 ? Math.max(...codes) + 1 : 1;
+  return String(nextNum);
 }
 
 function makeBarcodeSVG(code, opts={}) {
@@ -921,8 +941,168 @@ function bumpQty(code, delta) {
 }
 
 // ══════════════════════════════════════
-//  ADD MODAL
+//  LABEL PAGE CAMERA — scans any barcode to increment that product
 // ══════════════════════════════════════
+let lblCamStream = null, lblDecTimer = null, lblCamOpen = false;
+
+function toggleLabelCam() {
+  if(lblCamOpen) closeLabelCam();
+  else openLabelCam();
+}
+
+async function openLabelCam() {
+  lblCamOpen = true;
+  const wrap = document.getElementById('lblCamWrap');
+  const btn  = document.getElementById('lblCamBtn');
+  if(wrap) wrap.style.display = 'block';
+  if(btn)  { btn.style.background = 'var(--grn)'; btn.style.color = '#fff'; }
+  const st = document.getElementById('lblCamSt');
+  if(st) st.textContent = 'جارٍ تهيئة الكاميرا...';
+  try {
+    lblCamStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } }
+    });
+    const video = document.getElementById('lblVid');
+    if(video) { video.srcObject = lblCamStream; }
+    if(st) st.textContent = 'وجّه الكاميرا على باركود أي منتج...';
+    startLblDecode(video);
+  } catch(err) {
+    if(st) st.textContent = '⚠️ ' + err.message;
+  }
+}
+
+function closeLabelCam() {
+  lblCamOpen = false;
+  clearInterval(lblDecTimer);
+  if(lblCamStream) { lblCamStream.getTracks().forEach(t => t.stop()); lblCamStream = null; }
+  const video = document.getElementById('lblVid');
+  if(video) video.srcObject = null;
+  const wrap = document.getElementById('lblCamWrap');
+  const btn  = document.getElementById('lblCamBtn');
+  if(wrap) wrap.style.display = 'none';
+  if(btn)  { btn.style.background = ''; btn.style.color = ''; }
+}
+
+function startLblDecode(video) {
+  clearInterval(lblDecTimer);
+  if(!('BarcodeDetector' in window)) {
+    const st = document.getElementById('lblCamSt');
+    if(st) st.innerHTML = 'المتصفح لا يدعم المسح التلقائي — استخدم قارئ USB';
+    return;
+  }
+  let detector;
+  try { detector = new BarcodeDetector({formats:['code_128','code_39','ean_13','ean_8','upc_a','upc_e','itf','codabar','qr_code','data_matrix']}); }
+  catch(e) { try{ detector = new BarcodeDetector(); }catch(e2){ return; } }
+  const canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+  let lastCode = '', lastTime = 0;
+  lblDecTimer = setInterval(async () => {
+    if(!video || video.readyState < 2 || video.videoWidth === 0) return;
+    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0);
+    try {
+      const codes = await detector.detect(canvas);
+      if(!codes.length) return;
+      const code = codes[0].rawValue;
+      const now = Date.now();
+      if(code === lastCode && now - lastTime < 1500) return;
+      lastCode = code; lastTime = now;
+      const st = document.getElementById('lblCamSt');
+      if(DB[code]) {
+        const p = DB[code];
+        p.count++; p.totalWholesale += p.wholesalePrice; p.totalSell += p.sellPrice;
+        p.lastScan = new Date().toISOString(); save();
+        if(st) st.innerHTML = `<span style="color:var(--grn)">✓ ${p.name} — العدد: <b>${p.count}</b></span>`;
+        toast(`✓ ${p.name} | ${p.count} قطعة`);
+        renderStats(); renderRecent(); renderLabels();
+        // flash the matching label card
+        setTimeout(() => {
+          const card = document.querySelector(`.lcard[data-code="${code}"]`);
+          if(card) {
+            card.style.outline = '3px solid var(--grn)';
+            card.style.transform = 'scale(1.04)';
+            setTimeout(() => { card.style.outline=''; card.style.transform=''; }, 1200);
+          }
+        }, 80);
+        setTimeout(() => { if(st) st.textContent = 'وجّه الكاميرا على باركود أي منتج...'; }, 2200);
+      } else {
+        if(st) st.innerHTML = `<span style="color:var(--amb)">⚠️ باركود غير معرّف: ${code} — اذهب لصفحة المسح لإضافته أولاً</span>`;
+        setTimeout(() => { if(st) st.textContent = 'وجّه الكاميرا على باركود أي منتج...'; }, 3000);
+      }
+    } catch(e) {}
+  }, 280);
+}
+
+// ══════════════════════════════════════
+//  PRICE / MARGIN AUTO-CALC
+// ══════════════════════════════════════
+// سعر الجملة + هامش % → سعر البيع: sp = wp * (1 + margin/100)
+// سعر البيع + هامش % → سعر الجملة: wp = sp / (1 + margin/100)
+
+function calcFromWp() {
+  const wp = parseFloat(document.getElementById('fWp')?.value) || 0;
+  const margin = parseFloat(document.getElementById('fMargin')?.value);
+  if(wp > 0 && !isNaN(margin) && margin > 0) {
+    const sp = wp * (1 + margin / 100);
+    const spEl = document.getElementById('fSp');
+    if(spEl) spEl.value = sp.toFixed(3);
+    showProfitAmt(wp, sp);
+  } else {
+    recalcMargin();
+  }
+}
+
+function calcFromSp() {
+  const sp = parseFloat(document.getElementById('fSp')?.value) || 0;
+  const margin = parseFloat(document.getElementById('fMargin')?.value);
+  if(sp > 0 && !isNaN(margin) && margin > 0) {
+    const wp = sp / (1 + margin / 100);
+    const wpEl = document.getElementById('fWp');
+    if(wpEl) wpEl.value = wp.toFixed(3);
+    showProfitAmt(wp, sp);
+  } else {
+    recalcMargin();
+  }
+}
+
+function calcFromMargin() {
+  const margin = parseFloat(document.getElementById('fMargin')?.value);
+  const wp = parseFloat(document.getElementById('fWp')?.value) || 0;
+  const sp = parseFloat(document.getElementById('fSp')?.value) || 0;
+  if(isNaN(margin) || margin <= 0) return;
+  if(wp > 0) {
+    // Wholesale given → calculate sell price
+    const newSp = wp * (1 + margin / 100);
+    const spEl = document.getElementById('fSp');
+    if(spEl) spEl.value = newSp.toFixed(3);
+    showProfitAmt(wp, newSp);
+  } else if(sp > 0) {
+    // Sell price given → calculate wholesale
+    const newWp = sp / (1 + margin / 100);
+    const wpEl = document.getElementById('fWp');
+    if(wpEl) wpEl.value = newWp.toFixed(3);
+    showProfitAmt(newWp, sp);
+  }
+}
+
+function recalcMargin() {
+  const wp = parseFloat(document.getElementById('fWp')?.value) || 0;
+  const sp = parseFloat(document.getElementById('fSp')?.value) || 0;
+  if(wp > 0 && sp > 0) {
+    const margin = ((sp - wp) / wp) * 100;
+    const mEl = document.getElementById('fMargin');
+    if(mEl) mEl.value = margin.toFixed(1);
+    showProfitAmt(wp, sp);
+  }
+}
+
+function showProfitAmt(wp, sp) {
+  const el = document.getElementById('fProfitAmt');
+  if(!el) return;
+  const profit = sp - wp;
+  const margin = wp > 0 ? ((profit/wp)*100).toFixed(1) : 0;
+  el.textContent = `ربح: ${profit.toFixed(3)} د.ع (${margin}%)`;
+  el.style.color = profit >= 0 ? 'var(--grn)' : 'var(--red)';
+}
 function showAddModal(origCode) {
   const nc=genCode();
   document.getElementById('addTit').innerHTML=`<i data-lucide="plus-circle"></i> إضافة منتج جديد`;
@@ -938,8 +1118,20 @@ function showAddModal(origCode) {
       <div class="fg"><label class="fl">الفئة الفرعية</label><select class="fsl" id="fSb"></select></div>
     </div>
     <div class="fr">
-      <div class="fg"><label class="fl">سعر الجملة</label><input class="fi" id="fWp" type="number" placeholder="0.000" min="0" step="0.001"></div>
-      <div class="fg"><label class="fl">سعر البيع</label><input class="fi" id="fSp" type="number" placeholder="0.000" min="0" step="0.001"></div>
+      <div class="fg"><label class="fl">سعر الجملة</label><input class="fi" id="fWp" type="number" placeholder="0.000" min="0" step="0.001" oninput="calcFromWp()"></div>
+      <div class="fg"><label class="fl">سعر البيع</label><input class="fi" id="fSp" type="number" placeholder="0.000" min="0" step="0.001" oninput="calcFromSp()"></div>
+    </div>
+    <!-- نسبة الربح مع حساب تلقائي -->
+    <div style="background:var(--bg3);border:1px solid var(--bdr2);border-radius:var(--rsm);padding:9px 11px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
+        <div style="font-size:9px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.4px;flex:1">نسبة الربح %</div>
+        <div style="font-size:10px;color:var(--grn);font-weight:700" id="fProfitAmt">—</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <input class="fi" id="fMargin" type="number" placeholder="مثال: 150" min="0" step="0.5" style="flex:1" oninput="calcFromMargin()">
+        <span style="font-size:13px;font-weight:700;color:var(--txt2)">%</span>
+      </div>
+      <div style="font-size:9px;color:var(--txt3);margin-top:5px">أدخل سعر البيع ونسبة الربح → يُحسب سعر الجملة تلقائياً · أو العكس</div>
     </div>
     <div style="background:var(--bg);border:1px solid var(--bdr2);border-radius:var(--rsm);padding:10px;margin-top:4px">
       <div style="font-size:9px;color:var(--txt3);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:.4px">الباركود الجديد (قابل للتعديل)</div>
@@ -1316,9 +1508,10 @@ function renderLabels() {
     el.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="empty-ico"><i data-lucide="tag-off"></i></div><h3>لا توجد منتجات</h3></div>`;
     lucide.createIcons({nodes:[el]}); return;
   }
-  el.innerHTML=entries.map(([code,p])=>
-    `<div class="lcard" onclick="showPrintModal('${code}')">
+  el.innerHTML=entries.map(([code,p], idx)=>
+    `<div class="lcard" data-code="${code}" onclick="showPrintModal('${code}')">
       <div class="lcard-qty">${p.count} قطعة</div>
+      <div class="lcard-seq">${idx + 1}</div>
       <div class="lcard-nm">${p.name}</div>
       <div class="lcard-pr">${fmtP(p.sellPrice)}</div>
       <div class="lcard-bc"><svg id="lbc-${code}" style="width:100%;max-width:120px;height:28px"></svg></div>
@@ -1439,6 +1632,8 @@ function switchPg(pg) {
   if(pg==='report') renderReport();
   if(pg==='settings') renderSettings();
   if(pg==='scan'){ renderStats(); renderRecent(); }
+  // Close label cam if navigating away
+  if(pg !== 'labels' && lblCamOpen) closeLabelCam();
 }
 
 // ══════════════════════════════════════
