@@ -297,7 +297,7 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
 /* ── PRINT STYLES ── */
 @media print{
   body *{visibility:hidden}
-  .print-area,. print-area *{visibility:visible}
+  .print-area, .print-area *{visibility:visible}
   .print-area{position:fixed;inset:0;display:flex;flex-wrap:wrap;align-items:flex-start;align-content:flex-start;gap:4mm;padding:4mm;background:#fff}
   .label-print{border:1px solid #ddd;border-radius:4px;padding:6mm 7mm 5mm;text-align:center;width:60mm;page-break-inside:avoid;background:#fff}
   .lp-name{font-size:9pt;font-weight:700;margin-bottom:2mm;direction:rtl;font-family:Arial,sans-serif}
@@ -691,6 +691,19 @@ document.getElementById('scanInp').addEventListener('keydown', function(e) {
 });
 
 // ══════════════════════════════════════
+//  SHARED HELPER — البحث بأي باركود (أصلي أو داخلي)
+// ══════════════════════════════════════
+function findByAnyCode(scanned) {
+  const s = String(scanned).trim();
+  // 1) الباركود الداخلي الجديد
+  if(DB[s]) return { internalCode: s, product: DB[s] };
+  // 2) الباركود الأصلي للملصق (origCode)
+  const entry = Object.entries(DB).find(([k,v]) => v.origCode && String(v.origCode).trim() === s);
+  if(entry) return { internalCode: entry[0], product: entry[1] };
+  return null;
+}
+
+// ══════════════════════════════════════
 //  SCAN LOGIC
 // ══════════════════════════════════════
 function processScan() {
@@ -707,25 +720,25 @@ function handleBarcode(code) {
   setTimeout(()=>{ scanCD=false; }, 600);
 
   const res = document.getElementById('sres');
-  if(DB[code]) {
-    const p = DB[code];
+  const found = findByAnyCode(code);
+
+  if(found) {
+    const { internalCode, product: p } = found;
     p.count++; p.totalWholesale+=p.wholesalePrice; p.totalSell+=p.sellPrice;
     p.lastScan=new Date().toISOString();
     save();
-    recent.unshift({...p,code,time:new Date().toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'})});
+    recent.unshift({...p, code:internalCode, time:new Date().toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'})});
     if(recent.length>15) recent.pop();
     res.style.display='flex'; res.className='sres ok';
     res.innerHTML=`<i data-lucide="check-circle"></i> <b>${p.name}</b> — العدد: <b>${p.count} قطعة</b>`;
     lucide.createIcons({nodes:[res]});
     toast(`✓ ${p.name} | ${p.count} قطعة`);
     renderStats(); renderRecent();
-    // highlight card in products if on that page
     setTimeout(()=>{
-      const c=document.querySelector(`[data-code="${code}"]`);
+      const c=document.querySelector(`[data-code="${internalCode}"]`);
       if(c){ c.classList.add('hl'); setTimeout(()=>c.classList.remove('hl'),2200); }
     }, 60);
-    // Also refresh detail if it's open for this code
-    refreshDetailLive(code);
+    refreshDetailLive(internalCode);
   } else {
     res.style.display='flex'; res.className='sres info';
     res.innerHTML=`<i data-lucide="plus-circle"></i> باركود جديد — أدخل بيانات المنتج`;
@@ -869,6 +882,11 @@ function startDetDecode(video, productCode) {
   catch(e){ try{detector=new BarcodeDetector();}catch(e2){return;} }
   const canvas=document.createElement('canvas'), ctx=canvas.getContext('2d');
   let lastCode='', lastTime=0;
+  // جمع كل الباركودات المرتبطة بهذا المنتج: الداخلي + الأصلي للملصق
+  const prod0 = DB[productCode];
+  const matchSet = new Set([String(productCode)]);
+  if(prod0 && prod0.origCode) matchSet.add(String(prod0.origCode).trim());
+
   detDecTimer=setInterval(async()=>{
     if(video.readyState<2||video.videoWidth===0) return;
     canvas.width=video.videoWidth; canvas.height=video.videoHeight;
@@ -876,22 +894,30 @@ function startDetDecode(video, productCode) {
     try{
       const codes=await detector.detect(canvas);
       if(!codes.length) return;
-      const code=codes[0].rawValue;
+      const code=String(codes[0].rawValue).trim();
       const now=Date.now();
       if(code===lastCode&&now-lastTime<1500) return;
       lastCode=code; lastTime=now;
       const p=DB[productCode]; if(!p) return;
-      if(code===productCode||(p.origCode&&code===p.origCode)){
+      const st=document.getElementById('detCamSt');
+      if(matchSet.has(code)){
+        // ✅ نفس المنتج (بالباركود الأصلي أو الداخلي) — زيادة العدد
         p.count++; p.totalWholesale+=p.wholesalePrice; p.totalSell+=p.sellPrice;
         p.lastScan=new Date().toISOString(); save();
-        document.getElementById('detCamSt').innerHTML=`<span style="color:var(--grn)">✓ تمت الإضافة — العدد: ${p.count}</span>`;
+        if(st) st.innerHTML=`<span style="color:var(--grn)">✓ تمت الإضافة — العدد: <b>${p.count}</b> قطعة</span>`;
         toast(`✓ ${p.name} | ${p.count} قطعة`);
         renderStats(); renderRecent();
         refreshDetailLive(productCode);
-        setTimeout(()=>{ const s=document.getElementById('detCamSt'); if(s) s.textContent='الكاميرا مفتوحة — تبقى حتى تُغلقها يدوياً'; },2000);
+        setTimeout(()=>{ if(st) st.textContent='الكاميرا مفتوحة — تبقى حتى تُغلقها يدوياً'; },2200);
       } else {
-        document.getElementById('detCamSt').innerHTML=`<span style="color:var(--amb)">⚠️ باركود مختلف: ${code}</span>`;
-        setTimeout(()=>{ const s=document.getElementById('detCamSt'); if(s) s.textContent='الكاميرا مفتوحة — تبقى حتى تُغلقها يدوياً'; },2000);
+        // ⚠️ باركود منتج مختلف
+        const other = findByAnyCode(code);
+        if(other) {
+          if(st) st.innerHTML=`<span style="color:var(--amb)">⚠️ منتج مختلف: ${other.product.name}</span>`;
+        } else {
+          if(st) st.innerHTML=`<span style="color:var(--amb)">⚠️ باركود غير معرّف: ${code}</span>`;
+        }
+        setTimeout(()=>{ if(st) st.textContent='الكاميرا مفتوحة — تبقى حتى تُغلقها يدوياً'; },2200);
       }
     }catch(e){}
   },300);
@@ -996,18 +1022,6 @@ function startLblDecode(video) {
   const canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
   let lastCode = '', lastTime = 0;
 
-  // ── بناء خريطة بحث مزدوجة ──
-  // تربط كلاً من: الباركود الأصلي للملصق (origCode) والباركود الداخلي الجديد
-  // بنفس المنتج حتى يمكن التعرف عليه بأي من الباركودين
-  function findProductByAnyCode(scanned) {
-    // 1) بحث مباشر بالباركود الداخلي
-    if(DB[scanned]) return { internalCode: scanned, product: DB[scanned] };
-    // 2) بحث بالباركود الأصلي للملصق (origCode المخزّن داخل المنتج)
-    const entry = Object.entries(DB).find(([k, v]) => v.origCode && String(v.origCode) === String(scanned));
-    if(entry) return { internalCode: entry[0], product: entry[1] };
-    return null;
-  }
-
   lblDecTimer = setInterval(async () => {
     if(!video || video.readyState < 2 || video.videoWidth === 0) return;
     canvas.width = video.videoWidth; canvas.height = video.videoHeight;
@@ -1015,13 +1029,14 @@ function startLblDecode(video) {
     try {
       const codes = await detector.detect(canvas);
       if(!codes.length) return;
-      const code = codes[0].rawValue;
+      const code = String(codes[0].rawValue).trim();
       const now = Date.now();
       if(code === lastCode && now - lastTime < 1500) return;
       lastCode = code; lastTime = now;
       const st = document.getElementById('lblCamSt');
 
-      const found = findProductByAnyCode(code);
+      // استخدام الدالة العامة التي تتعرف على الباركود الأصلي والداخلي
+      const found = findByAnyCode(code);
       if(found) {
         const { internalCode, product: p } = found;
         p.count++;
