@@ -296,15 +296,42 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
 
 /* ── PRINT STYLES ── */
 @media print{
+  body,html{overflow:visible!important;height:auto!important}
   body *{visibility:hidden}
-  .print-area, .print-area *{visibility:visible}
-  .print-area{position:fixed;inset:0;display:flex;flex-wrap:wrap;align-items:flex-start;align-content:flex-start;gap:4mm;padding:4mm;background:#fff}
-  .label-print{border:1px solid #ddd;border-radius:4px;padding:6mm 7mm 5mm;text-align:center;width:60mm;page-break-inside:avoid;background:#fff}
-  .lp-name{font-size:9pt;font-weight:700;margin-bottom:2mm;direction:rtl;font-family:Arial,sans-serif}
-  .lp-price{font-size:18pt;font-weight:700;margin-bottom:2mm;font-family:'Courier New',monospace;direction:ltr}
-  .lp-bc-wrap svg{width:50mm;height:12mm}
-  .lp-code{font-size:7pt;letter-spacing:1px;font-family:'Courier New',monospace;margin-top:1mm}
+  .print-area,.print-area *{visibility:visible!important}
+  .print-area{
+    position:fixed;inset:0;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:3mm;padding:4mm;background:#fff;
+    align-content:start;
+  }
+  .label-print{
+    border:1px solid #ccc;border-radius:3mm;
+    padding:4mm 5mm 3mm;text-align:center;
+    background:#fff;page-break-inside:avoid;
+    break-inside:avoid;
+  }
+  .lp-name{margin-bottom:1.5mm;direction:rtl;font-family:Arial,'IBM Plex Sans Arabic',sans-serif}
+  .lp-price{margin-bottom:2mm;direction:ltr;font-family:'Courier New',monospace}
+  .lp-bc-wrap svg{width:42mm;display:block;margin:0 auto}
+  .lp-code{letter-spacing:1px;font-family:'Courier New',monospace;margin-top:1mm}
+  /* Report print */
+  .print-report{position:fixed;inset:0;background:#fff;padding:8mm;direction:rtl}
+  .print-report *{visibility:visible!important}
+  .pr-title{font-size:16pt;font-weight:700;margin-bottom:5mm;text-align:center}
+  .pr-table{width:100%;border-collapse:collapse;font-size:10pt}
+  .pr-table th{border:1px solid #333;padding:2mm 3mm;background:#f0f0f0;font-weight:700;text-align:right}
+  .pr-table td{border:1px solid #ccc;padding:2mm 3mm;text-align:right}
+  .pr-table tfoot td{border:1px solid #333;font-weight:700;background:#f5f5f5}
+  .pr-summary{margin-top:4mm;font-size:9pt;color:#555}
 }
+
+.rtbl tfoot td{background:var(--bg3);border-top:2px solid var(--bdr2);font-weight:700;color:var(--txt);padding:8px}
+.rtbl tfoot td.sum-grn{color:var(--grn)}
+
+/* Label highlight on scan */
+.lcard.lbl-found{outline:3px solid var(--grn)!important;transform:scale(1.04)!important;transition:all .3s}
 
 @media(max-width:360px){.stats-row{grid-template-columns:repeat(2,1fr)}}
 </style>
@@ -372,15 +399,15 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
   <div class="sh">
     <div class="sh-t"><i data-lucide="tag"></i> بطاقات الباركود</div>
     <div style="display:flex;gap:5px">
-      <button class="btn btn-grn" style="font-size:10px;padding:5px 9px" id="lblCamBtn" onclick="toggleLabelCam()"><i data-lucide="camera"></i> مسح لزيادة العدد</button>
+      <button class="btn btn-grn" style="font-size:10px;padding:5px 9px" id="lblCamBtn" onclick="toggleLabelCam()"><i data-lucide="camera"></i> مسح للبحث والعدد</button>
       <button class="btn btn-amb" style="font-size:10px;padding:5px 9px" onclick="printAllLabels()"><i data-lucide="printer"></i> طباعة الكل</button>
     </div>
   </div>
-  <!-- LABEL PAGE CAMERA -->
+  <!-- LABEL PAGE CAMERA — يمسح ويذهب للبطاقة ويزيد العدد -->
   <div id="lblCamWrap" style="display:none;margin-bottom:10px">
     <div style="background:var(--sur);border:1px solid var(--bdr2);border-radius:var(--r);overflow:hidden">
       <div style="background:var(--grn-d);border-bottom:1px solid rgba(14,203,138,.2);padding:8px 12px;display:flex;align-items:center;justify-content:space-between">
-        <span style="font-size:11px;font-weight:700;color:var(--grn);display:flex;align-items:center;gap:6px"><i data-lucide="scan-barcode" style="width:13px;height:13px"></i> وجّه الكاميرا لباركود أي منتج لزيادة عدده</span>
+        <span style="font-size:11px;font-weight:700;color:var(--grn);display:flex;align-items:center;gap:6px"><i data-lucide="scan-barcode" style="width:13px;height:13px"></i> امسح باركود → يذهب للبطاقة ويزيد العدد</span>
         <button class="ibtn r" onclick="closeLabelCam()"><i data-lucide="x"></i></button>
       </div>
       <div style="position:relative;width:100%;aspect-ratio:16/9;max-height:28vh;background:#000">
@@ -390,12 +417,21 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
       <div id="lblCamSt" style="text-align:center;padding:7px;font-size:11px;color:var(--txt2)">جارٍ تهيئة الكاميرا...</div>
     </div>
   </div>
-  <p style="font-size:10px;color:var(--txt3);margin-bottom:8px">انقر على بطاقة لطباعتها · الترقيم تسلسلي ١، ٢، ٣...</p>
+  <!-- بحث نصي ذكي -->
+  <div class="sw" style="margin-bottom:8px">
+    <div class="si"><i data-lucide="search"></i></div>
+    <input class="sf" id="lblSearch" placeholder="بحث بالاسم أو رقم الباركود..." oninput="filterLabels()">
+  </div>
+  <p style="font-size:10px;color:var(--txt3);margin-bottom:8px">انقر على بطاقة لطباعتها · الباركود يبدأ من 0001 ويتصاعد</p>
   <div class="lgrid" id="labelsGrid"></div>
 </div>
 
 <!-- REPORT PAGE -->
 <div class="pg" id="pg-report">
+  <div class="sh">
+    <div class="sh-t"><i data-lucide="bar-chart-2"></i> تقارير الجرد</div>
+    <button class="btn btn-amb" style="font-size:10px;padding:5px 9px" onclick="printReport()"><i data-lucide="printer"></i> طباعة التقرير</button>
+  </div>
   <div class="stats-row" id="repStats" style="margin-bottom:10px"></div>
   <div class="rcard">
     <h3><i data-lucide="pie-chart"></i> حسب الفئة</h3>
@@ -405,10 +441,11 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
     </table></div>
   </div>
   <div class="rcard">
-    <h3><i data-lucide="list"></i> كل المنتجات</h3>
+    <h3><i data-lucide="list"></i> تفاصيل المنتجات</h3>
     <div style="overflow-x:auto"><table class="rtbl">
-      <thead><tr><th>المنتج</th><th>فئة</th><th>عدد</th><th>جملة</th><th>بيع</th><th>إجمالي</th><th>باركود</th></tr></thead>
+      <thead><tr><th>الباركود</th><th>المنتج</th><th>العدد</th><th>سعر البيع</th><th>سعر الجملة</th></tr></thead>
       <tbody id="allBody"></tbody>
+      <tfoot id="repTfoot"></tfoot>
     </table></div>
   </div>
 </div>
@@ -429,6 +466,83 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
   <div class="sgrp">
     <div class="sgrp-t">إحصائيات</div>
     <div class="sitm"><div class="sitm-l"><div class="sico" style="background:var(--acc-d)"><i data-lucide="database" style="color:var(--acc2)"></i></div><div><div class="snm">إجمالي الأصناف</div><div class="ssub" id="settInfo">...</div></div></div></div>
+  </div>
+  <!-- LABEL TYPOGRAPHY SETTINGS -->
+  <div class="sgrp">
+    <div class="sgrp-t">🖨️ تخصيص شكل البطاقة</div>
+    <div style="background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);padding:12px">
+      <!-- اسم المنتج -->
+      <div style="margin-bottom:12px">
+        <div style="font-size:10px;font-weight:700;color:var(--txt2);margin-bottom:7px;display:flex;align-items:center;gap:5px"><i data-lucide="type" style="width:12px;height:12px;color:var(--acc2)"></i> اسم المنتج</div>
+        <div class="fr">
+          <div class="fg"><label class="fl">حجم الخط</label>
+            <select class="fsl" id="lbl-nm-size" onchange="saveLblStyle()">
+              <option value="9">صغير (9pt)</option>
+              <option value="11" selected>متوسط (11pt)</option>
+              <option value="13">كبير (13pt)</option>
+              <option value="16">كبير جداً (16pt)</option>
+            </select>
+          </div>
+          <div class="fg"><label class="fl">سُمك الخط</label>
+            <select class="fsl" id="lbl-nm-weight" onchange="saveLblStyle()">
+              <option value="400">عادي</option>
+              <option value="700" selected>غليظ</option>
+              <option value="900">غليظ جداً</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <!-- السعر -->
+      <div style="margin-bottom:12px">
+        <div style="font-size:10px;font-weight:700;color:var(--txt2);margin-bottom:7px;display:flex;align-items:center;gap:5px"><i data-lucide="banknote" style="width:12px;height:12px;color:var(--grn)"></i> السعر</div>
+        <div class="fr">
+          <div class="fg"><label class="fl">حجم الخط</label>
+            <select class="fsl" id="lbl-pr-size" onchange="saveLblStyle()">
+              <option value="16">متوسط (16pt)</option>
+              <option value="20" selected>كبير (20pt)</option>
+              <option value="26">كبير جداً (26pt)</option>
+              <option value="32">ضخم (32pt)</option>
+            </select>
+          </div>
+          <div class="fg"><label class="fl">سُمك الخط</label>
+            <select class="fsl" id="lbl-pr-weight" onchange="saveLblStyle()">
+              <option value="400">عادي</option>
+              <option value="700" selected>غليظ</option>
+              <option value="900">غليظ جداً</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <!-- الباركود -->
+      <div style="margin-bottom:10px">
+        <div style="font-size:10px;font-weight:700;color:var(--txt2);margin-bottom:7px;display:flex;align-items:center;gap:5px"><i data-lucide="scan-barcode" style="width:12px;height:12px;color:var(--amb)"></i> الباركود</div>
+        <div class="fr">
+          <div class="fg"><label class="fl">ارتفاع الباركود</label>
+            <select class="fsl" id="lbl-bc-h" onchange="saveLblStyle()">
+              <option value="8">صغير (8mm)</option>
+              <option value="12" selected>متوسط (12mm)</option>
+              <option value="16">كبير (16mm)</option>
+            </select>
+          </div>
+          <div class="fg"><label class="fl">حجم الرقم</label>
+            <select class="fsl" id="lbl-cd-size" onchange="saveLblStyle()">
+              <option value="7">صغير (7pt)</option>
+              <option value="9" selected>متوسط (9pt)</option>
+              <option value="11">كبير (11pt)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <!-- Preview -->
+      <div style="font-size:9px;color:var(--txt3);margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:.4px">معاينة البطاقة</div>
+      <div id="lblStylePreview" style="background:#fff;border-radius:6px;padding:10px;text-align:center;max-width:200px;margin:0 auto">
+        <div id="prev-nm" style="font-weight:700;margin-bottom:3px;direction:rtl;color:#222">قميص رجالي</div>
+        <div id="prev-pr" style="font-weight:700;margin-bottom:4px;direction:ltr;color:#111;font-family:'JetBrains Mono',monospace">13.000</div>
+        <svg id="prev-bc" style="display:block;margin:0 auto 3px"></svg>
+        <div id="prev-cd" style="font-family:'JetBrains Mono',monospace;color:#555;letter-spacing:1px;direction:ltr">0001</div>
+      </div>
+      <button class="btn btn-acc" style="width:100%;justify-content:center;margin-top:10px" onclick="applyLblPreview()"><i data-lucide="eye"></i> تحديث المعاينة</button>
+    </div>
   </div>
 </div>
 
@@ -554,15 +668,15 @@ const fmt = n => Math.round(n||0).toLocaleString('ar-IQ');
 const fmtP = n => (n||0).toLocaleString('ar-IQ',{minimumFractionDigits:3,maximumFractionDigits:3});
 
 // ══════════════════════════════════════
-//  BARCODE GENERATION — Sequential (1, 2, 3...)
+//  BARCODE GENERATION — Sequential 0001 format
 // ══════════════════════════════════════
 function genCode() {
-  // Sequential: find the highest existing sequential code and increment
+  // Sequential with leading zeros: 0001, 0002, ... 9999, 10000
   const codes = Object.keys(DB)
     .map(k => parseInt(k))
-    .filter(n => !isNaN(n) && n >= 1 && n <= 999999);
+    .filter(n => !isNaN(n) && n >= 1);
   const nextNum = codes.length > 0 ? Math.max(...codes) + 1 : 1;
-  return String(nextNum);
+  return String(nextNum).padStart(4, '0');
 }
 
 function makeBarcodeSVG(code, opts={}) {
@@ -1047,15 +1161,15 @@ function startLblDecode(video) {
         if(st) st.innerHTML = `<span style="color:var(--grn)">✓ ${p.name} — العدد: <b>${p.count}</b> قطعة</span>`;
         toast(`✓ ${p.name} | ${p.count} قطعة`);
         renderStats(); renderRecent(); renderLabels();
-        // وميض البطاقة المقروءة (بالباركود الداخلي)
+        // وميض وتمرير تلقائي للبطاقة المقروءة
         setTimeout(() => {
           const card = document.querySelector(`.lcard[data-code="${internalCode}"]`);
           if(card) {
-            card.style.outline = '3px solid var(--grn)';
-            card.style.transform = 'scale(1.04)';
-            setTimeout(() => { card.style.outline = ''; card.style.transform = ''; }, 1400);
+            card.classList.add('lbl-found');
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => card.classList.remove('lbl-found'), 1800);
           }
-        }, 80);
+        }, 120);
         setTimeout(() => { if(st) st.textContent = 'وجّه الكاميرا على باركود أي منتج...'; }, 2500);
       } else {
         if(st) st.innerHTML = `<span style="color:var(--amb)">⚠️ باركود غير معرّف: ${code}<br><small style="font-weight:400">اذهب لصفحة المسح لإضافته أولاً</small></span>`;
@@ -1430,33 +1544,27 @@ function syncQty(val) {
 
 function doPrint(code) {
   const p = DB[code]; if(!p) return;
-  // Build print content
   const area = document.getElementById('printArea');
-  area.style.display = 'flex';
+  const bcH = lblStyle.bcH || 12;
+  area.style.display = 'grid';
   area.innerHTML = '';
   for(let i=0; i<printQty; i++) {
     const lbl = document.createElement('div');
     lbl.className = 'label-print';
     lbl.innerHTML = `
-      <div class="lp-name">${p.name}</div>
-      <div class="lp-price">${fmtP(p.sellPrice)}</div>
-      <svg class="lp-bc-svg-${i}" style="width:50mm;height:12mm;display:block;margin:0 auto 2mm"></svg>
-      <div class="lp-code">${code}</div>
+      <div class="lp-name" style="font-size:${lblStyle.nmSize}pt;font-weight:${lblStyle.nmWeight}">${p.name}</div>
+      <div class="lp-price" style="font-size:${lblStyle.prSize}pt;font-weight:${lblStyle.prWeight}">${fmtP(p.sellPrice)}</div>
+      <div class="lp-bc-wrap"><svg class="lp-bc-svg-${i}" style="width:42mm;height:${bcH}mm;display:block;margin:0 auto"></svg></div>
+      <div class="lp-code" style="font-size:${lblStyle.cdSize}pt">${code}</div>
     `;
     area.appendChild(lbl);
   }
-  // Render barcodes then print
   setTimeout(()=>{
     for(let i=0;i<printQty;i++){
-      try{
-        JsBarcode(`.lp-bc-svg-${i}`,String(code),{format:'CODE128',lineColor:'#000',background:'transparent',width:1.5,height:35,displayValue:false,margin:0});
-      }catch(e){}
+      try{ JsBarcode(`.lp-bc-svg-${i}`,String(code),{format:'CODE128',lineColor:'#000',background:'transparent',width:1.3,height:bcH*3.78,displayValue:false,margin:0}); }catch(e){}
     }
-    setTimeout(()=>{
-      window.print();
-      setTimeout(()=>{ area.style.display='none'; area.innerHTML=''; },500);
-    },200);
-  },100);
+    setTimeout(()=>{ window.print(); setTimeout(()=>{ area.style.display='none'; area.innerHTML=''; },600); },220);
+  },120);
   closePrint();
 }
 
@@ -1545,10 +1653,10 @@ function renderLabels() {
     `<div class="lcard" data-code="${code}" onclick="showPrintModal('${code}')">
       <div class="lcard-qty">${p.count} قطعة</div>
       <div class="lcard-seq">${idx + 1}</div>
-      <div class="lcard-nm">${p.name}</div>
-      <div class="lcard-pr">${fmtP(p.sellPrice)}</div>
+      <div class="lcard-nm" style="font-size:${lblStyle.nmSize*0.75}pt;font-weight:${lblStyle.nmWeight}">${p.name}</div>
+      <div class="lcard-pr" style="font-size:${Math.min(lblStyle.prSize*0.65,17)}pt;font-weight:${lblStyle.prWeight}">${fmtP(p.sellPrice)}</div>
       <div class="lcard-bc"><svg id="lbc-${code}" style="width:100%;max-width:120px;height:28px"></svg></div>
-      <div class="lcard-cd">${code}</div>
+      <div class="lcard-cd" style="font-size:${Math.max(lblStyle.cdSize*0.7,7)}pt">${code}</div>
     </div>`
   ).join('');
   // Render barcodes
@@ -1579,14 +1687,126 @@ function renderReport() {
   document.getElementById('catBody').innerHTML=Object.entries(bycat).map(([cat,v])=>
     `<tr><td>${CEM[cat]||''} ${cat}</td><td>${v.items}</td><td>${v.count.toLocaleString()}</td><td>${fmt(v.w)}</td><td>${fmt(v.s)}</td><td class="${v.s-v.w>=0?'pos':'neg'}">${fmt(v.s-v.w)}</td></tr>`
   ).join('')||'<tr><td colspan="6" style="text-align:center;padding:14px;color:var(--txt3)">لا توجد بيانات</td></tr>';
+  // New columns: باركود | اسم | عدد | سعر البيع | سعر الجملة
+  const totalSell = entries.reduce((a,[,p])=>a+p.totalSell,0);
+  const totalWhole = entries.reduce((a,[,p])=>a+p.totalWholesale,0);
   document.getElementById('allBody').innerHTML=entries.map(([code,p])=>
-    `<tr><td style="font-weight:600;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</td><td style="font-size:9px;color:var(--txt2)">${p.cat}</td><td>${p.count}</td><td>${fmt(p.wholesalePrice)}</td><td style="color:var(--grn);font-weight:700">${fmt(p.sellPrice)}</td><td>${fmt(p.totalSell)}</td><td class="mn">${code}</td></tr>`
-  ).join('')||'<tr><td colspan="7" style="text-align:center;padding:14px;color:var(--txt3)">لا توجد بيانات</td></tr>';
+    `<tr>
+      <td class="mn" style="direction:ltr">${code}</td>
+      <td style="font-weight:600;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</td>
+      <td style="text-align:center">${p.count}</td>
+      <td style="color:var(--grn);font-weight:700">${fmtP(p.sellPrice)}</td>
+      <td>${fmtP(p.wholesalePrice)}</td>
+    </tr>`
+  ).join('')||'<tr><td colspan="5" style="text-align:center;padding:14px;color:var(--txt3)">لا توجد بيانات</td></tr>';
+  // Totals footer
+  const tfoot = document.getElementById('repTfoot');
+  if(tfoot) tfoot.innerHTML=`
+    <tr>
+      <td colspan="3" style="text-align:right;font-size:10px;color:var(--txt3)">المجموع الكلي</td>
+      <td class="sum-grn">${fmtP(totalSell)}</td>
+      <td>${fmtP(totalWhole)}</td>
+    </tr>`;
 }
 
 function renderSettings(){
   const items=Object.values(DB), tot=items.reduce((a,b)=>a+b.count,0);
   const el=document.getElementById('settInfo'); if(el) el.textContent=`${items.length} صنف · ${tot.toLocaleString()} قطعة`;
+  applyLblPreview();
+}
+
+// ══════════════════════════════════════
+//  LABEL TYPOGRAPHY SETTINGS
+// ══════════════════════════════════════
+let lblStyle = { nmSize:11, nmWeight:700, prSize:20, prWeight:700, bcH:12, cdSize:9 };
+try { const s = localStorage.getItem('lblStyle'); if(s) lblStyle = {...lblStyle,...JSON.parse(s)}; } catch(e){}
+
+function saveLblStyle() {
+  lblStyle.nmSize   = parseInt(document.getElementById('lbl-nm-size')?.value)||11;
+  lblStyle.nmWeight = parseInt(document.getElementById('lbl-nm-weight')?.value)||700;
+  lblStyle.prSize   = parseInt(document.getElementById('lbl-pr-size')?.value)||20;
+  lblStyle.prWeight = parseInt(document.getElementById('lbl-pr-weight')?.value)||700;
+  lblStyle.bcH      = parseInt(document.getElementById('lbl-bc-h')?.value)||12;
+  lblStyle.cdSize   = parseInt(document.getElementById('lbl-cd-size')?.value)||9;
+  localStorage.setItem('lblStyle', JSON.stringify(lblStyle));
+  applyLblPreview();
+  toast('تم حفظ إعدادات الخط');
+}
+
+function applyLblPreview() {
+  const nm = document.getElementById('prev-nm');
+  const pr = document.getElementById('prev-pr');
+  const cd = document.getElementById('prev-cd');
+  const bc = document.getElementById('prev-bc');
+  if(nm){ nm.style.fontSize = lblStyle.nmSize+'pt'; nm.style.fontWeight = lblStyle.nmWeight; }
+  if(pr){ pr.style.fontSize = lblStyle.prSize+'pt'; pr.style.fontWeight = lblStyle.prWeight; }
+  if(cd){ cd.style.fontSize = lblStyle.cdSize+'pt'; }
+  if(bc){ try{ JsBarcode('#prev-bc','0001',{format:'CODE128',lineColor:'#000',background:'transparent',width:1.2,height:lblStyle.bcH*3.78,displayValue:false,margin:0}); }catch(e){} }
+  // Sync selects to current values
+  const ss = (id,v)=>{ const el=document.getElementById(id); if(el) el.value=String(v); };
+  ss('lbl-nm-size',lblStyle.nmSize); ss('lbl-nm-weight',lblStyle.nmWeight);
+  ss('lbl-pr-size',lblStyle.prSize); ss('lbl-pr-weight',lblStyle.prWeight);
+  ss('lbl-bc-h',lblStyle.bcH); ss('lbl-cd-size',lblStyle.cdSize);
+}
+
+// ══════════════════════════════════════
+//  LABELS SEARCH FILTER
+// ══════════════════════════════════════
+function filterLabels() {
+  const q = (document.getElementById('lblSearch')?.value||'').toLowerCase().trim();
+  const cards = document.querySelectorAll('#labelsGrid .lcard');
+  cards.forEach(card => {
+    const code = (card.dataset.code||'').toLowerCase();
+    const name = (card.querySelector('.lcard-nm')?.textContent||'').toLowerCase();
+    const match = !q || code.includes(q) || name.includes(q);
+    card.style.display = match ? '' : 'none';
+  });
+}
+
+// ══════════════════════════════════════
+//  PRINT REPORT
+// ══════════════════════════════════════
+function printReport() {
+  const entries = Object.entries(DB);
+  if(!entries.length){ toast('لا توجد بيانات للطباعة','a'); return; }
+  const totalSell  = entries.reduce((a,[,p])=>a+p.totalSell,0);
+  const totalWhole = entries.reduce((a,[,p])=>a+p.totalWholesale,0);
+  const now = new Date().toLocaleDateString('ar-IQ');
+  const rows = entries.map(([code,p],i)=>`
+    <tr style="background:${i%2===0?'#fff':'#f9f9f9'}">
+      <td style="font-family:'Courier New',monospace;direction:ltr;font-size:9pt">${code}</td>
+      <td style="font-weight:600">${p.name}</td>
+      <td style="text-align:center">${p.count}</td>
+      <td style="text-align:right;color:#007a50;font-weight:700">${fmtP(p.sellPrice)}</td>
+      <td style="text-align:right">${fmtP(p.wholesalePrice)}</td>
+    </tr>`).join('');
+  const html = `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">
+  <style>
+    body{font-family:Arial,sans-serif;direction:rtl;padding:10mm;font-size:10pt;color:#111}
+    h1{font-size:14pt;text-align:center;margin-bottom:2mm}
+    .sub{font-size:9pt;color:#666;text-align:center;margin-bottom:6mm}
+    table{width:100%;border-collapse:collapse}
+    th{background:#2a2a4a;color:#fff;padding:2.5mm 3mm;text-align:right;font-size:9pt}
+    td{border-bottom:1px solid #ddd;padding:2.5mm 3mm}
+    tfoot td{background:#f0f0f0;font-weight:700;border-top:2px solid #333;font-size:10pt}
+    .sum-sell{color:#007a50}
+    @page{margin:10mm}
+  </style></head><body>
+  <h1>🏬 سنتر الملابس — تقرير الجرد</h1>
+  <div class="sub">تاريخ التقرير: ${now} · إجمالي الأصناف: ${entries.length} · إجمالي القطع: ${entries.reduce((a,[,p])=>a+p.count,0).toLocaleString()}</div>
+  <table>
+    <thead><tr><th>الباركود</th><th>اسم المنتج</th><th style="text-align:center">العدد</th><th>سعر البيع</th><th>سعر الجملة</th></tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr>
+      <td colspan="3">المجموع الكلي</td>
+      <td class="sum-sell">${fmtP(totalSell)}</td>
+      <td>${fmtP(totalWhole)}</td>
+    </tr></tfoot>
+  </table>
+  </body></html>`;
+  const w = window.open('','_blank');
+  w.document.write(html); w.document.close();
+  w.focus(); w.print();
 }
 
 // ══════════════════════════════════════
@@ -1605,19 +1825,24 @@ function printAllLabels() {
   const entries=Object.entries(DB);
   if(!entries.length){ toast('لا توجد منتجات للطباعة','a'); return; }
   const area=document.getElementById('printArea');
-  area.style.display='flex'; area.innerHTML='';
+  area.style.display='grid'; area.innerHTML='';
   entries.forEach(([code,p])=>{
+    const bcH = (lblStyle.bcH||12);
     const lbl=document.createElement('div');
     lbl.className='label-print';
-    lbl.innerHTML=`<div class="lp-name">${p.name}</div><div class="lp-price">${fmtP(p.sellPrice)}</div><svg class="lp-bc-svg-all-${code}" style="width:50mm;height:12mm;display:block;margin:0 auto 2mm"></svg><div class="lp-code">${code}</div>`;
+    lbl.innerHTML=`
+      <div class="lp-name" style="font-size:${lblStyle.nmSize}pt;font-weight:${lblStyle.nmWeight}">${p.name}</div>
+      <div class="lp-price" style="font-size:${lblStyle.prSize}pt;font-weight:${lblStyle.prWeight}">${fmtP(p.sellPrice)}</div>
+      <div class="lp-bc-wrap"><svg class="lp-bc-all-${code}" style="width:42mm;height:${bcH}mm;display:block;margin:0 auto"></svg></div>
+      <div class="lp-code" style="font-size:${lblStyle.cdSize}pt">${code}</div>`;
     area.appendChild(lbl);
   });
   setTimeout(()=>{
     entries.forEach(([code])=>{
-      try{ JsBarcode(`.lp-bc-svg-all-${code}`,String(code),{format:'CODE128',lineColor:'#000',background:'transparent',width:1.4,height:35,displayValue:false,margin:0}); }catch(e){}
+      try{ JsBarcode(`.lp-bc-all-${code}`,String(code),{format:'CODE128',lineColor:'#000',background:'transparent',width:1.3,height:(lblStyle.bcH||12)*3.78,displayValue:false,margin:0}); }catch(e){}
     });
-    setTimeout(()=>{ window.print(); setTimeout(()=>{ area.style.display='none'; area.innerHTML=''; },500); },200);
-  },150);
+    setTimeout(()=>{ window.print(); setTimeout(()=>{ area.style.display='none'; area.innerHTML=''; },600); },250);
+  },180);
 }
 
 // ══════════════════════════════════════
