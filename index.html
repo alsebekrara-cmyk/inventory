@@ -1268,6 +1268,16 @@ function showAddModal(origCode) {
       <div class="fg"><label class="fl">سعر الجملة</label><input class="fi" id="fWp" type="number" placeholder="0.000" min="0" step="0.001" oninput="calcFromWp()"></div>
       <div class="fg"><label class="fl">سعر البيع</label><input class="fi" id="fSp" type="number" placeholder="0.000" min="0" step="0.001" oninput="calcFromSp()"></div>
     </div>
+    <!-- عدد القطع عند الإضافة -->
+    <div class="fg">
+      <label class="fl">عدد القطع المضافة</label>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button type="button" class="di-qbtn minus" onclick="stepQty(-1)" style="width:34px;height:34px;flex-shrink:0"><i data-lucide="minus"></i></button>
+        <input class="fi" id="fQty" type="number" value="1" min="1" step="1" style="text-align:center;font-size:16px;font-weight:700;flex:1">
+        <button type="button" class="di-qbtn plus" onclick="stepQty(1)" style="width:34px;height:34px;flex-shrink:0"><i data-lucide="plus"></i></button>
+      </div>
+      <div class="fhint">عدد القطع الموجودة من هذا المنتج</div>
+    </div>
     <!-- نسبة الربح مع حساب تلقائي -->
     <div style="background:var(--bg3);border:1px solid var(--bdr2);border-radius:var(--rsm);padding:9px 11px;margin-bottom:10px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
@@ -1311,6 +1321,13 @@ function updBCPrv(val, svgId) {
   }catch(e){el.innerHTML='';}
 }
 
+function stepQty(delta) {
+  const el = document.getElementById('fQty');
+  if(!el) return;
+  const val = Math.max(1, (parseInt(el.value)||1) + delta);
+  el.value = val;
+}
+
 function updSub() {
   const cat=document.getElementById('fCt').value;
   document.getElementById('fSb').innerHTML=(CATS[cat]||[]).map(s=>`<option>${s}</option>`).join('');
@@ -1323,16 +1340,26 @@ function saveNew(origCode) {
   const cat=document.getElementById('fCt').value, sub=document.getElementById('fSb').value;
   const wp=parseFloat(document.getElementById('fWp').value)||0;
   const sp=parseFloat(document.getElementById('fSp').value)||0;
-  DB[newCode]={name,cat,sub,wholesalePrice:wp,sellPrice:sp,count:1,totalWholesale:wp,totalSell:sp,origCode,createdAt:new Date().toISOString(),lastScan:new Date().toISOString()};
+  const qty=Math.max(1, parseInt(document.getElementById('fQty')?.value)||1);
+  DB[newCode]={
+    name, cat, sub,
+    wholesalePrice:wp, sellPrice:sp,
+    count:qty,
+    totalWholesale:wp*qty,
+    totalSell:sp*qty,
+    origCode,
+    createdAt:new Date().toISOString(),
+    lastScan:new Date().toISOString()
+  };
   save();
   recent.unshift({...DB[newCode],code:newCode,time:new Date().toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'})});
   if(recent.length>15) recent.pop();
   closeAdd(); renderStats(); renderRecent();
   const res=document.getElementById('sres');
   res.style.display='flex'; res.className='sres ok';
-  res.innerHTML=`<i data-lucide="check-circle"></i> تمت إضافة <b>${name}</b> · <span style="font-family:'JetBrains Mono',monospace;font-size:10px">${newCode}</span>`;
+  res.innerHTML=`<i data-lucide="check-circle"></i> تمت إضافة <b>${name}</b> · <b>${qty} قطعة</b> · <span style="font-family:'JetBrains Mono',monospace;font-size:10px">${newCode}</span>`;
   lucide.createIcons({nodes:[res]});
-  toast(`تمت إضافة: ${name}`);
+  toast(`تمت إضافة: ${name} (${qty} قطعة)`);
 }
 
 // ══════════════════════════════════════
