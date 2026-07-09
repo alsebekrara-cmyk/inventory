@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>سنتر الملابس — نظام الجرد</title>
+<!-- v4.1 - cache bust -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>سنتر الملابس v4.1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
@@ -1270,13 +1274,13 @@ function showAddModal(origCode) {
     </div>
     <!-- عدد القطع عند الإضافة -->
     <div class="fg">
-      <label class="fl">عدد القطع المضافة</label>
+      <label class="fl">★ عدد القطع المضافة</label>
       <div style="display:flex;align-items:center;gap:8px">
-        <button type="button" class="di-qbtn minus" onclick="stepQty(-1)" style="width:34px;height:34px;flex-shrink:0"><i data-lucide="minus"></i></button>
-        <input class="fi" id="fQty" type="number" value="1" min="1" step="1" style="text-align:center;font-size:16px;font-weight:700;flex:1">
-        <button type="button" class="di-qbtn plus" onclick="stepQty(1)" style="width:34px;height:34px;flex-shrink:0"><i data-lucide="plus"></i></button>
+        <button type="button" onclick="stepQty(-1)" style="width:36px;height:36px;flex-shrink:0;border-radius:50%;border:2px solid var(--red);background:var(--red-d);color:var(--red);font-size:20px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">−</button>
+        <input class="fi" id="fQty" type="number" value="1" min="1" step="1" style="text-align:center;font-size:18px;font-weight:700;flex:1;padding:8px">
+        <button type="button" onclick="stepQty(1)" style="width:36px;height:36px;flex-shrink:0;border-radius:50%;border:2px solid var(--grn);background:var(--grn-d);color:var(--grn);font-size:20px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">+</button>
       </div>
-      <div class="fhint">عدد القطع الموجودة من هذا المنتج</div>
+      <div class="fhint">حدد عدد القطع الموجودة من هذا المنتج (افتراضي: 1)</div>
     </div>
     <!-- نسبة الربح مع حساب تلقائي -->
     <div style="background:var(--bg3);border:1px solid var(--bdr2);border-radius:var(--rsm);padding:9px 11px;margin-bottom:10px">
@@ -1306,8 +1310,13 @@ function showAddModal(origCode) {
   `;
   updSub();
   document.getElementById('addMbg').classList.add('open');
-  lucide.createIcons();
-  setTimeout(()=>{ updBCPrv(nc,'bcPrv'); document.getElementById('fNm').focus(); },200);
+  // Icons in the modal title only
+  try { lucide.createIcons({nodes:[document.getElementById('addTit')]}); } catch(e){}
+  setTimeout(()=>{
+    updBCPrv(nc,'bcPrv');
+    const nm = document.getElementById('fNm');
+    if(nm) nm.focus();
+  }, 200);
 }
 
 function updBCPrv(val, svgId) {
