@@ -2404,15 +2404,44 @@ function buildProductsFromGlyphs(glyphs) {
       const qty = parseInt(qtyM[0]);
       if (qty <= 0) continue;
 
-      let wholesale = cleanNum(priceS);
-      let total = cleanNum(totalS);
+      const rawUnit = cleanNum(priceS);
+      const rawTotal = cleanNum(totalS);
 
-      // Derive missing wholesale and total values
-      if (wholesale === 0 && total > 0 && qty > 0) wholesale = Math.round(total / qty);
-      if (total === 0 && wholesale > 0)             total = wholesale * qty;
-      if (wholesale === 0 && total > 0 && qty > 0)  wholesale = Math.round(total / qty);
+      const approxEqual = (a, b) => Math.abs(a - b) <= 1;
+      let wholesale = 0;
+      let sellPrice = 0;
 
-      const sellPrice = wholesale > 0 ? Math.round(wholesale * 1.5) : 0;
+      if (rawUnit > 0 && rawTotal > 0) {
+        const totalByUnit = rawUnit * qty;
+        const totalByUnitAtSell = Math.round(rawUnit * 1.5) * qty;
+        const wholesaleFromUnit = Math.round(rawUnit / 1.5);
+        const totalByWholesaleFromUnit = wholesaleFromUnit * qty;
+
+        if (approxEqual(totalByUnit, rawTotal)) {
+          wholesale = rawUnit;
+          sellPrice = Math.round(wholesale * 1.5);
+        } else if (approxEqual(totalByUnitAtSell, rawTotal)) {
+          wholesale = rawUnit;
+          sellPrice = Math.round(rawUnit * 1.5);
+        } else if (approxEqual(totalByWholesaleFromUnit, rawTotal)) {
+          sellPrice = rawUnit;
+          wholesale = wholesaleFromUnit;
+        } else if (rawUnit > rawTotal / qty) {
+          sellPrice = rawUnit;
+          wholesale = wholesaleFromUnit;
+        } else {
+          wholesale = rawUnit;
+          sellPrice = Math.round(wholesale * 1.5);
+        }
+      } else if (rawUnit > 0) {
+        wholesale = rawUnit;
+        sellPrice = Math.round(wholesale * 1.5);
+      } else if (rawTotal > 0) {
+        const avg = rawTotal / qty;
+        wholesale = Math.round(avg / 1.5);
+        sellPrice = Math.round(wholesale * 1.5);
+      }
+
       const totalWholesale = wholesale * qty;
       const totalSell = sellPrice * qty;
 
