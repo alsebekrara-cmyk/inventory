@@ -716,7 +716,7 @@ const fmtP = n => {
 };
 const REPORT_COLS = [
   { key:'code', label:'الباركود', width:'70px', align:'center' },
-  { key:'name', label:'اسم المنتج', width:'140px', align:'right' },
+  { key:'name', label:'اسم المنتج', width:'240px', align:'right' },
   { key:'count', label:'العدد', width:'55px', align:'center' },
   { key:'sellPrice', label:'سعر البيع', width:'80px', align:'right' },
   { key:'totalSell', label:'إجمالي البيع', width:'90px', align:'right' },
@@ -755,6 +755,14 @@ try {
 } catch(e) {}
 function saveReportCols(){ localStorage.setItem('reportColsState', JSON.stringify(reportColsState)); }
 function saveReportPrintState(){ localStorage.setItem('reportPrintState', JSON.stringify(reportPrintState)); }
+function sortEntriesByCode(entries){
+  return entries.slice().sort((a,b)=>{
+    const na = parseInt(a[0],10);
+    const nb = parseInt(b[0],10);
+    if(!isNaN(na) && !isNaN(nb)) return na-nb;
+    return String(a[0]).localeCompare(String(b[0]), undefined, {numeric:true});
+  });
+}
 function getVisibleReportCols(){ return REPORT_COLS.filter(col => reportColsState[col.key]); }
 function updateReportColumns(){ document.querySelectorAll('#repCols input[name="reportCol"]').forEach(cb => { reportColsState[cb.value] = cb.checked; }); saveReportCols(); renderReport(); }
 function updateReportBlankCols(){ document.querySelectorAll('#printBlankCols input[type="checkbox"]').forEach(cb => { reportPrintState.blankCols[cb.value] = cb.checked; }); saveReportPrintState(); }
@@ -1782,7 +1790,12 @@ function renderProds() {
   let entries=Object.entries(DB);
   if(fCat!=='all') entries=entries.filter(([k,v])=>v.cat===fCat);
   if(q) entries=entries.filter(([k,v])=>v.name.toLowerCase().includes(q)||k.toLowerCase().includes(q)||(v.sub||'').includes(q));
-  entries.sort((a,b)=>a[1].name.localeCompare(b[1].name,'ar'));
+  entries.sort((a,b)=>{
+    const na = parseInt(a[0],10);
+    const nb = parseInt(b[0],10);
+    if(!isNaN(na) && !isNaN(nb)) return na-nb;
+    return a[0].localeCompare(b[0], undefined, {numeric:true});
+  });
   document.getElementById('prodBdg').textContent=entries.length;
   if(!entries.length){
     el.innerHTML=`<div class="empty"><div class="empty-ico"><i data-lucide="package-x"></i></div><h3>${q?'لا نتائج':'لا توجد منتجات'}</h3><p>${q?'جرب كلمة مختلفة':'ابدأ بمسح باركود'}</p></div>`;
@@ -1795,11 +1808,18 @@ function renderProds() {
 function setFCat(cat){ fCat=cat; renderProds(); }
 
 function renderLabels() {
-  const el=document.getElementById('labelsGrid'), entries=Object.entries(DB);
+  const el=document.getElementById('labelsGrid');
+  let entries=Object.entries(DB);
   if(!entries.length){
     el.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="empty-ico"><i data-lucide="tag-off"></i></div><h3>لا توجد منتجات</h3></div>`;
     lucide.createIcons({nodes:[el]}); return;
   }
+  entries.sort((a,b)=>{
+    const na = parseInt(a[0],10);
+    const nb = parseInt(b[0],10);
+    if(!isNaN(na) && !isNaN(nb)) return na-nb;
+    return a[0].localeCompare(b[0], undefined, {numeric:true});
+  });
   el.innerHTML=entries.map(([code,p], idx)=>
     `<div class="lcard" data-code="${code}" onclick="showPrintModal('${code}')">
       <div class="lcard-qty">${p.count} قطعة</div>
@@ -1821,7 +1841,7 @@ function renderLabels() {
 }
 
 function renderReport() {
-  const items=Object.values(DB), entries=Object.entries(DB);
+  const items=Object.values(DB);
   const tw=items.reduce((a,b)=>a+b.totalWholesale,0);
   const ts=items.reduce((a,b)=>a+b.totalSell,0);
   const tot=items.reduce((a,b)=>a+b.count,0);
@@ -1841,13 +1861,14 @@ function renderReport() {
     `<tr><td>${CEM[cat]||''} ${cat}</td><td>${fmt(v.items)}</td><td>${fmt(v.count)}</td><td>${fmt(v.w)}</td><td>${fmt(v.s)}</td><td class="${v.s-v.w>=0?'pos':'neg'}">${fmt(v.s-v.w)}</td></tr>`
   ).join('')||'<tr><td colspan="6" style="text-align:center;padding:14px;color:var(--txt3)">لا توجد بيانات</td></tr>';
   let visibleCols = getVisibleReportCols();
+  const entries = sortEntriesByCode(Object.entries(DB));
   if (!visibleCols.length) visibleCols = REPORT_COLS;
   const headers = visibleCols.map(col => `<th style="${col.width!=='auto'?'width:'+col.width+';':''}text-align:${col.align}">${col.label}</th>`).join('');
   const rows = entries.map(([code,p])=>
     `<tr>${visibleCols.map(col => {
       switch(col.key){
         case 'code': return `<td class="mn" style="direction:ltr;text-align:${col.align}">${code}</td>`;
-        case 'name': return `<td style="font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:${col.align}">${p.name}</td>`;
+        case 'name': return `<td style="font-weight:600;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:${col.align}">${p.name}</td>`;
         case 'count': return `<td style="text-align:${col.align};font-weight:700">${fmt(p.count)}</td>`;
         case 'sellPrice': return `<td style="text-align:${col.align};color:var(--grn);font-weight:700">${fmtP(p.sellPrice)}</td>`;
         case 'totalSell': return `<td style="text-align:${col.align};color:var(--grn);font-weight:700">${fmtP(p.totalSell)}</td>`;
@@ -1940,7 +1961,7 @@ function filterLabels() {
 //  PRINT REPORT
 // ══════════════════════════════════════
 function printReport() {
-  const entries = Object.entries(DB);
+  let entries = sortEntriesByCode(Object.entries(DB));
   if(!entries.length){ toast('لا توجد بيانات للطباعة','a'); return; }
   const totalSell  = entries.reduce((a,[,p])=>a+p.totalSell,0);
   const totalWhole = entries.reduce((a,[,p])=>a+p.totalWholesale,0);
@@ -1954,7 +1975,7 @@ function printReport() {
       const blank = !!reportPrintState.blankCols[col.key];
       switch(col.key){
         case 'code': return `<td style="direction:ltr;font-family:'Courier New',monospace;text-align:${col.align};font-size:9pt;border:1px solid #bbb">${blank?'':code}</td>`;
-        case 'name': return `<td style="font-weight:700;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:${col.align};border:1px solid #bbb">${blank?'':p.name}</td>`;
+        case 'name': return `<td style="font-weight:700;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:${col.align};border:1px solid #bbb">${blank?'':p.name}</td>`;
         case 'count': return `<td style="text-align:${col.align};font-weight:700;border:1px solid #bbb">${blank?'':fmt(p.count)}</td>`;
         case 'sellPrice': return `<td style="text-align:${col.align};color:#007a50;font-weight:700;border:1px solid #bbb">${blank?'':fmtP(p.sellPrice)}</td>`;
         case 'totalSell': return `<td style="text-align:${col.align};color:#007a50;border:1px solid #bbb">${blank?'':fmtP(p.totalSell)}</td>`;
@@ -2041,9 +2062,10 @@ function delProd(code,e) {
 function printAllLabels() {
   const entries=Object.entries(DB);
   if(!entries.length){ toast('لا توجد منتجات للطباعة','a'); return; }
+  const sortedEntries=sortEntriesByCode(entries);
   const area=document.getElementById('printArea');
   area.style.display='grid'; area.innerHTML='';
-  entries.forEach(([code,p])=>{
+  sortedEntries.forEach(([code,p])=>{
     const bcH = (lblStyle.bcH||12);
     const lbl=document.createElement('div');
     lbl.className='label-print';
@@ -2055,7 +2077,7 @@ function printAllLabels() {
     area.appendChild(lbl);
   });
   setTimeout(()=>{
-    entries.forEach(([code])=>{
+    sortedEntries.forEach(([code])=>{
       try{ JsBarcode(`.lp-bc-all-${code}`,String(code),{format:'CODE128',lineColor:'#000',background:'transparent',width:1.3,height:(lblStyle.bcH||12)*3.78,displayValue:false,margin:0}); }catch(e){}
     });
     setTimeout(()=>{ window.print(); setTimeout(()=>{ area.style.display='none'; area.innerHTML=''; },600); },250);
@@ -2067,7 +2089,8 @@ function printAllLabels() {
 // ══════════════════════════════════════
 function exportCSV() {
   const rows=[['\uFEFFاسم المنتج','الفئة','الفئة الفرعية','الباركود','العدد','سعر الجملة','سعر البيع','إجمالي الجملة','إجمالي البيع','الربح']];
-  Object.entries(DB).forEach(([code,p])=>rows.push([p.name,p.cat,p.sub||'',code,p.count,p.wholesalePrice,p.sellPrice,p.totalWholesale,p.totalSell,p.totalSell-p.totalWholesale]));
+  const sortedEntries = sortEntriesByCode(Object.entries(DB));
+  sortedEntries.forEach(([code,p])=>rows.push([p.name,p.cat,p.sub||'',code,p.count,p.wholesalePrice,p.sellPrice,p.totalWholesale,p.totalSell,p.totalSell-p.totalWholesale]));
   const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\r\n');
   const a=document.createElement('a');
   a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
