@@ -2320,15 +2320,20 @@ function buildProductsFromGlyphs(glyphs) {
     if (!s) return '';
     // Apply ligature fixes
     for (const [k, v] of Object.entries(LIGS)) s = s.split(k).join(v);
-    // Reverse each Arabic word's characters, then reverse word order
     const words = s.split(/\s+/).filter(Boolean);
     const fixed = words.map(w => /^[\d\s,.-]+$/.test(w) ? w : w.split('').reverse().join(''));
-    return fixed.reverse().join(' ').trim();
+    return fixed.join(' ').trim();
   }
 
   function cleanNum(s) {
     if (!s) return 0;
-    try { return parseFloat(s.replace(/[^\d.]/g,'')) || 0; } catch { return 0; }
+    try {
+      const normalized = String(s)
+        .replace(/[\u0660-\u0669\u06F0-\u06F9]/g, d => String.fromCharCode(48 + (d.charCodeAt(0) & 0x0F)))
+        .replace(/[\u066B\u066C]/g, '')
+        .replace(/[^\d.]/g, '');
+      return parseFloat(normalized) || 0;
+    } catch { return 0; }
   }
 
   function getCategory(name) {
@@ -2399,23 +2404,28 @@ function buildProductsFromGlyphs(glyphs) {
       const qty = parseInt(qtyM[0]);
       if (qty <= 0) continue;
 
-      let price = cleanNum(priceS);
+      let wholesale = cleanNum(priceS);
       let total = cleanNum(totalS);
 
-      // Derive missing values
-      if (price === 0 && total > 0 && qty > 0) price = Math.round(total / qty);
-      if (total === 0 && price > 0)             total = price * qty;
+      // Derive missing wholesale and total values
+      if (wholesale === 0 && total > 0 && qty > 0) wholesale = Math.round(total / qty);
+      if (total === 0 && wholesale > 0)             total = wholesale * qty;
+      if (wholesale === 0 && total > 0 && qty > 0)  wholesale = Math.round(total / qty);
+
+      const sellPrice = wholesale > 0 ? Math.round(wholesale * 1.5) : 0;
+      const totalWholesale = wholesale * qty;
+      const totalSell = sellPrice * qty;
 
       const name = fixAr(nameRaw) || ('منتج ' + code);
       const { cat, sub } = getCategory(name);
 
       products[code] = {
         name, cat, sub,
-        wholesalePrice: 0,
-        sellPrice: price,
+        wholesalePrice: wholesale,
+        sellPrice: sellPrice,
         count: qty,
-        totalWholesale: 0,
-        totalSell: total,
+        totalWholesale: totalWholesale,
+        totalSell: totalSell,
         origCode: code,
         createdAt: new Date().toISOString(),
         lastScan:  new Date().toISOString()
