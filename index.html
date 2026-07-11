@@ -305,18 +305,32 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
   body *{visibility:hidden}
   .print-area,.print-area *{visibility:visible!important}
   .print-area{
-    position:fixed;inset:0;
+    position:absolute;top:0;left:0;right:0;bottom:0;
     display:grid;
     grid-template-columns:repeat(3,1fr);
+    grid-auto-rows:minmax(30mm, auto);
     gap:3mm;padding:4mm;background:#fff;
     align-content:start;
+    align-items:start;
+    box-sizing:border-box;
   }
   .label-print{
     border:1px solid #ccc;border-radius:3mm;
     padding:4mm 5mm 3mm;text-align:center;
-    background:#fff;page-break-inside:avoid;
-    break-inside:avoid;
+    background:#fff;
+    page-break-inside:avoid;
+    break-inside:avoid-column;
+    break-inside:avoid-page;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    min-height:40mm;
+    overflow:hidden;
   }
+  .lp-name{min-height:10mm;}
+  .lp-bc-wrap{display:block;width:100%;}
+  .lp-bc-wrap svg{width:100%;height:auto;}
   .lp-name{margin-bottom:1.5mm;direction:rtl;font-family:Arial,'IBM Plex Sans Arabic',sans-serif}
   .lp-price{margin-bottom:2mm;direction:ltr;font-family:'Courier New',monospace}
   .lp-bc-wrap svg{width:42mm;display:block;margin:0 auto}
@@ -2321,15 +2335,21 @@ function buildProductsFromGlyphs(glyphs) {
     // Apply ligature fixes
     for (const [k, v] of Object.entries(LIGS)) s = s.split(k).join(v);
     const words = s.split(/\s+/).filter(Boolean);
-    const fixed = words.map(w => /^[\d\s,.-]+$/.test(w) ? w : w.split('').reverse().join(''));
-    return fixed.join(' ').trim();
+    const fixed = words.map(w => /^[\d\s,.,-]+$/.test(w) ? w : w.split('').reverse().join(''));
+    const arabicWords = words.filter(w => /[\u0600-\u06FF]/.test(w));
+    return arabicWords.length > 1 ? fixed.reverse().join(' ').trim() : fixed.join(' ').trim();
+  }
+
+  function normalizeDigits(s) {
+    return String(s)
+      .replace(/[\u0660-\u0669]/g, d => String.fromCharCode(d.charCodeAt(0) - 0x0660 + 48))
+      .replace(/[\u06F0-\u06F9]/g, d => String.fromCharCode(d.charCodeAt(0) - 0x06F0 + 48));
   }
 
   function cleanNum(s) {
     if (!s) return 0;
     try {
-      const normalized = String(s)
-        .replace(/[\u0660-\u0669\u06F0-\u06F9]/g, d => String.fromCharCode(48 + (d.charCodeAt(0) & 0x0F)))
+      const normalized = normalizeDigits(String(s))
         .replace(/[\u066B\u066C]/g, '')
         .replace(/[^\d.]/g, '');
       return parseFloat(normalized) || 0;
@@ -2375,12 +2395,15 @@ function buildProductsFromGlyphs(glyphs) {
 
     // Find code items at x~218-232 with numeric 4-7 digit values
     const codeItems = pageGlyphs
-      .filter(g => g.x >= 218 && g.x <= 232 && /^\d{4,7}$/.test(g.u.replace(/\s/g,'')))
+      .filter(g => {
+        const candidate = normalizeDigits(g.u.replace(/\s/g,''));
+        return g.x >= 218 && g.x <= 232 && /^\d{4,7}$/.test(candidate);
+      })
       .sort((a, b) => a.y - b.y);
 
     for (let i = 0; i < codeItems.length; i++) {
       const { y: cy, u: codeRaw } = codeItems[i];
-      const code = codeRaw.replace(/\s/g,'');
+      const code = normalizeDigits(codeRaw.replace(/\s/g,''));
       if (products[code]) continue;
 
       // Band: this row to next row minus 3 units
@@ -2399,7 +2422,7 @@ function buildProductsFromGlyphs(glyphs) {
       const nameRaw = gx(165, 220);  // الاسم
 
       // Parse quantity
-      const qtyM = qtyS.replace(/\s/g,'').match(/\d+/);
+      const qtyM = normalizeDigits(qtyS).replace(/\s/g,'').match(/\d+/);
       if (!qtyM) continue;
       const qty = parseInt(qtyM[0]);
       if (qty <= 0) continue;
@@ -2410,34 +2433,37 @@ function buildProductsFromGlyphs(glyphs) {
       const approxEqual = (a, b) => Math.abs(a - b) <= 1;
       let wholesale = 0;
       let sellPrice = 0;
+      const avg = rawTotal > 0 ? rawTotal / qty : 0;
 
-      if (rawUnit > 0 && rawTotal > 0) {
-        const totalByUnit = rawUnit * qty;
-        const totalByUnitAtSell = Math.round(rawUnit * 1.5) * qty;
-        const wholesaleFromUnit = Math.round(rawUnit / 1.5);
-        const totalByWholesaleFromUnit = wholesaleFromUnit * qty;
+      if (rawUnit > 0) {
+        if (avg > 0) {
+          const unitAsSell = Math.round(rawUnit / 1.5);
+          const unitAsWholesale = rawUnit;
+          const totalIfSell = rawUnit * qty;
+          const totalIfWholesale = Math.round(rawUnit * 1.5) * qty;
+          const totalIfDerivedWholesale = unitAsSell * qty;
 
-        if (approxEqual(totalByUnit, rawTotal)) {
-          wholesale = rawUnit;
-          sellPrice = Math.round(wholesale * 1.5);
-        } else if (approxEqual(totalByUnitAtSell, rawTotal)) {
-          wholesale = rawUnit;
-          sellPrice = Math.round(rawUnit * 1.5);
-        } else if (approxEqual(totalByWholesaleFromUnit, rawTotal)) {
-          sellPrice = rawUnit;
-          wholesale = wholesaleFromUnit;
-        } else if (rawUnit > rawTotal / qty) {
-          sellPrice = rawUnit;
-          wholesale = wholesaleFromUnit;
+          if (approxEqual(totalIfSell, rawTotal) && rawUnit > avg * 1.2) {
+            sellPrice = rawUnit;
+            wholesale = unitAsSell;
+          } else if (approxEqual(rawUnit, Math.round(avg * 1.5))) {
+            sellPrice = rawUnit;
+            wholesale = unitAsSell;
+          } else if (approxEqual(rawUnit, Math.round(avg / 1.5))) {
+            wholesale = rawUnit;
+            sellPrice = Math.round(wholesale * 1.5);
+          } else if (rawUnit > avg * 1.2) {
+            sellPrice = rawUnit;
+            wholesale = unitAsSell;
+          } else {
+            wholesale = rawUnit;
+            sellPrice = Math.round(wholesale * 1.5);
+          }
         } else {
           wholesale = rawUnit;
           sellPrice = Math.round(wholesale * 1.5);
         }
-      } else if (rawUnit > 0) {
-        wholesale = rawUnit;
-        sellPrice = Math.round(wholesale * 1.5);
       } else if (rawTotal > 0) {
-        const avg = rawTotal / qty;
         wholesale = Math.round(avg / 1.5);
         sellPrice = Math.round(wholesale * 1.5);
       }
