@@ -2334,10 +2334,17 @@ function buildProductsFromGlyphs(glyphs) {
     if (!s) return '';
     // Apply ligature fixes
     for (const [k, v] of Object.entries(LIGS)) s = s.split(k).join(v);
-    const words = s.split(/\s+/).filter(Boolean);
-    const fixed = words.map(w => /^[\d\s,.,-]+$/.test(w) ? w : w.split('').reverse().join(''));
-    const arabicWords = words.filter(w => /[\u0600-\u06FF]/.test(w));
-    return arabicWords.length > 1 ? fixed.reverse().join(' ').trim() : fixed.join(' ').trim();
+    const words = s.trim().split(/\s+/).filter(Boolean);
+    const fixed = words.map(w => /^[\d.,-]+$/.test(w) ? w : w.split('').reverse().join(''));
+    const startsArabic = w => /^[\u0600-\u06FF]/.test(w);
+    if (fixed.length > 1) {
+      const firstIsArabic = startsArabic(fixed[0]);
+      const lastIsArabic = startsArabic(fixed[fixed.length - 1]);
+      if (!firstIsArabic && lastIsArabic) {
+        fixed.reverse();
+      }
+    }
+    return fixed.join(' ').trim();
   }
 
   function normalizeDigits(s) {
