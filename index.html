@@ -2122,10 +2122,10 @@ function importOXPS(e) {
   toast('جارٍ قراءة الملف...', 'a');
 
   const reader = new FileReader();
-  reader.onload = function(ev) {
+  reader.onload = async function(ev) {
     const arrayBuffer = ev.target.result;
     try {
-      const products = parseOXPSBuffer(arrayBuffer);
+      const products = await parseOXPSBuffer(arrayBuffer);
       if (products && Object.keys(products).length > 0) {
         showOXPSImportPreview(products);
       } else {
@@ -2133,7 +2133,7 @@ function importOXPS(e) {
       }
     } catch (err) {
       console.error('OXPS parse error:', err);
-      toast('خطأ في قراءة الملف: ' + err.message, 'r');
+      toast('خطأ في قراءة الملف: ' + (err.message || err), 'r');
     }
   };
   reader.onerror = () => toast('فشل قراءة الملف', 'r');
@@ -2175,28 +2175,38 @@ async function extractZipEntries(bytes) {
   let i = 0;
   const len = bytes.length;
 
-  while (i < len - 4) {
-    // Local file header signature: PK\x03\x04
-    if (bytes[i]===0x50 && bytes[i+1]===0x4B && bytes[i+2]===0x03 && bytes[i+3]===0x04) {
-      const compression = bytes[i+8]  | (bytes[i+9]  << 8);
-      const compSize    = bytes[i+18] | (bytes[i+19] << 8) | (bytes[i+20] << 16) | (bytes[i+21] << 24);
-      const uncompSize  = bytes[i+22] | (bytes[i+23] << 8) | (bytes[i+24] << 16) | (bytes[i+25] << 24);
-      const fnLen       = bytes[i+26] | (bytes[i+27] << 8);
-      const extraLen    = bytes[i+28] | (bytes[i+29] << 8);
-      const fnBytes     = bytes.slice(i+30, i+30+fnLen);
-      const fileName    = new TextDecoder('utf-8').decode(fnBytes);
-      const dataStart   = i + 30 + fnLen + extraLen;
-      const dataEnd     = dataStart + Math.abs(compSize);
+  const readU16 = off => bytes[off] | (bytes[off + 1] << 8);
+  const readU32 = off => (bytes[off] | (bytes[off + 1] << 8) | (bytes[off + 2] << 16) | (bytes[off + 3] << 24)) >>> 0;
 
-      if (/\.fpage$/i.test(fileName)) {
+  while (i < len - 4) {
+    if (bytes[i] === 0x50 && bytes[i + 1] === 0x4B && bytes[i + 2] === 0x03 && bytes[i + 3] === 0x04) {
+      const flags = readU16(i + 6);
+      const compression = readU16(i + 8);
+      const compSize = readU32(i + 18);
+      const uncompSize = readU32(i + 22);
+      const fnLen = readU16(i + 26);
+      const extraLen = readU16(i + 28);
+      const fnBytes = bytes.slice(i + 30, i + 30 + fnLen);
+      const fileName = new TextDecoder('utf-8').decode(fnBytes);
+      const dataStart = i + 30 + fnLen + extraLen;
+      let dataEnd = dataStart + compSize;
+
+      if (flags & 0x08 || dataEnd > len || dataEnd <= dataStart) {
+        let j = dataStart;
+        while (j < len - 4) {
+          if (bytes[j] === 0x50 && bytes[j + 1] === 0x4B && bytes[j + 2] === 0x03 && bytes[j + 3] === 0x04) break;
+          j++;
+        }
+        dataEnd = j > dataStart ? j : len;
+      }
+
+      if (/\.fpage$/i.test(fileName) && dataStart < len && dataEnd <= len && dataEnd > dataStart) {
         let xmlText = '';
         const chunk = bytes.slice(dataStart, dataEnd);
 
         if (compression === 0) {
-          // Stored — no compression
           xmlText = new TextDecoder('utf-8').decode(chunk);
         } else if (compression === 8) {
-          // Deflate — use DecompressionStream (Chrome 80+, Firefox 113+, Safari 16.4+)
           try {
             const ds = new DecompressionStream('deflate-raw');
             const writer = ds.writable.getWriter();
@@ -2209,20 +2219,21 @@ async function extractZipEntries(bytes) {
               if (done) break;
               chunks.push(value);
             }
-            const total = chunks.reduce((a,b) => a+b.length, 0);
+            const total = chunks.reduce((acc, part) => acc + part.length, 0);
             const merged = new Uint8Array(total);
             let off = 0;
             for (const c of chunks) { merged.set(c, off); off += c.length; }
             xmlText = new TextDecoder('utf-8').decode(merged);
-          } catch(e) {
-            // Fallback: try as raw text (won't work for compressed but prevents crash)
+          } catch (e) {
+            console.warn('Failed to decompress OXPS page', fileName, e);
             xmlText = new TextDecoder('utf-8', {fatal:false}).decode(chunk);
           }
         }
+
         if (xmlText) entries[fileName] = xmlText;
       }
 
-      i = dataStart + Math.abs(compSize);
+      i = dataEnd;
     } else {
       i++;
     }
