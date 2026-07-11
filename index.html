@@ -268,6 +268,8 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
 .report-options{display:flex;flex-wrap:wrap;gap:8px}
 .rep-col-opts{display:flex;align-items:center;gap:6px;padding:8px 10px;border:1px solid var(--bdr);border-radius:8px;background:var(--bg3);font-size:10px;color:var(--txt2);cursor:pointer}
 .rep-col-opts input{accent-color:var(--acc);width:14px;height:14px;margin:0}
+.report-option-section{width:100%;margin-bottom:12px}
+.report-option-title{font-size:9px;font-weight:700;color:var(--txt3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.3px}
 .rtbl{width:100%;border-collapse:collapse;font-size:10px;table-layout:fixed}
 .rtbl th{text-align:right;padding:6px 8px;background:var(--bg3);color:var(--txt3);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--bdr);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rtbl td{padding:7px 8px;border-bottom:1px solid var(--bdr);color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -724,12 +726,65 @@ const REPORT_COLS = [
 let reportColsState = {};
 try { reportColsState = JSON.parse(localStorage.getItem('reportColsState') || '{}') || {}; } catch(e){ reportColsState = {}; }
 REPORT_COLS.forEach(col => { if (typeof reportColsState[col.key] !== 'boolean') reportColsState[col.key] = true; });
+const REPORT_PRINT_DEFAULTS = {
+  blankCols: {
+    code:false,
+    name:false,
+    count:false,
+    sellPrice:false,
+    totalSell:false,
+    wholesalePrice:false,
+    totalWholesale:false
+  },
+  showSummary: {
+    categories:true,
+    totalPieces:true,
+    totalSell:true,
+    totalWholesale:true,
+    expectedProfit:true
+  }
+};
+let reportPrintState = {
+  blankCols:{...REPORT_PRINT_DEFAULTS.blankCols},
+  showSummary:{...REPORT_PRINT_DEFAULTS.showSummary}
+};
+try {
+  const stored = JSON.parse(localStorage.getItem('reportPrintState') || '{}') || {};
+  reportPrintState.blankCols = {...reportPrintState.blankCols, ...(stored.blankCols || {})};
+  reportPrintState.showSummary = {...reportPrintState.showSummary, ...(stored.showSummary || {})};
+} catch(e) {}
 function saveReportCols(){ localStorage.setItem('reportColsState', JSON.stringify(reportColsState)); }
+function saveReportPrintState(){ localStorage.setItem('reportPrintState', JSON.stringify(reportPrintState)); }
 function getVisibleReportCols(){ return REPORT_COLS.filter(col => reportColsState[col.key]); }
-function updateReportColumns(){ document.querySelectorAll('#repCols input[type="checkbox"]').forEach(cb => { reportColsState[cb.value] = cb.checked; }); saveReportCols(); renderReport(); }
-function renderReportColumnsUI(){ const container = document.getElementById('repCols'); if(!container) return; container.innerHTML = REPORT_COLS.map(col => `
-    <label class="rep-col-opts"><input type="checkbox" value="${col.key}" ${reportColsState[col.key] ? 'checked' : ''} onchange="updateReportColumns()"><span>${col.label}</span></label>
-  `).join(''); }
+function updateReportColumns(){ document.querySelectorAll('#repCols input[name="reportCol"]').forEach(cb => { reportColsState[cb.value] = cb.checked; }); saveReportCols(); renderReport(); }
+function updateReportBlankCols(){ document.querySelectorAll('#printBlankCols input[type="checkbox"]').forEach(cb => { reportPrintState.blankCols[cb.value] = cb.checked; }); saveReportPrintState(); }
+function updateReportSummaryState(){ document.querySelectorAll('#printSummaryCols input[type="checkbox"]').forEach(cb => { reportPrintState.showSummary[cb.value] = cb.checked; }); saveReportPrintState(); renderReport(); }
+function renderReportOptionsUI(){ const container = document.getElementById('repCols'); if(!container) return;
+  container.innerHTML = `
+    <div class="report-option-section">
+      <div class="report-option-title">أعمدة التقرير</div>
+      <div class="report-options">${REPORT_COLS.map(col => `
+        <label class="rep-col-opts"><input type="checkbox" name="reportCol" value="${col.key}" ${reportColsState[col.key] ? 'checked' : ''} onchange="updateReportColumns()"><span>${col.label}</span></label>
+      `).join('')}</div>
+    </div>
+    <div class="report-option-section">
+      <div class="report-option-title">طباعة حقول فارغة</div>
+      <div class="report-options" id="printBlankCols">${REPORT_COLS.map(col => `
+        <label class="rep-col-opts"><input type="checkbox" value="${col.key}" ${reportPrintState.blankCols[col.key] ? 'checked' : ''} onchange="updateReportBlankCols()"><span>${col.label}</span></label>
+      `).join('')}</div>
+    </div>
+    <div class="report-option-section">
+      <div class="report-option-title">مربعات الملخص</div>
+      <div class="report-options" id="printSummaryCols">
+        <label class="rep-col-opts"><input type="checkbox" value="categories" ${reportPrintState.showSummary.categories ? 'checked' : ''} onchange="updateReportSummaryState()"><span>الأصناف</span></label>
+        <label class="rep-col-opts"><input type="checkbox" value="totalPieces" ${reportPrintState.showSummary.totalPieces ? 'checked' : ''} onchange="updateReportSummaryState()"><span>إجمالي القطع</span></label>
+        <label class="rep-col-opts"><input type="checkbox" value="totalSell" ${reportPrintState.showSummary.totalSell ? 'checked' : ''} onchange="updateReportSummaryState()"><span>إجمالي البيع</span></label>
+        <label class="rep-col-opts"><input type="checkbox" value="totalWholesale" ${reportPrintState.showSummary.totalWholesale ? 'checked' : ''} onchange="updateReportSummaryState()"><span>إجمالي الجملة</span></label>
+        <label class="rep-col-opts"><input type="checkbox" value="expectedProfit" ${reportPrintState.showSummary.expectedProfit ? 'checked' : ''} onchange="updateReportSummaryState()"><span>الربح المتوقع</span></label>
+      </div>
+    </div>
+  `;
+}
 
 // ══════════════════════════════════════
 //  BARCODE GENERATION — Sequential 0001 format
@@ -1778,7 +1833,7 @@ function renderReport() {
     <div class="sc cg"><div class="sc-ico"><i data-lucide="archive"></i></div><div class="sc-lbl">إجمالي الجملة</div><div class="sc-val">${fmtP(tw)}</div></div>
     <div class="sc ch"><div class="sc-ico"><i data-lucide="trending-up"></i></div><div class="sc-lbl">الربح المتوقع</div><div class="sc-val">${fmt(ts-tw)}</div></div>
   `;
-  if(document.getElementById('repCols')) renderReportColumnsUI();
+  if(document.getElementById('repCols')) renderReportOptionsUI();
   lucide.createIcons({nodes:[document.getElementById('repStats'), document.getElementById('repCols')]});
   const bycat={};
   items.forEach(p=>{ if(!bycat[p.cat]) bycat[p.cat]={items:0,count:0,w:0,s:0}; bycat[p.cat].items++;bycat[p.cat].count+=p.count;bycat[p.cat].w+=p.totalWholesale;bycat[p.cat].s+=p.totalSell; });
@@ -1894,18 +1949,22 @@ function printReport() {
   let visibleCols = getVisibleReportCols();
   if (!visibleCols.length) visibleCols = REPORT_COLS;
   const headers = visibleCols.map(col => `<th style="${col.width!=='auto'?'width:'+col.width+';':''}text-align:${col.align}">${col.label}</th>`).join('');
-  const rows = entries.map(([code,p],i)=>`<tr style="background:${i%2===0?'#fff':'#f7f8ff'}">${visibleCols.map(col=>{
+  const rows = entries.map(([code,p],i)=>{
+    const rowCells = visibleCols.map(col => {
+      const blank = !!reportPrintState.blankCols[col.key];
       switch(col.key){
-        case 'code': return `<td style="direction:ltr;font-family:'Courier New',monospace;text-align:${col.align};font-size:9pt;border:1px solid #bbb">${code}</td>`;
-        case 'name': return `<td style="font-weight:700;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:${col.align};border:1px solid #bbb">${p.name}</td>`;
-        case 'count': return `<td style="text-align:${col.align};font-weight:700;border:1px solid #bbb">${fmt(p.count)}</td>`;
-        case 'sellPrice': return `<td style="text-align:${col.align};color:#007a50;font-weight:700;border:1px solid #bbb">${fmtP(p.sellPrice)}</td>`;
-        case 'totalSell': return `<td style="text-align:${col.align};color:#007a50;border:1px solid #bbb">${fmtP(p.totalSell)}</td>`;
-        case 'wholesalePrice': return `<td style="text-align:${col.align};border:1px solid #bbb">${fmtP(p.wholesalePrice)}</td>`;
-        case 'totalWholesale': return `<td style="text-align:${col.align};border:1px solid #bbb">${fmtP(p.totalWholesale)}</td>`;
+        case 'code': return `<td style="direction:ltr;font-family:'Courier New',monospace;text-align:${col.align};font-size:9pt;border:1px solid #bbb">${blank?'':code}</td>`;
+        case 'name': return `<td style="font-weight:700;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:${col.align};border:1px solid #bbb">${blank?'':p.name}</td>`;
+        case 'count': return `<td style="text-align:${col.align};font-weight:700;border:1px solid #bbb">${blank?'':fmt(p.count)}</td>`;
+        case 'sellPrice': return `<td style="text-align:${col.align};color:#007a50;font-weight:700;border:1px solid #bbb">${blank?'':fmtP(p.sellPrice)}</td>`;
+        case 'totalSell': return `<td style="text-align:${col.align};color:#007a50;border:1px solid #bbb">${blank?'':fmtP(p.totalSell)}</td>`;
+        case 'wholesalePrice': return `<td style="text-align:${col.align};border:1px solid #bbb">${blank?'':fmtP(p.wholesalePrice)}</td>`;
+        case 'totalWholesale': return `<td style="text-align:${col.align};border:1px solid #bbb">${blank?'':fmtP(p.totalWholesale)}</td>`;
         default: return `<td style="text-align:${col.align};border:1px solid #bbb">—</td>`;
       }
-    }).join('')}</tr>`).join('');
+    });
+    return `<tr style="background:${i%2===0?'#fff':'#f7f8ff'}">${rowCells.join('')}</tr>`;
+  }).join('');
   const footerCells = visibleCols.map(col=>{
     switch(col.key){
       case 'code':
@@ -1922,6 +1981,13 @@ function printReport() {
   const summaryCols = visibleCols.filter(c=>c.key==='code'||c.key==='name');
   const summaryCell = `<td colspan="${Math.max(1, summaryCols.length)}" style="text-align:right;font-size:10px;color:#555;border:1px solid #bbb">المجموع الكلي</td>`;
   const footerRow = summaryCols.length ? [summaryCell, ...footerCells.filter((_, idx) => visibleCols[idx].key!=='code' && visibleCols[idx].key!=='name')] : footerCells;
+  const summaryBlocks = [];
+  if(reportPrintState.showSummary.categories) summaryBlocks.push(`<div class="sum-box"><div class="v">${fmt(entries.length)}</div><div class="l">الأصناف</div></div>`);
+  if(reportPrintState.showSummary.totalPieces) summaryBlocks.push(`<div class="sum-box"><div class="v">${fmt(totalCount)}</div><div class="l">إجمالي القطع</div></div>`);
+  if(reportPrintState.showSummary.totalSell) summaryBlocks.push(`<div class="sum-box"><div class="v" style="color:#007a50">${fmtP(totalSell)}</div><div class="l">إجمالي البيع</div></div>`);
+  if(reportPrintState.showSummary.totalWholesale) summaryBlocks.push(`<div class="sum-box"><div class="v">${fmtP(totalWhole)}</div><div class="l">إجمالي الجملة</div></div>`);
+  if(reportPrintState.showSummary.expectedProfit) summaryBlocks.push(`<div class="sum-box"><div class="v" style="color:#007a50">${fmtP(totalSell-totalWhole)}</div><div class="l">الربح المتوقع</div></div>`);
+  const summaryHtml = summaryBlocks.length ? `<div class="summary">${summaryBlocks.join('')}</div>` : '';
   const html = `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">
   <style>
     *{box-sizing:border-box}
@@ -1936,7 +2002,7 @@ function printReport() {
     table{width:100%;border-collapse:collapse;margin-top:6mm}
     thead tr{background:#2a2a4a}
     th{color:#fff;padding:2.5mm 3mm;text-align:right;font-size:9pt;font-weight:700;border:1px solid #1a1a3a}
-    td{padding:2.5mm 3mm;border:1px solid #bbb;font-size:9pt}
+    td{padding:2.5mm 3mm;border:1px solid #bbb;font-size:9pt;word-break:break-word}
     tbody tr:nth-child(even){background:#f7f8ff}
     tfoot tr{background:#e8e8f5}
     .footer{text-align:center;margin-top:6mm;font-size:8pt;color:#666;border-top:1px solid #ddd;padding-top:3mm}
@@ -1946,13 +2012,7 @@ function printReport() {
     <h1>🏬 الجرد — تقرير الجرد</h1>
     <div class="sub">تاريخ التقرير: ${now}</div>
   </div>
-  <div class="summary">
-    <div class="sum-box"><div class="v">${fmt(entries.length)}</div><div class="l">الأصناف</div></div>
-    <div class="sum-box"><div class="v">${fmt(totalCount)}</div><div class="l">إجمالي القطع</div></div>
-    <div class="sum-box"><div class="v" style="color:#007a50">${fmtP(totalSell)}</div><div class="l">إجمالي البيع</div></div>
-    <div class="sum-box"><div class="v">${fmtP(totalWhole)}</div><div class="l">إجمالي الجملة</div></div>
-    <div class="sum-box"><div class="v" style="color:#007a50">${fmtP(totalSell-totalWhole)}</div><div class="l">الربح المتوقع</div></div>
-  </div>
+  ${summaryHtml}
   <table>
     <thead><tr>${headers}</tr></thead>
     <tbody>${rows}</tbody>
