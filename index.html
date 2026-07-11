@@ -71,19 +71,20 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
 
 /* ── PAGES ── */
 .pages{flex:1;overflow:hidden;position:relative}
-.pg{position:absolute;inset:0;overflow-y:auto;padding:10px 10px 62px;display:none}
+.pg{position:absolute;inset:0;overflow-y:auto;padding:10px 10px 70px;display:none}
 .pg.active{display:block}
 
 /* ── BOTTOM NAV ── */
-.bnav{height:var(--nav);background:var(--bg2);border-top:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-around;padding:2px 0 max(2px,env(safe-area-inset-bottom));flex-shrink:0;z-index:40}
-.ni{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 8px;border-radius:var(--rsm);cursor:pointer;color:var(--txt3);font-size:9px;font-weight:600;font-family:inherit;border:none;background:none;transition:all .18s;min-width:40px}
-.ni svg{width:17px;height:17px}
+.bnav{height:var(--nav);background:var(--bg2);border-top:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-around;padding:2px 1px max(4px,env(safe-area-inset-bottom));flex-shrink:0;z-index:40}
+.ni{display:flex;flex-direction:column;align-items:center;gap:1px;padding:3px 1px;border-radius:var(--rsm);cursor:pointer;color:var(--txt3);font-size:8px;font-weight:600;font-family:inherit;border:none;background:none;transition:all .18s;min-width:0;flex:1;max-width:56px}
+.ni svg{width:16px;height:16px}
+.ni span{font-size:8px;white-space:nowrap}
 .ni.active{color:var(--acc2)}
 .ni.active svg{filter:drop-shadow(0 0 4px var(--acc))}
-.ni-cam-wrap{display:flex;flex-direction:column;align-items:center;gap:2px}
-.ni-cam{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;margin-top:-14px;box-shadow:0 3px 14px var(--acc-g);border:none;cursor:pointer;transition:all .18s}
+.ni-cam-wrap{display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;max-width:56px}
+.ni-cam{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;margin-top:-10px;box-shadow:0 3px 14px var(--acc-g);border:none;cursor:pointer;transition:all .18s}
 .ni-cam:hover{transform:scale(1.07)}
-.ni-cam svg{width:19px;height:19px;color:#fff}
+.ni-cam svg{width:17px;height:17px;color:#fff}
 
 /* ── STATS ── */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
@@ -291,7 +292,7 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
 .empty p{font-size:11px}
 
 /* ── TOAST ── */
-.toast{position:fixed;bottom:62px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--sur2);color:var(--txt);border:1px solid var(--bdr2);padding:7px 14px;border-radius:var(--r);font-size:11px;font-weight:600;z-index:900;opacity:0;transition:all .25s;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.4);display:flex;align-items:center;gap:7px;pointer-events:none}
+.toast{position:fixed;bottom:68px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--sur2);color:var(--txt);border:1px solid var(--bdr2);padding:7px 14px;border-radius:var(--r);font-size:11px;font-weight:600;z-index:900;opacity:0;transition:all .25s;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.4);display:flex;align-items:center;gap:7px;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast svg{width:13px;height:13px;flex-shrink:0}
 .toast.tg{border-color:rgba(14,203,138,.3)}.toast.tg svg{color:var(--grn)}
@@ -461,6 +462,18 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
     <div class="sitm" onclick="exportCSV()"><div class="sitm-l"><div class="sico" style="background:var(--grn-d)"><i data-lucide="file-spreadsheet" style="color:var(--grn)"></i></div><div><div class="snm">تصدير CSV/Excel</div><div class="ssub">جميع بيانات الجرد</div></div></div><i data-lucide="chevron-left" style="width:13px;height:13px;color:var(--txt3)"></i></div>
     <div class="sitm" onclick="backupJSON()"><div class="sitm-l"><div class="sico" style="background:var(--blu-d)"><i data-lucide="save" style="color:var(--blu)"></i></div><div><div class="snm">نسخة احتياطية JSON</div><div class="ssub">حفظ كامل البيانات</div></div></div><i data-lucide="chevron-left" style="width:13px;height:13px;color:var(--txt3)"></i></div>
     <label class="sitm"><div class="sitm-l"><div class="sico" style="background:var(--amb-d)"><i data-lucide="upload" style="color:var(--amb)"></i></div><div><div class="snm">استيراد JSON</div><div class="ssub">استعادة نسخة احتياطية</div></div></div><i data-lucide="chevron-left" style="width:13px;height:13px;color:var(--txt3)"></i><input type="file" accept=".json" style="display:none" onchange="importJSON(event)"></label>
+    <!-- OXPS IMPORT -->
+    <label class="sitm" id="oxpsImportBtn">
+      <div class="sitm-l">
+        <div class="sico" style="background:var(--cyn-d,rgba(34,211,238,0.12))"><i data-lucide="file-scan" style="color:var(--cyn,#22d3ee)"></i></div>
+        <div>
+          <div class="snm" style="color:var(--cyn,#22d3ee)">استيراد ملف OXPS</div>
+          <div class="ssub">قراءة تلقائية لملفات كشف المخزون</div>
+        </div>
+      </div>
+      <i data-lucide="chevron-left" style="width:13px;height:13px;color:var(--txt3)"></i>
+      <input type="file" accept=".oxps,.xps" style="display:none" onchange="importOXPS(event)">
+    </label>
     <div class="sitm" onclick="confirmClear()"><div class="sitm-l"><div class="sico" style="background:var(--red-d)"><i data-lucide="trash-2" style="color:var(--red)"></i></div><div><div class="snm">مسح جميع البيانات</div><div class="ssub">لا يمكن التراجع</div></div></div><i data-lucide="chevron-left" style="width:13px;height:13px;color:var(--txt3)"></i></div>
   </div>
   <div class="sgrp">
@@ -562,6 +575,7 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
   </div>
   <button class="ni" id="ni-labels" onclick="switchPg('labels')"><i data-lucide="tag"></i><span>بطاقات</span></button>
   <button class="ni" id="ni-report" onclick="switchPg('report')"><i data-lucide="bar-chart-2"></i><span>تقارير</span></button>
+  <button class="ni" id="ni-settings" onclick="switchPg('settings')"><i data-lucide="settings-2"></i><span>إعدادات</span></button>
 </nav>
 
 </div><!-- /app -->
@@ -1938,10 +1952,136 @@ function backupJSON() {
   a.click(); toast('تم حفظ النسخة الاحتياطية');
 }
 function importJSON(e) {
-  const file=e.target.files[0]; if(!file) return;
-  const reader=new FileReader();
-  reader.onload=ev=>{ try{ const d=JSON.parse(ev.target.result); if(typeof d==='object'){ Object.assign(DB,d); save(); renderStats(); renderRecent(); toast('تم الاستيراد: '+Object.keys(d).length+' صنف'); } }catch(err){ toast('خطأ في الملف','r'); } };
-  reader.readAsText(file); e.target.value='';
+  const file = e.target.files[0];
+  if(!file) return;
+  e.target.value = ''; // reset input
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const raw = JSON.parse(ev.target.result);
+      if(typeof raw !== 'object' || Array.isArray(raw)) {
+        toast('صيغة الملف غير صحيحة','r'); return;
+      }
+
+      // ── تنظيف وتصحيح البيانات المستوردة ──
+      const cleaned = {};
+      let skipped = 0;
+      Object.entries(raw).forEach(([code, p]) => {
+        if(!code || typeof p !== 'object') { skipped++; return; }
+        const name = (p.name||'').trim() || ('منتج '+code);
+        const wp   = parseFloat(p.wholesalePrice)||0;
+        const sp   = parseFloat(p.sellPrice)||0;
+        const qty  = Math.max(0, parseInt(p.count)||0);
+        cleaned[code] = {
+          name,
+          cat:  p.cat  || 'ملابس نسائية',
+          sub:  p.sub  || 'منوعات نسائية',
+          wholesalePrice: wp,
+          sellPrice: sp,
+          count: qty,
+          totalWholesale: wp * qty,
+          totalSell: sp > 0 ? sp * qty : (parseFloat(p.totalSell)||0),
+          origCode: p.origCode || code,
+          createdAt: p.createdAt || new Date().toISOString(),
+          lastScan:  p.lastScan  || new Date().toISOString()
+        };
+      });
+
+      const newCount   = Object.keys(cleaned).length;
+      const totalQty   = Object.values(cleaned).reduce((a,b)=>a+b.count,0);
+      const totalVal   = Object.values(cleaned).reduce((a,b)=>a+b.totalSell,0);
+      const withPrice  = Object.values(cleaned).filter(v=>v.sellPrice>0).length;
+      const existing   = Object.keys(DB).length;
+
+      // ── نافذة تأكيد الاستيراد ──
+      document.getElementById('addTit').innerHTML =
+        `<i data-lucide="upload"></i> استيراد البيانات`;
+      document.getElementById('addBody').innerHTML = `
+        <div style="background:var(--grn-d);border:1px solid rgba(14,203,138,.2);border-radius:var(--rsm);padding:12px 14px;margin-bottom:14px">
+          <div style="font-size:12px;font-weight:700;color:var(--grn);margin-bottom:8px;display:flex;align-items:center;gap:6px">
+            <i data-lucide="check-circle" style="width:14px;height:14px"></i> تم قراءة الملف بنجاح
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+            <div style="background:rgba(0,0,0,.15);border-radius:6px;padding:8px;text-align:center">
+              <div style="font-size:18px;font-weight:700;color:var(--txt)">${newCount.toLocaleString()}</div>
+              <div style="font-size:10px;color:var(--txt2)">صنف مختلف</div>
+            </div>
+            <div style="background:rgba(0,0,0,.15);border-radius:6px;padding:8px;text-align:center">
+              <div style="font-size:18px;font-weight:700;color:var(--txt)">${totalQty.toLocaleString()}</div>
+              <div style="font-size:10px;color:var(--txt2)">إجمالي القطع</div>
+            </div>
+            <div style="background:rgba(0,0,0,.15);border-radius:6px;padding:8px;text-align:center">
+              <div style="font-size:14px;font-weight:700;color:var(--grn)">${Math.round(totalVal).toLocaleString('ar-IQ')}</div>
+              <div style="font-size:10px;color:var(--txt2)">إجمالي البيع (د.ع)</div>
+            </div>
+            <div style="background:rgba(0,0,0,.15);border-radius:6px;padding:8px;text-align:center">
+              <div style="font-size:18px;font-weight:700;color:${withPrice<newCount?'var(--amb)':'var(--grn)'}">${withPrice}</div>
+              <div style="font-size:10px;color:var(--txt2)">منتجات بسعر</div>
+            </div>
+          </div>
+        </div>
+        ${existing > 0 ? `
+        <div style="background:var(--amb-d);border:1px solid rgba(245,158,11,.2);border-radius:var(--rsm);padding:10px 13px;margin-bottom:12px;font-size:11px;color:var(--amb)">
+          <div style="font-weight:700;margin-bottom:5px">⚠️ يوجد ${existing} صنف في التطبيق حالياً — اختر كيف تريد الاستيراد:</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:4px">
+          <label style="display:flex;align-items:center;gap:10px;background:var(--sur);border:1.5px solid var(--bdr2);border-radius:var(--rsm);padding:10px 13px;cursor:pointer">
+            <input type="radio" name="import_mode" value="merge" checked style="accent-color:var(--acc);width:16px;height:16px">
+            <div>
+              <div style="font-size:12px;font-weight:700;color:var(--txt)">إضافة بجانب الموجود</div>
+              <div style="font-size:10px;color:var(--txt3)">يدمج المنتجات الجديدة مع الحالية (في حال تعارض الباركود يُحدَّث)</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;background:var(--sur);border:1.5px solid var(--bdr2);border-radius:var(--rsm);padding:10px 13px;cursor:pointer">
+            <input type="radio" name="import_mode" value="replace" style="accent-color:var(--red);width:16px;height:16px">
+            <div>
+              <div style="font-size:12px;font-weight:700;color:var(--red)">استبدال الكل</div>
+              <div style="font-size:10px;color:var(--txt3)">حذف جميع البيانات الحالية وإضافة الملف الجديد فقط</div>
+            </div>
+          </label>
+        </div>` : '<div style="font-size:11px;color:var(--txt2);margin-bottom:4px">سيتم إضافة جميع المنتجات إلى التطبيق.</div>'}
+      `;
+      document.getElementById('addActs').innerHTML = `
+        <button class="btn btn-gh" onclick="closeAdd()"><i data-lucide="x"></i> إلغاء</button>
+        <button class="btn btn-acc" onclick="doImport(${JSON.stringify(JSON.stringify(cleaned))})">
+          <i data-lucide="upload"></i> استيراد الآن
+        </button>
+      `;
+      document.getElementById('addMbg').classList.add('open');
+      try { lucide.createIcons({nodes:[document.getElementById('addMbg')]}); } catch(er){}
+
+      // Store cleaned data for doImport
+      window._pendingImport = cleaned;
+      // Fix the button
+      document.getElementById('addActs').querySelector('.btn-acc').onclick = () => doImport(window._pendingImport);
+
+    } catch(err) {
+      toast('خطأ في قراءة الملف — تأكد أنه JSON صحيح','r');
+    }
+  };
+  reader.readAsText(file, 'utf-8');
+}
+
+function doImport(data) {
+  if(!data || typeof data !== 'object') return;
+  const mode = document.querySelector('input[name="import_mode"]:checked')?.value || 'merge';
+  if(mode === 'replace') {
+    DB = {};
+  }
+  let added = 0, updated = 0;
+  Object.entries(data).forEach(([code, p]) => {
+    if(DB[code]) updated++;
+    else added++;
+    DB[code] = p;
+  });
+  save();
+  closeAdd();
+  renderStats(); renderRecent();
+  if(curPg === 'products') renderProds();
+  if(curPg === 'labels')   renderLabels();
+  if(curPg === 'report')   renderReport();
+  toast(`✅ تم: ${added} مضاف + ${updated} محدَّث`,'g');
+  window._pendingImport = null;
 }
 function confirmClear() {
   if(!confirm('⚠️ مسح جميع بيانات الجرد؟')) return;
@@ -1969,8 +2109,385 @@ function switchPg(pg) {
 }
 
 // ══════════════════════════════════════
-//  INIT
+//  OXPS / XPS FILE IMPORT
+//  OXPS is a ZIP archive containing XML pages (XPS format)
+//  We use JSZip-compatible approach via raw zip reading in browser
 // ══════════════════════════════════════
+
+function importOXPS(e) {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+
+  toast('جارٍ قراءة الملف...', 'a');
+
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const arrayBuffer = ev.target.result;
+    try {
+      const products = parseOXPSBuffer(arrayBuffer);
+      if (products && Object.keys(products).length > 0) {
+        showOXPSImportPreview(products);
+      } else {
+        toast('لم يتم العثور على منتجات في الملف', 'r');
+      }
+    } catch (err) {
+      console.error('OXPS parse error:', err);
+      toast('خطأ في قراءة الملف: ' + err.message, 'r');
+    }
+  };
+  reader.onerror = () => toast('فشل قراءة الملف', 'r');
+  reader.readAsArrayBuffer(file);
+}
+
+// ── Parse OXPS (ZIP containing XML fpage files) — ASYNC ──
+async function parseOXPSBuffer(buffer) {
+  const bytes = new Uint8Array(buffer);
+  const pages = await extractZipEntries(bytes);
+
+  const allGlyphs = [];
+  // Sort pages numerically
+  const pageEntries = Object.entries(pages)
+    .filter(([name]) => /Documents\/1\/Pages\/\d+\.fpage$/i.test(name))
+    .sort(([a], [b]) => {
+      const na = parseInt(a.match(/(\d+)\.fpage/)?.[1] || 0);
+      const nb = parseInt(b.match(/(\d+)\.fpage/)?.[1] || 0);
+      return na - nb;
+    });
+
+  // Skip last page (usually summary/totals)
+  const dataPages = pageEntries.slice(0, -1);
+
+  let pageNum = 0;
+  for (const [, pageXml] of dataPages) {
+    pageNum++;
+    const glyphs = extractGlyphsFromXML(pageXml, pageNum);
+    allGlyphs.push(...glyphs);
+  }
+
+  if (allGlyphs.length === 0) return {};
+  return buildProductsFromGlyphs(allGlyphs);
+}
+
+// ── ZIP parser with proper async Deflate decompression ──
+async function extractZipEntries(bytes) {
+  const entries = {};
+  let i = 0;
+  const len = bytes.length;
+
+  while (i < len - 4) {
+    // Local file header signature: PK\x03\x04
+    if (bytes[i]===0x50 && bytes[i+1]===0x4B && bytes[i+2]===0x03 && bytes[i+3]===0x04) {
+      const compression = bytes[i+8]  | (bytes[i+9]  << 8);
+      const compSize    = bytes[i+18] | (bytes[i+19] << 8) | (bytes[i+20] << 16) | (bytes[i+21] << 24);
+      const uncompSize  = bytes[i+22] | (bytes[i+23] << 8) | (bytes[i+24] << 16) | (bytes[i+25] << 24);
+      const fnLen       = bytes[i+26] | (bytes[i+27] << 8);
+      const extraLen    = bytes[i+28] | (bytes[i+29] << 8);
+      const fnBytes     = bytes.slice(i+30, i+30+fnLen);
+      const fileName    = new TextDecoder('utf-8').decode(fnBytes);
+      const dataStart   = i + 30 + fnLen + extraLen;
+      const dataEnd     = dataStart + Math.abs(compSize);
+
+      if (/\.fpage$/i.test(fileName)) {
+        let xmlText = '';
+        const chunk = bytes.slice(dataStart, dataEnd);
+
+        if (compression === 0) {
+          // Stored — no compression
+          xmlText = new TextDecoder('utf-8').decode(chunk);
+        } else if (compression === 8) {
+          // Deflate — use DecompressionStream (Chrome 80+, Firefox 113+, Safari 16.4+)
+          try {
+            const ds = new DecompressionStream('deflate-raw');
+            const writer = ds.writable.getWriter();
+            const reader = ds.readable.getReader();
+            writer.write(chunk);
+            writer.close();
+            const chunks = [];
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              chunks.push(value);
+            }
+            const total = chunks.reduce((a,b) => a+b.length, 0);
+            const merged = new Uint8Array(total);
+            let off = 0;
+            for (const c of chunks) { merged.set(c, off); off += c.length; }
+            xmlText = new TextDecoder('utf-8').decode(merged);
+          } catch(e) {
+            // Fallback: try as raw text (won't work for compressed but prevents crash)
+            xmlText = new TextDecoder('utf-8', {fatal:false}).decode(chunk);
+          }
+        }
+        if (xmlText) entries[fileName] = xmlText;
+      }
+
+      i = dataStart + Math.abs(compSize);
+    } else {
+      i++;
+    }
+  }
+  return entries;
+}
+
+// ── Extract Glyphs from XPS page XML ──
+function extractGlyphsFromXML(xml, pageNum) {
+  const glyphs = [];
+  const attrRe = /(\w+)="([^"]*)"/g;
+
+  // Match each self-closing Glyphs element — handles multiline and any attribute order
+  const glyphRe = /<Glyphs\s([\s\S]*?)\/>/g;
+  let m;
+  while ((m = glyphRe.exec(xml)) !== null) {
+    const attrStr = m[1];
+    const attrs = {};
+    let a;
+    while ((a = attrRe.exec(attrStr)) !== null) {
+      attrs[a[1]] = a[2];
+    }
+    attrRe.lastIndex = 0; // reset for next iteration
+    const u  = (attrs.UnicodeString || '').trim();
+    const ox = attrs.OriginX;
+    const oy = attrs.OriginY;
+    if (u && ox && oy) {
+      glyphs.push({ u, x: parseFloat(ox), y: parseFloat(oy), p: pageNum });
+    }
+  }
+
+  // Fallback: DOMParser if regex found nothing
+  if (glyphs.length === 0) {
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(xml, 'text/xml');
+      const nodes = doc.getElementsByTagNameNS('*', 'Glyphs');
+      for (let i = 0; i < nodes.length; i++) {
+        const el = nodes[i];
+        const u  = (el.getAttribute('UnicodeString') || '').trim();
+        const ox = el.getAttribute('OriginX');
+        const oy = el.getAttribute('OriginY');
+        if (u && ox && oy) {
+          glyphs.push({ u, x: parseFloat(ox), y: parseFloat(oy), p: pageNum });
+        }
+      }
+    } catch(e2) {}
+  }
+  return glyphs;
+}
+
+// ── Build products from glyphs using correct X/Y coordinate analysis ──
+function buildProductsFromGlyphs(glyphs) {
+  const products = {};
+
+  // Fix Arabic text stored in visual/reversed order in XPS
+  const LIGS = {
+    'ﻻ':'لا','ﻼ':'لا','ﻹ':'لإ','ﻷ':'لأ','ﻰ':'ى','ﻱ':'ي','ﻴ':'ي','ﻳ':'ي',
+    'ﻦ':'ن','ﻨ':'ن','ﻧ':'ن','ﻢ':'م','ﻤ':'م','ﻣ':'م','ﻡ':'م',
+    'ﻞ':'ل','ﻠ':'ل','ﻟ':'ل','ﻚ':'ك','ﻜ':'ك','ﻛ':'ك',
+    'ﺒ':'ب','ﺑ':'ب','ﺔ':'ة','ﺓ':'ة','ﺸ':'ش','ﺷ':'ش',
+    'ﺴ':'س','ﺳ':'س','ﺮ':'ر','ﺭ':'ر','ﺬ':'ذ','ﺩ':'د',
+    'ﺤ':'ح','ﺣ':'ح','ﺠ':'ج','ﺟ':'ج','ﺘ':'ت','ﺗ':'ت',
+    'ﺎ':'ا','ﺍ':'ا','ﻭ':'و','ﻮ':'و','ﻬ':'ه','ﻫ':'ه',
+    'ﻘ':'ق','ﻗ':'ق','ﻔ':'ف','ﻓ':'ف','ﻐ':'غ','ﻏ':'غ',
+    'ﻌ':'ع','ﻋ':'ع','ﻈ':'ظ','ﻇ':'ظ','ﻄ':'ط','ﻃ':'ط',
+    'ﻀ':'ض','ﺿ':'ض','ﺼ':'ص','ﺻ':'ص','ﺰ':'ز','ﺯ':'ز',
+    'ﺨ':'خ','ﺧ':'خ','ﲏ':'ني','ﲤ':'ما','ﲜ':'جا',
+    'ﳌ':'لم','ﳍ':'له','ﲨ':'جم','ﱃ':'لى','ﱄ':'لي',
+    'ﻲ':'ي','ﻪ':'ه','ﺪ':'د',
+  };
+
+  function fixAr(s) {
+    if (!s) return '';
+    // Apply ligature fixes
+    for (const [k, v] of Object.entries(LIGS)) s = s.split(k).join(v);
+    // Reverse each Arabic word's characters, then reverse word order
+    const words = s.split(/\s+/).filter(Boolean);
+    const fixed = words.map(w => /^[\d\s,.-]+$/.test(w) ? w : w.split('').reverse().join(''));
+    return fixed.reverse().join(' ').trim();
+  }
+
+  function cleanNum(s) {
+    if (!s) return 0;
+    try { return parseFloat(s.replace(/[^\d.]/g,'')) || 0; } catch { return 0; }
+  }
+
+  function getCategory(name) {
+    const n = name;
+    if (/حذاء|نعال|احذية/.test(n)) {
+      if (/اطفال|ولادي/.test(n)) return { cat:'أحذية أطفال', sub:'حذاء أطفال' };
+      if (/بيبي/.test(n))         return { cat:'أحذية بيبي',  sub:'حذاء بيبي' };
+      if (/رجال/.test(n))         return { cat:'شحاطات رجالية', sub:'شحاطة رجالي' };
+      return { cat:'أحذية نسائية', sub:'حذاء نسائي' };
+    }
+    if (/شحاطة|كروكس/.test(n)) {
+      if (/اطفال|ولادي/.test(n)) return { cat:'شحاطات أطفال', sub:'شحاطة أطفال' };
+      if (/رجال/.test(n))        return { cat:'شحاطات رجالية', sub:'شحاطة رجالي' };
+      return { cat:'شحاطات نسائية', sub:'شحاطة نسائي' };
+    }
+    if (/حقيبة|جزدان/.test(n))                    return { cat:'حقائب نسائية', sub:'حقيبة يد' };
+    if (/شال|حجاب|نقاب|ربطة|كفوف|جوارب/.test(n)) return { cat:'إكسسوارات', sub:'منوعات إكسسوارات' };
+    if (/ولادة/.test(n) && /حديث/.test(n))         return { cat:'ملابس ولادة', sub:'منوعات ولادة' };
+    if (/بيبي|قوط/.test(n))                        return { cat:'ملابس بيبي', sub:'منوعات بيبي' };
+    if (/اطفال|ولادي/.test(n))                     return { cat:'ملابس أطفال', sub:'منوعات أطفال' };
+    if (/تراك/.test(n))                            return { cat:'ملابس رياضية', sub:'تراك رياضي' };
+    if (/فستان|عباءة/.test(n))                     return { cat:'ملابس نسائية', sub:'فستان' };
+    if (/بنطلون|جينز/.test(n))                     return { cat:'ملابس نسائية', sub:'بنطلون نسائي' };
+    return { cat:'ملابس نسائية', sub:'منوعات نسائية' };
+  }
+
+  // Group glyphs by page
+  const byPage = {};
+  glyphs.forEach(g => { (byPage[g.p] = byPage[g.p] || []).push(g); });
+
+  for (const pageGlyphs of Object.values(byPage)) {
+    // ── Column X ranges (from actual coordinate analysis) ──
+    // x ~38-75  → الإجمالي (total)
+    // x ~75-100 → سعر المفرد (unit sell price)
+    // x ~100-130→ وحدة
+    // x ~128-165→ الكمية (quantity)
+    // x ~165-220→ اسم المادة (product name) — RTL reversed
+    // x ~218-232→ رقم المادة (barcode/code)
+
+    // Find code items at x~218-232 with numeric 4-7 digit values
+    const codeItems = pageGlyphs
+      .filter(g => g.x >= 218 && g.x <= 232 && /^\d{4,7}$/.test(g.u.replace(/\s/g,'')))
+      .sort((a, b) => a.y - b.y);
+
+    for (let i = 0; i < codeItems.length; i++) {
+      const { y: cy, u: codeRaw } = codeItems[i];
+      const code = codeRaw.replace(/\s/g,'');
+      if (products[code]) continue;
+
+      // Band: this row to next row minus 3 units
+      const yEnd = i+1 < codeItems.length ? codeItems[i+1].y - 3 : cy + 70;
+      const band = pageGlyphs.filter(g => g.y >= cy - 3 && g.y <= Math.min(cy + 65, yEnd));
+
+      // Get text in X range
+      const gx = (x0, x1) =>
+        band.filter(g => g.x >= x0 && g.x <= x1)
+            .sort((a,b) => a.y - b.y || a.x - b.x)
+            .map(g => g.u).join(' ');
+
+      const totalS  = gx(38, 75);    // الإجمالي
+      const priceS  = gx(75, 100);   // سعر المفرد
+      const qtyS    = gx(128, 165);  // الكمية
+      const nameRaw = gx(165, 220);  // الاسم
+
+      // Parse quantity
+      const qtyM = qtyS.replace(/\s/g,'').match(/\d+/);
+      if (!qtyM) continue;
+      const qty = parseInt(qtyM[0]);
+      if (qty <= 0) continue;
+
+      let price = cleanNum(priceS);
+      let total = cleanNum(totalS);
+
+      // Derive missing values
+      if (price === 0 && total > 0 && qty > 0) price = Math.round(total / qty);
+      if (total === 0 && price > 0)             total = price * qty;
+
+      const name = fixAr(nameRaw) || ('منتج ' + code);
+      const { cat, sub } = getCategory(name);
+
+      products[code] = {
+        name, cat, sub,
+        wholesalePrice: 0,
+        sellPrice: price,
+        count: qty,
+        totalWholesale: 0,
+        totalSell: total,
+        origCode: code,
+        createdAt: new Date().toISOString(),
+        lastScan:  new Date().toISOString()
+      };
+    }
+  }
+
+  return products;
+}
+
+// ── Show OXPS import preview modal ──
+function showOXPSImportPreview(parsed) {
+  const newCount  = Object.keys(parsed).length;
+  const totalQty  = Object.values(parsed).reduce((a,b)=>a+b.count,0);
+  const totalVal  = Object.values(parsed).reduce((a,b)=>a+b.totalSell,0);
+  const withPrice = Object.values(parsed).filter(v=>v.sellPrice>0).length;
+  const noPrice   = newCount - withPrice;
+  const existing  = Object.keys(DB).length;
+
+  // Count: how many are new vs update
+  let willAdd = 0, willUpdate = 0;
+  Object.keys(parsed).forEach(code => { DB[code] ? willUpdate++ : willAdd++; });
+
+  document.getElementById('addTit').innerHTML = `<i data-lucide="file-scan"></i> استيراد ملف OXPS`;
+  document.getElementById('addBody').innerHTML = `
+    <div style="background:var(--grn-d);border:1px solid rgba(14,203,138,.2);border-radius:var(--rsm);padding:12px 14px;margin-bottom:14px">
+      <div style="font-size:12px;font-weight:700;color:var(--grn);margin-bottom:8px">✓ تم قراءة الملف وتحليله بنجاح</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <div style="background:rgba(0,0,0,.15);border-radius:6px;padding:7px;text-align:center">
+          <div style="font-size:17px;font-weight:700;color:var(--txt)">${newCount.toLocaleString()}</div>
+          <div style="font-size:9px;color:var(--txt2)">صنف مستخرج</div>
+        </div>
+        <div style="background:rgba(0,0,0,.15);border-radius:6px;padding:7px;text-align:center">
+          <div style="font-size:17px;font-weight:700;color:var(--txt)">${totalQty.toLocaleString()}</div>
+          <div style="font-size:9px;color:var(--txt2)">إجمالي القطع</div>
+        </div>
+        <div style="background:rgba(0,0,0,.15);border-radius:6px;padding:7px;text-align:center">
+          <div style="font-size:13px;font-weight:700;color:var(--grn)">${Math.round(totalVal).toLocaleString('ar-IQ')}</div>
+          <div style="font-size:9px;color:var(--txt2)">إجمالي البيع (د.ع)</div>
+        </div>
+        <div style="background:rgba(0,0,0,.15);border-radius:6px;padding:7px;text-align:center">
+          <div style="font-size:17px;font-weight:700;color:${noPrice>0?'var(--amb)':'var(--grn)'}">${withPrice}</div>
+          <div style="font-size:9px;color:var(--txt2)">منتج بسعر (${noPrice} بدون سعر)</div>
+        </div>
+      </div>
+    </div>
+    ${existing > 0 ? `
+    <div style="background:var(--amb-d);border:1px solid rgba(245,158,11,.2);border-radius:var(--rsm);padding:9px 12px;margin-bottom:10px;font-size:10px;color:var(--amb)">
+      <b>يوجد ${existing} صنف حالياً:</b> ${willAdd} صنف جديد + ${willUpdate} صنف سيُحدَّث
+    </div>
+    <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:4px">
+      <label style="display:flex;align-items:center;gap:9px;background:var(--sur);border:1.5px solid var(--bdr2);border-radius:var(--rsm);padding:9px 12px;cursor:pointer">
+        <input type="radio" name="oxps_mode" value="merge" checked style="accent-color:var(--acc);width:15px;height:15px">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--txt)">دمج مع الموجود</div>
+          <div style="font-size:9px;color:var(--txt3)">إضافة الجديد وتحديث المتعارض</div>
+        </div>
+      </label>
+      <label style="display:flex;align-items:center;gap:9px;background:var(--sur);border:1.5px solid var(--bdr2);border-radius:var(--rsm);padding:9px 12px;cursor:pointer">
+        <input type="radio" name="oxps_mode" value="replace" style="accent-color:var(--red);width:15px;height:15px">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--red)">استبدال الكل</div>
+          <div style="font-size:9px;color:var(--txt3)">حذف الموجود والبدء من الملف فقط</div>
+        </div>
+      </label>
+    </div>` :
+    `<div style="font-size:11px;color:var(--txt2);margin-bottom:6px">سيتم إضافة جميع المنتجات إلى التطبيق.</div>`}
+  `;
+  document.getElementById('addActs').innerHTML = `
+    <button class="btn btn-gh" onclick="closeAdd()">إلغاء</button>
+    <button class="btn btn-acc" id="doOxpsBtn">استيراد الآن</button>
+  `;
+  document.getElementById('addMbg').classList.add('open');
+  try { lucide.createIcons({nodes:[document.getElementById('addTit')]}); } catch(er){}
+
+  document.getElementById('doOxpsBtn').onclick = () => {
+    const mode = document.querySelector('input[name="oxps_mode"]:checked')?.value || 'merge';
+    if (mode === 'replace') DB = {};
+    let added = 0, updated = 0;
+    Object.entries(parsed).forEach(([code, p]) => {
+      if (DB[code]) updated++; else added++;
+      DB[code] = p;
+    });
+    save();
+    closeAdd();
+    renderStats(); renderRecent();
+    if (curPg === 'products') renderProds();
+    if (curPg === 'labels')   renderLabels();
+    if (curPg === 'report')   renderReport();
+    toast(`✅ OXPS: ${added} مضاف + ${updated} محدَّث`, 'g');
+  };
+}
+// ── END OXPS IMPORT ──
 lucide.createIcons();
 if(isLight){
   const btn=document.getElementById('themeBtn');
