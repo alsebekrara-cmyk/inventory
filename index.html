@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>الجرد v4.1</title>
+<title>سنتر الملابس v4.1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
@@ -265,14 +265,9 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
 .rcard{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);padding:11px;margin-bottom:10px}
 .rcard h3{font-size:10px;font-weight:700;color:var(--txt2);margin-bottom:10px;display:flex;align-items:center;gap:5px;text-transform:uppercase;letter-spacing:.4px}
 .rcard h3 svg{width:11px;height:11px;color:var(--acc2)}
-.report-options{display:flex;flex-wrap:wrap;gap:8px}
-.rep-col-opts{display:flex;align-items:center;gap:6px;padding:8px 10px;border:1px solid var(--bdr);border-radius:8px;background:var(--bg3);font-size:10px;color:var(--txt2);cursor:pointer}
-.rep-col-opts input{accent-color:var(--acc);width:14px;height:14px;margin:0}
-.report-option-section{width:100%;margin-bottom:12px}
-.report-option-title{font-size:9px;font-weight:700;color:var(--txt3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.3px}
-.rtbl{width:100%;border-collapse:collapse;font-size:10px;table-layout:fixed}
-.rtbl th{text-align:right;padding:6px 8px;background:var(--bg3);color:var(--txt3);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--bdr);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.rtbl td{padding:7px 8px;border-bottom:1px solid var(--bdr);color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rtbl{width:100%;border-collapse:collapse;font-size:10px}
+.rtbl th{text-align:right;padding:6px 8px;background:var(--bg3);color:var(--txt3);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--bdr)}
+.rtbl td{padding:7px 8px;border-bottom:1px solid var(--bdr);color:var(--txt)}
 .rtbl tr:last-child td{border-bottom:none}
 .rtbl tr:hover td{background:var(--bg3)}
 .mn{font-family:'JetBrains Mono',monospace;font-size:9px;direction:ltr}
@@ -310,39 +305,22 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
   body *{visibility:hidden}
   .print-area,.print-area *{visibility:visible!important}
   .print-area{
-    position:absolute;top:0;left:0;right:0;bottom:0;
+    position:fixed;inset:0;
     display:grid;
-    grid-template-columns:repeat(2,1fr);
-    grid-auto-rows:minmax(60mm, auto);
-    gap:4mm;padding:4mm;background:#fff;
+    grid-template-columns:repeat(3,1fr);
+    gap:3mm;padding:4mm;background:#fff;
     align-content:start;
-    align-items:start;
-    box-sizing:border-box;
   }
   .label-print{
-    border:1px solid #999;border-radius:4mm;
-    width:46mm;
-    max-width:46mm;
-    padding:3.5mm 4mm 3mm;text-align:center;
-    background:#fff;
-    page-break-inside:avoid;
-    break-inside:avoid-column;
-    break-inside:avoid-page;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:flex-start;
-    min-height:58mm;
-    margin:0 auto;
-    overflow:hidden;
+    border:1px solid #ccc;border-radius:3mm;
+    padding:4mm 5mm 3mm;text-align:center;
+    background:#fff;page-break-inside:avoid;
+    break-inside:avoid;
   }
-  .lp-name{min-height:12mm;}
-  .lp-bc-wrap{display:block;width:100%;margin-bottom:2mm;}
-  .lp-bc-wrap svg{width:100%;height:13mm;}
-  .lp-name{margin-bottom:1.5mm;direction:rtl;font-family:Arial,'IBM Plex Sans Arabic',sans-serif;font-size:11pt;line-height:1.1;}
-  .lp-price{margin-bottom:3mm;direction:ltr;font-family:'Courier New',monospace;font-size:14pt;}
-  .lp-bc-wrap svg{width:100%;height:13mm;}
-  .lp-code{letter-spacing:1px;font-family:'Courier New',monospace;margin-top:1mm;font-size:9pt;}
+  .lp-name{margin-bottom:1.5mm;direction:rtl;font-family:Arial,'IBM Plex Sans Arabic',sans-serif}
+  .lp-price{margin-bottom:2mm;direction:ltr;font-family:'Courier New',monospace}
+  .lp-bc-wrap svg{width:42mm;display:block;margin:0 auto}
+  .lp-code{letter-spacing:1px;font-family:'Courier New',monospace;margin-top:1mm}
   /* Report print */
   .print-report{position:fixed;inset:0;background:#fff;padding:8mm;direction:rtl}
   .print-report *{visibility:visible!important}
@@ -373,7 +351,7 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
 <header class="hdr">
   <div class="brand">
     <div class="brand-logo"><i data-lucide="shirt"></i></div>
-    <div><div class="brand-nm">الجرد</div><div class="brand-v">INVENTORY v4.1</div></div>
+    <div><div class="brand-nm">سنتر الملابس</div><div class="brand-v">INVENTORY v4.0</div></div>
   </div>
   <div class="hdr-right">
     <button class="ibtn" onclick="toggleTheme()" id="themeBtn" title="تبديل الثيم" style="width:28px;height:28px"><i data-lucide="sun"></i></button>
@@ -460,10 +438,6 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
     <button class="btn btn-amb" style="font-size:10px;padding:5px 9px" onclick="printReport()"><i data-lucide="printer"></i> طباعة التقرير</button>
   </div>
   <div class="stats-row" id="repStats" style="margin-bottom:10px"></div>
-  <div class="rcard">
-    <h3><i data-lucide="sliders"></i> خيارات التقرير</h3>
-    <div class="report-options" id="repCols"></div>
-  </div>
   <div class="rcard">
     <h3><i data-lucide="pie-chart"></i> حسب الفئة</h3>
     <div style="overflow-x:auto"><table class="rtbl">
@@ -708,91 +682,8 @@ try { DB = JSON.parse(localStorage.getItem('inv_v4') || '{}'); } catch(e){ DB = 
 try { isLight = localStorage.getItem('inv_theme') === 'light'; if(isLight) document.documentElement.classList.add('light'); } catch(e){}
 
 const save = () => { try{ localStorage.setItem('inv_v4', JSON.stringify(DB)); }catch(e){} };
-const fmt = n => Math.round(n||0).toLocaleString('en-US');
-const fmtP = n => {
-  const value = Number(n) || 0;
-  const rounded = Math.round(value * 100) / 100;
-  return rounded.toLocaleString('en-US', {minimumFractionDigits:0,maximumFractionDigits:2});
-};
-const REPORT_COLS = [
-  { key:'code', label:'الباركود', width:'70px', align:'center' },
-  { key:'name', label:'اسم المنتج', width:'240px', align:'right' },
-  { key:'count', label:'العدد', width:'55px', align:'center' },
-  { key:'sellPrice', label:'سعر البيع', width:'80px', align:'right' },
-  { key:'totalSell', label:'إجمالي البيع', width:'90px', align:'right' },
-  { key:'wholesalePrice', label:'سعر الجملة', width:'90px', align:'right' },
-  { key:'totalWholesale', label:'إجمالي الجملة', width:'95px', align:'right' }
-];
-let reportColsState = {};
-try { reportColsState = JSON.parse(localStorage.getItem('reportColsState') || '{}') || {}; } catch(e){ reportColsState = {}; }
-REPORT_COLS.forEach(col => { if (typeof reportColsState[col.key] !== 'boolean') reportColsState[col.key] = true; });
-const REPORT_PRINT_DEFAULTS = {
-  blankCols: {
-    code:false,
-    name:false,
-    count:false,
-    sellPrice:false,
-    totalSell:false,
-    wholesalePrice:false,
-    totalWholesale:false
-  },
-  showSummary: {
-    categories:true,
-    totalPieces:true,
-    totalSell:true,
-    totalWholesale:true,
-    expectedProfit:true
-  }
-};
-let reportPrintState = {
-  blankCols:{...REPORT_PRINT_DEFAULTS.blankCols},
-  showSummary:{...REPORT_PRINT_DEFAULTS.showSummary}
-};
-try {
-  const stored = JSON.parse(localStorage.getItem('reportPrintState') || '{}') || {};
-  reportPrintState.blankCols = {...reportPrintState.blankCols, ...(stored.blankCols || {})};
-  reportPrintState.showSummary = {...reportPrintState.showSummary, ...(stored.showSummary || {})};
-} catch(e) {}
-function saveReportCols(){ localStorage.setItem('reportColsState', JSON.stringify(reportColsState)); }
-function saveReportPrintState(){ localStorage.setItem('reportPrintState', JSON.stringify(reportPrintState)); }
-function sortEntriesByCode(entries){
-  return entries.slice().sort((a,b)=>{
-    const na = parseInt(a[0],10);
-    const nb = parseInt(b[0],10);
-    if(!isNaN(na) && !isNaN(nb)) return na-nb;
-    return String(a[0]).localeCompare(String(b[0]), undefined, {numeric:true});
-  });
-}
-function getVisibleReportCols(){ return REPORT_COLS.filter(col => reportColsState[col.key]); }
-function updateReportColumns(){ document.querySelectorAll('#repCols input[name="reportCol"]').forEach(cb => { reportColsState[cb.value] = cb.checked; }); saveReportCols(); renderReport(); }
-function updateReportBlankCols(){ document.querySelectorAll('#printBlankCols input[type="checkbox"]').forEach(cb => { reportPrintState.blankCols[cb.value] = cb.checked; }); saveReportPrintState(); }
-function updateReportSummaryState(){ document.querySelectorAll('#printSummaryCols input[type="checkbox"]').forEach(cb => { reportPrintState.showSummary[cb.value] = cb.checked; }); saveReportPrintState(); renderReport(); }
-function renderReportOptionsUI(){ const container = document.getElementById('repCols'); if(!container) return;
-  container.innerHTML = `
-    <div class="report-option-section">
-      <div class="report-option-title">أعمدة التقرير</div>
-      <div class="report-options">${REPORT_COLS.map(col => `
-        <label class="rep-col-opts"><input type="checkbox" name="reportCol" value="${col.key}" ${reportColsState[col.key] ? 'checked' : ''} onchange="updateReportColumns()"><span>${col.label}</span></label>
-      `).join('')}</div>
-    </div>
-    <div class="report-option-section">
-      <div class="report-option-title">طباعة حقول فارغة</div>
-      <div class="report-options" id="printBlankCols">${REPORT_COLS.map(col => `
-        <label class="rep-col-opts"><input type="checkbox" value="${col.key}" ${reportPrintState.blankCols[col.key] ? 'checked' : ''} onchange="updateReportBlankCols()"><span>${col.label}</span></label>
-      `).join('')}</div>
-    </div>
-    <div class="report-option-section">
-      <div class="report-option-title">مربعات الملخص</div>
-      <div class="report-options" id="printSummaryCols">
-        <label class="rep-col-opts"><input type="checkbox" value="categories" ${reportPrintState.showSummary.categories ? 'checked' : ''} onchange="updateReportSummaryState()"><span>الأصناف</span></label>
-        <label class="rep-col-opts"><input type="checkbox" value="totalPieces" ${reportPrintState.showSummary.totalPieces ? 'checked' : ''} onchange="updateReportSummaryState()"><span>إجمالي القطع</span></label>
-        <label class="rep-col-opts"><input type="checkbox" value="totalSell" ${reportPrintState.showSummary.totalSell ? 'checked' : ''} onchange="updateReportSummaryState()"><span>إجمالي البيع</span></label>
-        <label class="rep-col-opts"><input type="checkbox" value="totalWholesale" ${reportPrintState.showSummary.totalWholesale ? 'checked' : ''} onchange="updateReportSummaryState()"><span>إجمالي الجملة</span></label>
-        <label class="rep-col-opts"><input type="checkbox" value="expectedProfit" ${reportPrintState.showSummary.expectedProfit ? 'checked' : ''} onchange="updateReportSummaryState()"><span>الربح المتوقع</span></label>
-      </div>
-    </div>
-  `;
-}
+const fmt = n => Math.round(n||0).toLocaleString('ar-IQ');
+const fmtP = n => (n||0).toLocaleString('ar-IQ',{minimumFractionDigits:3,maximumFractionDigits:3});
 
 // ══════════════════════════════════════
 //  BARCODE GENERATION — Sequential 0001 format
@@ -1790,12 +1681,7 @@ function renderProds() {
   let entries=Object.entries(DB);
   if(fCat!=='all') entries=entries.filter(([k,v])=>v.cat===fCat);
   if(q) entries=entries.filter(([k,v])=>v.name.toLowerCase().includes(q)||k.toLowerCase().includes(q)||(v.sub||'').includes(q));
-  entries.sort((a,b)=>{
-    const na = parseInt(a[0],10);
-    const nb = parseInt(b[0],10);
-    if(!isNaN(na) && !isNaN(nb)) return na-nb;
-    return a[0].localeCompare(b[0], undefined, {numeric:true});
-  });
+  entries.sort((a,b)=>a[1].name.localeCompare(b[1].name,'ar'));
   document.getElementById('prodBdg').textContent=entries.length;
   if(!entries.length){
     el.innerHTML=`<div class="empty"><div class="empty-ico"><i data-lucide="package-x"></i></div><h3>${q?'لا نتائج':'لا توجد منتجات'}</h3><p>${q?'جرب كلمة مختلفة':'ابدأ بمسح باركود'}</p></div>`;
@@ -1808,18 +1694,11 @@ function renderProds() {
 function setFCat(cat){ fCat=cat; renderProds(); }
 
 function renderLabels() {
-  const el=document.getElementById('labelsGrid');
-  let entries=Object.entries(DB);
+  const el=document.getElementById('labelsGrid'), entries=Object.entries(DB);
   if(!entries.length){
     el.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="empty-ico"><i data-lucide="tag-off"></i></div><h3>لا توجد منتجات</h3></div>`;
     lucide.createIcons({nodes:[el]}); return;
   }
-  entries.sort((a,b)=>{
-    const na = parseInt(a[0],10);
-    const nb = parseInt(b[0],10);
-    if(!isNaN(na) && !isNaN(nb)) return na-nb;
-    return a[0].localeCompare(b[0], undefined, {numeric:true});
-  });
   el.innerHTML=entries.map(([code,p], idx)=>
     `<div class="lcard" data-code="${code}" onclick="showPrintModal('${code}')">
       <div class="lcard-qty">${p.count} قطعة</div>
@@ -1841,66 +1720,47 @@ function renderLabels() {
 }
 
 function renderReport() {
-  const items=Object.values(DB);
+  const items=Object.values(DB), entries=Object.entries(DB);
   const tw=items.reduce((a,b)=>a+b.totalWholesale,0);
   const ts=items.reduce((a,b)=>a+b.totalSell,0);
   const tot=items.reduce((a,b)=>a+b.count,0);
   const mg=tw>0?Math.round((ts-tw)/tw*100):0;
   document.getElementById('repStats').innerHTML=`
-    <div class="sc cb"><div class="sc-ico"><i data-lucide="archive"></i></div><div class="sc-lbl">الأصناف</div><div class="sc-val">${fmt(items.length)}</div></div>
-    <div class="sc cp"><div class="sc-ico"><i data-lucide="layers"></i></div><div class="sc-lbl">إجمالي القطع</div><div class="sc-val">${fmt(tot)}</div></div>
-    <div class="sc ca"><div class="sc-ico"><i data-lucide="shopping-cart"></i></div><div class="sc-lbl">إجمالي البيع</div><div class="sc-val">${fmtP(ts)}</div></div>
-    <div class="sc cg"><div class="sc-ico"><i data-lucide="archive"></i></div><div class="sc-lbl">إجمالي الجملة</div><div class="sc-val">${fmtP(tw)}</div></div>
-    <div class="sc ch"><div class="sc-ico"><i data-lucide="trending-up"></i></div><div class="sc-lbl">الربح المتوقع</div><div class="sc-val">${fmt(ts-tw)}</div></div>
+    <div class="sc cp"><div class="sc-ico"><i data-lucide="layers"></i></div><div class="sc-lbl">القطع</div><div class="sc-val">${tot.toLocaleString()}</div></div>
+    <div class="sc cb"><div class="sc-ico"><i data-lucide="archive"></i></div><div class="sc-lbl">الأصناف</div><div class="sc-val">${items.length}</div></div>
+    <div class="sc cg"><div class="sc-ico"><i data-lucide="percent"></i></div><div class="sc-lbl">هامش الربح</div><div class="sc-val">${mg}%</div></div>
+    <div class="sc ca"><div class="sc-ico"><i data-lucide="trending-up"></i></div><div class="sc-lbl">الربح</div><div class="sc-val" style="font-size:11px">${fmt(ts-tw)}</div></div>
   `;
-  if(document.getElementById('repCols')) renderReportOptionsUI();
-  lucide.createIcons({nodes:[document.getElementById('repStats'), document.getElementById('repCols')]});
+  lucide.createIcons({nodes:[document.getElementById('repStats')]});
   const bycat={};
   items.forEach(p=>{ if(!bycat[p.cat]) bycat[p.cat]={items:0,count:0,w:0,s:0}; bycat[p.cat].items++;bycat[p.cat].count+=p.count;bycat[p.cat].w+=p.totalWholesale;bycat[p.cat].s+=p.totalSell; });
   document.getElementById('catBody').innerHTML=Object.entries(bycat).map(([cat,v])=>
-    `<tr><td>${CEM[cat]||''} ${cat}</td><td>${fmt(v.items)}</td><td>${fmt(v.count)}</td><td>${fmt(v.w)}</td><td>${fmt(v.s)}</td><td class="${v.s-v.w>=0?'pos':'neg'}">${fmt(v.s-v.w)}</td></tr>`
+    `<tr><td>${CEM[cat]||''} ${cat}</td><td>${v.items}</td><td>${v.count.toLocaleString()}</td><td>${fmt(v.w)}</td><td>${fmt(v.s)}</td><td class="${v.s-v.w>=0?'pos':'neg'}">${fmt(v.s-v.w)}</td></tr>`
   ).join('')||'<tr><td colspan="6" style="text-align:center;padding:14px;color:var(--txt3)">لا توجد بيانات</td></tr>';
-  let visibleCols = getVisibleReportCols();
-  const entries = sortEntriesByCode(Object.entries(DB));
-  if (!visibleCols.length) visibleCols = REPORT_COLS;
-  const headers = visibleCols.map(col => `<th style="${col.width!=='auto'?'width:'+col.width+';':''}text-align:${col.align}">${col.label}</th>`).join('');
-  const rows = entries.map(([code,p])=>
-    `<tr>${visibleCols.map(col => {
-      switch(col.key){
-        case 'code': return `<td class="mn" style="direction:ltr;text-align:${col.align}">${code}</td>`;
-        case 'name': return `<td style="font-weight:600;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:${col.align}">${p.name}</td>`;
-        case 'count': return `<td style="text-align:${col.align};font-weight:700">${fmt(p.count)}</td>`;
-        case 'sellPrice': return `<td style="text-align:${col.align};color:var(--grn);font-weight:700">${fmtP(p.sellPrice)}</td>`;
-        case 'totalSell': return `<td style="text-align:${col.align};color:var(--grn);font-weight:700">${fmtP(p.totalSell)}</td>`;
-        case 'wholesalePrice': return `<td style="text-align:${col.align}">${fmtP(p.wholesalePrice)}</td>`;
-        case 'totalWholesale': return `<td style="text-align:${col.align}">${fmtP(p.totalWholesale)}</td>`;
-        default: return `<td style="text-align:${col.align}">—</td>`;
-      }
-    }).join('')}</tr>`
-  ).join('');
-  const headerRow = document.getElementById('repHdr');
-  if(headerRow) headerRow.innerHTML = headers;
-  document.getElementById('allBody').innerHTML = rows || `<tr><td colspan="${Math.max(1, visibleCols.length)}" style="text-align:center;padding:14px;color:var(--txt3)">لا توجد بيانات</td></tr>`;
+  // Columns: باركود | اسم | عدد | سعر البيع | إجمالي البيع | سعر الجملة | إجمالي الجملة
   const totalSell = entries.reduce((a,[,p])=>a+p.totalSell,0);
   const totalWhole = entries.reduce((a,[,p])=>a+p.totalWholesale,0);
-  const summaryCols = visibleCols.filter(c=>c.key==='code'||c.key==='name');
-  const footerCells = visibleCols.map(col => {
-    switch(col.key){
-      case 'code':
-      case 'name':
-        return '';
-      case 'count': return `<td style="text-align:center;font-weight:700">${fmt(tot)}</td>`;
-      case 'sellPrice': return `<td class="sum-grn">—</td>`;
-      case 'totalSell': return `<td class="sum-grn">${fmtP(totalSell)}</td>`;
-      case 'wholesalePrice': return `<td>—</td>`;
-      case 'totalWholesale': return `<td>${fmtP(totalWhole)}</td>`;
-      default: return `<td>—</td>`;
-    }
-  });
-  const summaryCell = `<td colspan="${Math.max(1, summaryCols.length)}" style="text-align:right;font-size:10px;color:var(--txt3)">المجموع الكلي</td>`;
-  const footerRow = summaryCols.length ? [summaryCell, ...footerCells.filter((_, idx) => visibleCols[idx].key!=='code' && visibleCols[idx].key!=='name')] : footerCells;
+  document.getElementById('allBody').innerHTML=entries.map(([code,p])=>
+    `<tr>
+      <td class="mn" style="direction:ltr">${code}</td>
+      <td style="font-weight:600;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</td>
+      <td style="text-align:center;font-weight:700">${p.count}</td>
+      <td style="color:var(--grn);font-weight:700">${fmtP(p.sellPrice)}</td>
+      <td style="color:var(--grn);font-weight:700">${fmtP(p.totalSell)}</td>
+      <td>${fmtP(p.wholesalePrice)}</td>
+      <td>${fmtP(p.totalWholesale)}</td>
+    </tr>`
+  ).join('')||'<tr><td colspan="7" style="text-align:center;padding:14px;color:var(--txt3)">لا توجد بيانات</td></tr>';
+  // Totals footer
   const tfoot = document.getElementById('repTfoot');
-  if(tfoot) tfoot.innerHTML = `<tr>${footerRow.join('')}</tr>`;
+  if(tfoot) tfoot.innerHTML=`
+    <tr>
+      <td colspan="3" style="text-align:right;font-size:10px;color:var(--txt3)">المجموع الكلي</td>
+      <td class="sum-grn">—</td>
+      <td class="sum-grn">${fmtP(totalSell)}</td>
+      <td>—</td>
+      <td>${fmtP(totalWhole)}</td>
+    </tr>`;
 }
 
 function renderSettings(){
@@ -1961,85 +1821,75 @@ function filterLabels() {
 //  PRINT REPORT
 // ══════════════════════════════════════
 function printReport() {
-  let entries = sortEntriesByCode(Object.entries(DB));
+  const entries = Object.entries(DB);
   if(!entries.length){ toast('لا توجد بيانات للطباعة','a'); return; }
   const totalSell  = entries.reduce((a,[,p])=>a+p.totalSell,0);
   const totalWhole = entries.reduce((a,[,p])=>a+p.totalWholesale,0);
   const totalCount = entries.reduce((a,[,p])=>a+p.count,0);
-  const now = new Intl.DateTimeFormat('ar-IQ',{day:'2-digit',month:'2-digit',year:'numeric',numberingSystem:'latn'}).format(new Date());
-  let visibleCols = getVisibleReportCols();
-  if (!visibleCols.length) visibleCols = REPORT_COLS;
-  const headers = visibleCols.map(col => `<th style="${col.width!=='auto'?'width:'+col.width+';':''}text-align:${col.align}">${col.label}</th>`).join('');
-  const rows = entries.map(([code,p],i)=>{
-    const rowCells = visibleCols.map(col => {
-      const blank = !!reportPrintState.blankCols[col.key];
-      switch(col.key){
-        case 'code': return `<td style="direction:ltr;font-family:'Courier New',monospace;text-align:${col.align};font-size:9pt;border:1px solid #bbb">${blank?'':code}</td>`;
-        case 'name': return `<td style="font-weight:700;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:${col.align};border:1px solid #bbb">${blank?'':p.name}</td>`;
-        case 'count': return `<td style="text-align:${col.align};font-weight:700;border:1px solid #bbb">${blank?'':fmt(p.count)}</td>`;
-        case 'sellPrice': return `<td style="text-align:${col.align};color:#007a50;font-weight:700;border:1px solid #bbb">${blank?'':fmtP(p.sellPrice)}</td>`;
-        case 'totalSell': return `<td style="text-align:${col.align};color:#007a50;border:1px solid #bbb">${blank?'':fmtP(p.totalSell)}</td>`;
-        case 'wholesalePrice': return `<td style="text-align:${col.align};border:1px solid #bbb">${blank?'':fmtP(p.wholesalePrice)}</td>`;
-        case 'totalWholesale': return `<td style="text-align:${col.align};border:1px solid #bbb">${blank?'':fmtP(p.totalWholesale)}</td>`;
-        default: return `<td style="text-align:${col.align};border:1px solid #bbb">—</td>`;
-      }
-    });
-    return `<tr style="background:${i%2===0?'#fff':'#f7f8ff'}">${rowCells.join('')}</tr>`;
-  }).join('');
-  const footerCells = visibleCols.map(col=>{
-    switch(col.key){
-      case 'code':
-      case 'name':
-        return '';
-      case 'count': return `<td style="text-align:center;font-weight:700;border:1px solid #bbb">${fmt(totalCount)}</td>`;
-      case 'sellPrice': return `<td style="text-align:right;border:1px solid #bbb">—</td>`;
-      case 'totalSell': return `<td style="text-align:right;border:1px solid #bbb;color:#007a50;font-weight:700">${fmtP(totalSell)}</td>`;
-      case 'wholesalePrice': return `<td style="text-align:right;border:1px solid #bbb">—</td>`;
-      case 'totalWholesale': return `<td style="text-align:right;border:1px solid #bbb">${fmtP(totalWhole)}</td>`;
-      default: return `<td style="text-align:right;border:1px solid #bbb">—</td>`;
-    }
-  });
-  const summaryCols = visibleCols.filter(c=>c.key==='code'||c.key==='name');
-  const summaryCell = `<td colspan="${Math.max(1, summaryCols.length)}" style="text-align:right;font-size:10px;color:#555;border:1px solid #bbb">المجموع الكلي</td>`;
-  const footerRow = summaryCols.length ? [summaryCell, ...footerCells.filter((_, idx) => visibleCols[idx].key!=='code' && visibleCols[idx].key!=='name')] : footerCells;
-  const summaryBlocks = [];
-  if(reportPrintState.showSummary.categories) summaryBlocks.push(`<div class="sum-box"><div class="v">${fmt(entries.length)}</div><div class="l">الأصناف</div></div>`);
-  if(reportPrintState.showSummary.totalPieces) summaryBlocks.push(`<div class="sum-box"><div class="v">${fmt(totalCount)}</div><div class="l">إجمالي القطع</div></div>`);
-  if(reportPrintState.showSummary.totalSell) summaryBlocks.push(`<div class="sum-box"><div class="v" style="color:#007a50">${fmtP(totalSell)}</div><div class="l">إجمالي البيع</div></div>`);
-  if(reportPrintState.showSummary.totalWholesale) summaryBlocks.push(`<div class="sum-box"><div class="v">${fmtP(totalWhole)}</div><div class="l">إجمالي الجملة</div></div>`);
-  if(reportPrintState.showSummary.expectedProfit) summaryBlocks.push(`<div class="sum-box"><div class="v" style="color:#007a50">${fmtP(totalSell-totalWhole)}</div><div class="l">الربح المتوقع</div></div>`);
-  const summaryHtml = summaryBlocks.length ? `<div class="summary">${summaryBlocks.join('')}</div>` : '';
+  const now = new Date().toLocaleDateString('ar-IQ');
+  const rows = entries.map(([code,p],i)=>`
+    <tr style="background:${i%2===0?'#fff':'#f7f8ff'}">
+      <td style="font-family:'Courier New',monospace;direction:ltr;font-size:9pt;border:1px solid #bbb;text-align:center">${code}</td>
+      <td style="font-weight:700;border:1px solid #bbb">${p.name}</td>
+      <td style="text-align:center;font-weight:700;border:1px solid #bbb">${p.count}</td>
+      <td style="text-align:right;color:#007a50;font-weight:700;border:1px solid #bbb">${fmtP(p.sellPrice)}</td>
+      <td style="text-align:right;color:#007a50;border:1px solid #bbb">${fmtP(p.totalSell)}</td>
+      <td style="text-align:right;border:1px solid #bbb">${fmtP(p.wholesalePrice)}</td>
+      <td style="text-align:right;border:1px solid #bbb">${fmtP(p.totalWholesale)}</td>
+    </tr>`).join('');
   const html = `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">
   <style>
     *{box-sizing:border-box}
     body{font-family:Arial,sans-serif;direction:rtl;padding:8mm;font-size:9pt;color:#111;margin:0}
     .header{text-align:center;margin-bottom:5mm;border-bottom:2px solid #2a2a4a;padding-bottom:4mm}
-    h1{font-size:14pt;font-weight:700;margin:0 0 1mm}
+    h1{font-size:13pt;font-weight:700;margin:0 0 1mm}
     .sub{font-size:8.5pt;color:#555;margin:0}
     .summary{display:flex;gap:6mm;justify-content:center;margin:3mm 0 5mm;flex-wrap:wrap}
-    .sum-box{border:1px solid #2a2a4a;border-radius:3mm;padding:2mm 5mm;text-align:center;min-width:60px;}
+    .sum-box{border:1px solid #2a2a4a;border-radius:3mm;padding:2mm 5mm;text-align:center}
     .sum-box .v{font-size:12pt;font-weight:700;color:#2a2a4a}
     .sum-box .l{font-size:7pt;color:#777}
-    table{width:100%;border-collapse:collapse;margin-top:6mm}
+    table{width:100%;border-collapse:collapse;border:2px solid #2a2a4a}
     thead tr{background:#2a2a4a}
-    th{color:#fff;padding:2.5mm 3mm;text-align:right;font-size:9pt;font-weight:700;border:1px solid #1a1a3a}
-    td{padding:2.5mm 3mm;border:1px solid #bbb;font-size:9pt;word-break:break-word}
-    tbody tr:nth-child(even){background:#f7f8ff}
+    th{color:#fff;padding:2mm 2.5mm;text-align:right;font-size:8.5pt;font-weight:700;border:1px solid #1a1a3a}
+    td{padding:2mm 2.5mm;border:1px solid #bbb;font-size:8.5pt}
     tfoot tr{background:#e8e8f5}
-    .footer{text-align:center;margin-top:6mm;font-size:8pt;color:#666;border-top:1px solid #ddd;padding-top:3mm}
+    tfoot td{font-weight:700;font-size:9pt;border:1px solid #2a2a4a;color:#2a2a4a}
+    tfoot td.gs{color:#007a50}
+    .footer{text-align:center;margin-top:5mm;font-size:8pt;color:#999;border-top:1px solid #ddd;padding-top:3mm}
     @page{margin:8mm;size:A4 landscape}
   </style></head><body>
   <div class="header">
-    <h1>🏬 الجرد — تقرير الجرد</h1>
+    <h1>🏬 سنتر الملابس — تقرير جرد المخزون</h1>
     <div class="sub">تاريخ التقرير: ${now}</div>
   </div>
-  ${summaryHtml}
+  <div class="summary">
+    <div class="sum-box"><div class="v">${entries.length}</div><div class="l">الأصناف</div></div>
+    <div class="sum-box"><div class="v">${totalCount.toLocaleString()}</div><div class="l">إجمالي القطع</div></div>
+    <div class="sum-box"><div class="v" style="color:#007a50">${fmtP(totalSell)}</div><div class="l">إجمالي البيع</div></div>
+    <div class="sum-box"><div class="v">${fmtP(totalWhole)}</div><div class="l">إجمالي الجملة</div></div>
+    <div class="sum-box"><div class="v" style="color:#007a50">${fmtP(totalSell-totalWhole)}</div><div class="l">الربح المتوقع</div></div>
+  </div>
   <table>
-    <thead><tr>${headers}</tr></thead>
+    <thead><tr>
+      <th style="width:60px">الباركود</th>
+      <th>اسم المنتج</th>
+      <th style="width:40px;text-align:center">العدد</th>
+      <th style="width:70px">سعر البيع</th>
+      <th style="width:80px">إجمالي البيع</th>
+      <th style="width:70px">سعر الجملة</th>
+      <th style="width:80px">إجمالي الجملة</th>
+    </tr></thead>
     <tbody>${rows}</tbody>
-    <tfoot><tr>${footerRow.join('')}</tr></tfoot>
+    <tfoot><tr>
+      <td colspan="2" style="text-align:right">المجموع الكلي</td>
+      <td style="text-align:center;font-weight:700">${totalCount.toLocaleString()}</td>
+      <td>—</td>
+      <td class="gs">${fmtP(totalSell)}</td>
+      <td>—</td>
+      <td>${fmtP(totalWhole)}</td>
+    </tr></tfoot>
   </table>
-  <div class="footer">الجرد · نظام الجرد الذكي · ${now}</div>
+  <div class="footer">سنتر الملابس · نظام الجرد الذكي · ${now}</div>
   </body></html>`;
   const w = window.open('','_blank');
   w.document.write(html); w.document.close();
@@ -2062,10 +1912,9 @@ function delProd(code,e) {
 function printAllLabels() {
   const entries=Object.entries(DB);
   if(!entries.length){ toast('لا توجد منتجات للطباعة','a'); return; }
-  const sortedEntries=sortEntriesByCode(entries);
   const area=document.getElementById('printArea');
   area.style.display='grid'; area.innerHTML='';
-  sortedEntries.forEach(([code,p])=>{
+  entries.forEach(([code,p])=>{
     const bcH = (lblStyle.bcH||12);
     const lbl=document.createElement('div');
     lbl.className='label-print';
@@ -2077,7 +1926,7 @@ function printAllLabels() {
     area.appendChild(lbl);
   });
   setTimeout(()=>{
-    sortedEntries.forEach(([code])=>{
+    entries.forEach(([code])=>{
       try{ JsBarcode(`.lp-bc-all-${code}`,String(code),{format:'CODE128',lineColor:'#000',background:'transparent',width:1.3,height:(lblStyle.bcH||12)*3.78,displayValue:false,margin:0}); }catch(e){}
     });
     setTimeout(()=>{ window.print(); setTimeout(()=>{ area.style.display='none'; area.innerHTML=''; },600); },250);
@@ -2089,8 +1938,7 @@ function printAllLabels() {
 // ══════════════════════════════════════
 function exportCSV() {
   const rows=[['\uFEFFاسم المنتج','الفئة','الفئة الفرعية','الباركود','العدد','سعر الجملة','سعر البيع','إجمالي الجملة','إجمالي البيع','الربح']];
-  const sortedEntries = sortEntriesByCode(Object.entries(DB));
-  sortedEntries.forEach(([code,p])=>rows.push([p.name,p.cat,p.sub||'',code,p.count,p.wholesalePrice,p.sellPrice,p.totalWholesale,p.totalSell,p.totalSell-p.totalWholesale]));
+  Object.entries(DB).forEach(([code,p])=>rows.push([p.name,p.cat,p.sub||'',code,p.count,p.wholesalePrice,p.sellPrice,p.totalWholesale,p.totalSell,p.totalSell-p.totalWholesale]));
   const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\r\n');
   const a=document.createElement('a');
   a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
@@ -2274,10 +2122,10 @@ function importOXPS(e) {
   toast('جارٍ قراءة الملف...', 'a');
 
   const reader = new FileReader();
-  reader.onload = async function(ev) {
+  reader.onload = function(ev) {
     const arrayBuffer = ev.target.result;
     try {
-      const products = await parseOXPSBuffer(arrayBuffer);
+      const products = parseOXPSBuffer(arrayBuffer);
       if (products && Object.keys(products).length > 0) {
         showOXPSImportPreview(products);
       } else {
@@ -2285,7 +2133,7 @@ function importOXPS(e) {
       }
     } catch (err) {
       console.error('OXPS parse error:', err);
-      toast('خطأ في قراءة الملف: ' + (err.message || err), 'r');
+      toast('خطأ في قراءة الملف: ' + err.message, 'r');
     }
   };
   reader.onerror = () => toast('فشل قراءة الملف', 'r');
@@ -2324,52 +2172,31 @@ async function parseOXPSBuffer(buffer) {
 // ── ZIP parser with proper async Deflate decompression ──
 async function extractZipEntries(bytes) {
   const entries = {};
+  let i = 0;
   const len = bytes.length;
 
-  const readU16 = off => bytes[off] | (bytes[off + 1] << 8);
-  const readU32 = off => (bytes[off] | (bytes[off + 1] << 8) | (bytes[off + 2] << 16) | (bytes[off + 3] << 24)) >>> 0;
+  while (i < len - 4) {
+    // Local file header signature: PK\x03\x04
+    if (bytes[i]===0x50 && bytes[i+1]===0x4B && bytes[i+2]===0x03 && bytes[i+3]===0x04) {
+      const compression = bytes[i+8]  | (bytes[i+9]  << 8);
+      const compSize    = bytes[i+18] | (bytes[i+19] << 8) | (bytes[i+20] << 16) | (bytes[i+21] << 24);
+      const uncompSize  = bytes[i+22] | (bytes[i+23] << 8) | (bytes[i+24] << 16) | (bytes[i+25] << 24);
+      const fnLen       = bytes[i+26] | (bytes[i+27] << 8);
+      const extraLen    = bytes[i+28] | (bytes[i+29] << 8);
+      const fnBytes     = bytes.slice(i+30, i+30+fnLen);
+      const fileName    = new TextDecoder('utf-8').decode(fnBytes);
+      const dataStart   = i + 30 + fnLen + extraLen;
+      const dataEnd     = dataStart + Math.abs(compSize);
 
-  const findEOCD = () => {
-    for (let j = len - 22; j >= 0; j--) {
-      if (bytes[j] === 0x50 && bytes[j + 1] === 0x4B && bytes[j + 2] === 0x05 && bytes[j + 3] === 0x06) {
-        return j;
-      }
-    }
-    return -1;
-  };
-
-  const eocdOffset = findEOCD();
-  if (eocdOffset < 0) return entries;
-
-  const cdSize = readU32(eocdOffset + 12);
-  const cdOffset = readU32(eocdOffset + 16);
-  let pos = cdOffset;
-
-  while (pos + 46 <= len) {
-    if (bytes[pos] !== 0x50 || bytes[pos + 1] !== 0x4B || bytes[pos + 2] !== 0x01 || bytes[pos + 3] !== 0x02) break;
-
-    const compression = readU16(pos + 10);
-    const compSize = readU32(pos + 20);
-    const fileNameLen = readU16(pos + 28);
-    const extraLen = readU16(pos + 30);
-    const commentLen = readU16(pos + 32);
-    const localHeaderOffset = readU32(pos + 42);
-    const fileName = new TextDecoder('utf-8').decode(bytes.slice(pos + 46, pos + 46 + fileNameLen));
-
-    if (/\.fpage$/i.test(fileName) && localHeaderOffset + 30 <= len) {
-      const lhFlags = readU16(localHeaderOffset + 6);
-      const lhFnLen = readU16(localHeaderOffset + 26);
-      const lhExtraLen = readU16(localHeaderOffset + 28);
-      const dataStart = localHeaderOffset + 30 + lhFnLen + lhExtraLen;
-      const dataEnd = dataStart + compSize;
-
-      if (dataStart < len && dataEnd <= len && dataEnd > dataStart) {
-        const chunk = bytes.slice(dataStart, dataEnd);
+      if (/\.fpage$/i.test(fileName)) {
         let xmlText = '';
+        const chunk = bytes.slice(dataStart, dataEnd);
 
         if (compression === 0) {
+          // Stored — no compression
           xmlText = new TextDecoder('utf-8').decode(chunk);
         } else if (compression === 8) {
+          // Deflate — use DecompressionStream (Chrome 80+, Firefox 113+, Safari 16.4+)
           try {
             const ds = new DecompressionStream('deflate-raw');
             const writer = ds.writable.getWriter();
@@ -2382,24 +2209,24 @@ async function extractZipEntries(bytes) {
               if (done) break;
               chunks.push(value);
             }
-            const total = chunks.reduce((acc, part) => acc + part.length, 0);
+            const total = chunks.reduce((a,b) => a+b.length, 0);
             const merged = new Uint8Array(total);
             let off = 0;
             for (const c of chunks) { merged.set(c, off); off += c.length; }
             xmlText = new TextDecoder('utf-8').decode(merged);
-          } catch (e) {
-            console.warn('Failed to decompress OXPS page', fileName, e);
+          } catch(e) {
+            // Fallback: try as raw text (won't work for compressed but prevents crash)
             xmlText = new TextDecoder('utf-8', {fatal:false}).decode(chunk);
           }
         }
-
         if (xmlText) entries[fileName] = xmlText;
       }
+
+      i = dataStart + Math.abs(compSize);
+    } else {
+      i++;
     }
-
-    pos += 46 + fileNameLen + extraLen + commentLen;
   }
-
   return entries;
 }
 
@@ -2451,62 +2278,47 @@ function extractGlyphsFromXML(xml, pageNum) {
 function buildProductsFromGlyphs(glyphs) {
   const products = {};
 
-  // Fix Arabic text stored in visual/reversed order in XPS
+  // Arabic ligature table for XPS text
   const LIGS = {
     'ﻻ':'لا','ﻼ':'لا','ﻹ':'لإ','ﻷ':'لأ','ﻰ':'ى','ﻱ':'ي','ﻴ':'ي','ﻳ':'ي',
     'ﻦ':'ن','ﻨ':'ن','ﻧ':'ن','ﻢ':'م','ﻤ':'م','ﻣ':'م','ﻡ':'م',
     'ﻞ':'ل','ﻠ':'ل','ﻟ':'ل','ﻚ':'ك','ﻜ':'ك','ﻛ':'ك',
     'ﺒ':'ب','ﺑ':'ب','ﺔ':'ة','ﺓ':'ة','ﺸ':'ش','ﺷ':'ش',
-    'ﺴ':'س','ﺳ':'س','ﺮ':'ر','ﺭ':'ر','ﺬ':'ذ','ﺩ':'د',
+    'ﺴ':'س','ﺳ':'س','ﺮ':'ر','ﺭ':'ر','ﺬ':'ذ','ﺩ':'د','ﺪ':'د',
     'ﺤ':'ح','ﺣ':'ح','ﺠ':'ج','ﺟ':'ج','ﺘ':'ت','ﺗ':'ت',
     'ﺎ':'ا','ﺍ':'ا','ﻭ':'و','ﻮ':'و','ﻬ':'ه','ﻫ':'ه',
     'ﻘ':'ق','ﻗ':'ق','ﻔ':'ف','ﻓ':'ف','ﻐ':'غ','ﻏ':'غ',
     'ﻌ':'ع','ﻋ':'ع','ﻈ':'ظ','ﻇ':'ظ','ﻄ':'ط','ﻃ':'ط',
     'ﻀ':'ض','ﺿ':'ض','ﺼ':'ص','ﺻ':'ص','ﺰ':'ز','ﺯ':'ز',
     'ﺨ':'خ','ﺧ':'خ','ﲏ':'ني','ﲤ':'ما','ﲜ':'جا',
-    'ﳌ':'لم','ﳍ':'له','ﲨ':'جم','ﱃ':'لى','ﱄ':'لي',
-    'ﻲ':'ي','ﻪ':'ه','ﺪ':'د',
+    'ﳌ':'لم','ﳍ':'له','ﲨ':'جم','ﱃ':'لى','ﱄ':'لي','ﻲ':'ي','ﻪ':'ه',
   };
 
   function fixAr(s) {
     if (!s) return '';
-    s = String(s).normalize('NFKC');
     for (const [k, v] of Object.entries(LIGS)) s = s.split(k).join(v);
-    const words = s.trim().split(/\s+/).filter(Boolean);
-    const isArabic = w => /^[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(w);
-    const shouldReverse = w => /^[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF0-9\u0660-\u0669\u06F0-\u06F9.,-]+$/.test(w);
-    const fixed = words.map(w => shouldReverse(w) ? [...w].reverse().join('') : w);
-    if (fixed.length > 1) {
-      const firstIsArabic = isArabic(fixed[0]);
-      const lastIsArabic = isArabic(fixed[fixed.length - 1]);
-      if (!firstIsArabic && lastIsArabic) fixed.reverse();
-    }
-    return fixed.join(' ').trim();
+    const words = s.split(/\s+/).filter(Boolean);
+    const fixed = words.map(w => /^[\d\s,.\/-]+$/.test(w) ? w : w.split('').reverse().join(''));
+    const result = fixed.reverse().join(' ').trim();
+    // Remove duplicate consecutive words (e.g. "والدي والدي" → "والدي")
+    return result.replace(/(\b\S+\b)(\s+\1)+/g, '$1').trim();
   }
 
-  function normalizeDigits(s) {
-    return String(s)
-      .replace(/[\u0660-\u0669]/g, d => String.fromCharCode(d.charCodeAt(0) - 0x0660 + 48))
-      .replace(/[\u06F0-\u06F9]/g, d => String.fromCharCode(d.charCodeAt(0) - 0x06F0 + 48));
-  }
-
-  function cleanNum(s) {
+  // ── KEY FIX: Space is thousand separator in Arabic accounting software ──
+  // "18 000" = 18,000  (NOT 18×1000×1000)
+  // "2 916 000" = 2,916,000
+  function cleanPrice(s) {
     if (!s) return 0;
-    try {
-      const normalized = normalizeDigits(String(s))
-        .replace(/[\u066B\u066C]/g, '.')
-        .replace(/[^\d.]/g, '');
-      return parseFloat(normalized) || 0;
-    } catch (e) {
-      return 0;
-    }
+    // Remove ALL spaces (they are thousand separators), then parse
+    const clean = s.replace(/\s+/g, '').replace(/,/g, '');
+    return parseFloat(clean) || 0;
   }
 
   function getCategory(name) {
     const n = name;
     if (/حذاء|نعال|احذية/.test(n)) {
       if (/اطفال|ولادي/.test(n)) return { cat:'أحذية أطفال', sub:'حذاء أطفال' };
-      if (/بيبي/.test(n))         return { cat:'أحذية بيبي',  sub:'حذاء بيبي' };
+      if (/بيبي/.test(n))         return { cat:'أحذية بيبي', sub:'حذاء بيبي' };
       if (/رجال/.test(n))         return { cat:'شحاطات رجالية', sub:'شحاطة رجالي' };
       return { cat:'أحذية نسائية', sub:'حذاء نسائي' };
     }
@@ -2531,32 +2343,28 @@ function buildProductsFromGlyphs(glyphs) {
   glyphs.forEach(g => { (byPage[g.p] = byPage[g.p] || []).push(g); });
 
   for (const pageGlyphs of Object.values(byPage)) {
-    // ── Column X ranges (from actual coordinate analysis) ──
-    // x ~38-75  → الإجمالي (total)
-    // x ~75-100 → سعر المفرد (unit sell price)
-    // x ~100-130→ وحدة
-    // x ~128-165→ الكمية (quantity)
-    // x ~165-220→ اسم المادة (product name) — RTL reversed
+    // ── Verified column X ranges from coordinate analysis ──
+    // x ~38-75  → الإجمالي  (total price, sits ~10px ABOVE code row)
+    // x ~75-100 → سعر المفرد (unit sell price, sits ~8px ABOVE code row)
+    // x ~100-130→ وحدة      (unit label)
+    // x ~128-168→ الكمية    (quantity, same row as code)
+    // x ~165-220→ اسم المادة (name, same row + below row)
     // x ~218-232→ رقم المادة (barcode/code)
 
-    // Find code items at x~218-232 with numeric 4-7 digit values
     const codeItems = pageGlyphs
-      .filter(g => {
-        const candidate = normalizeDigits(g.u.replace(/\s/g,''));
-        return g.x >= 218 && g.x <= 232 && /^\d{4,7}$/.test(candidate);
-      })
+      .filter(g => g.x >= 218 && g.x <= 232 && /^\d{4,7}$/.test(g.u.replace(/\s/g,'')))
       .sort((a, b) => a.y - b.y);
 
     for (let i = 0; i < codeItems.length; i++) {
       const { y: cy, u: codeRaw } = codeItems[i];
-      const code = normalizeDigits(codeRaw.replace(/\s/g,''));
+      const code = codeRaw.replace(/\s/g,'');
       if (products[code]) continue;
 
-      // Band: this row to next row minus 3 units
-      const yEnd = i+1 < codeItems.length ? codeItems[i+1].y - 3 : cy + 70;
-      const band = pageGlyphs.filter(g => g.y >= cy - 3 && g.y <= Math.min(cy + 65, yEnd));
+      // ── CRITICAL: price/total sit ABOVE the code row (cy-22 to cy)
+      // Name extra words sit BELOW (cy to cy+35)
+      const yNext = i+1 < codeItems.length ? codeItems[i+1].y : cy + 80;
+      const band  = pageGlyphs.filter(g => g.y >= cy - 22 && g.y <= Math.min(cy + 38, yNext - 3));
 
-      // Get text in X range
       const gx = (x0, x1) =>
         band.filter(g => g.x >= x0 && g.x <= x1)
             .sort((a,b) => a.y - b.y || a.x - b.x)
@@ -2564,60 +2372,36 @@ function buildProductsFromGlyphs(glyphs) {
 
       const totalS  = gx(38, 75);    // الإجمالي
       const priceS  = gx(75, 100);   // سعر المفرد
-      const qtyS    = gx(128, 165);  // الكمية
-      const nameRaw = gx(165, 220);  // الاسم
+      const qtyS    = gx(128, 168);  // الكمية
+      const nameRaw = gx(165, 220);  // الاسم (may have duplicate words due to 2-line layout)
 
-      // Parse quantity
-      const qtyM = normalizeDigits(qtyS).replace(/\s/g,'').match(/\d+/);
+      const qtyM = qtyS.replace(/\s/g,'').match(/\d+/);
       if (!qtyM) continue;
       const qty = parseInt(qtyM[0]);
       if (qty <= 0) continue;
 
-      const rawUnit = cleanNum(priceS);
-      const rawTotal = cleanNum(totalS);
+      // ── FIX PRICES: treat spaces as thousand separators ──
+      let price = cleanPrice(priceS);
+      let total = cleanPrice(totalS);
 
-      const approxEqual = (a, b) => Math.abs(a - b) <= 1;
-      let wholesale = 0;
-      let sellPrice = 0;
-      const avg = rawTotal > 0 ? rawTotal / qty : 0;
+      if (price === 0 && total > 0 && qty > 0) price = Math.round(total / qty);
+      if (total === 0 && price > 0)             total = price * qty;
 
-      if (rawUnit > 0) {
-        const unitAsSell = rawUnit;
-        const unitAsWholesale = Math.round(rawUnit / 1.5);
-        const totalIfSell = unitAsSell * qty;
-        const totalIfWholesale = unitAsWholesale * qty;
+      // Fix Arabic and remove duplicates
+      let name = fixAr(nameRaw);
+      // Remove noise words
+      name = name.replace(/\b(وحدة|wahida)\b/g, '').replace(/\s+/g, ' ').trim();
+      if (!name) name = 'منتج ' + code;
 
-        if (avg > 0 && approxEqual(totalIfSell, rawTotal)) {
-          sellPrice = unitAsSell;
-          wholesale = unitAsWholesale;
-        } else if (avg > 0 && approxEqual(totalIfWholesale, rawTotal)) {
-          wholesale = unitAsWholesale;
-          sellPrice = Math.round(wholesale * 1.5);
-        } else if (avg > 0 && rawUnit > avg * 1.2) {
-          sellPrice = unitAsSell;
-          wholesale = unitAsWholesale;
-        } else {
-          wholesale = rawUnit;
-          sellPrice = Math.round(wholesale * 1.5);
-        }
-      } else if (rawTotal > 0) {
-        wholesale = Math.round(avg / 1.5);
-        sellPrice = Math.round(wholesale * 1.5);
-      }
-
-      const totalWholesale = wholesale * qty;
-      const totalSell = sellPrice * qty;
-
-      const name = fixAr(nameRaw) || ('منتج ' + code);
       const { cat, sub } = getCategory(name);
 
       products[code] = {
         name, cat, sub,
-        wholesalePrice: wholesale,
-        sellPrice: sellPrice,
+        wholesalePrice: 0,
+        sellPrice: price,
         count: qty,
-        totalWholesale: totalWholesale,
-        totalSell: totalSell,
+        totalWholesale: 0,
+        totalSell: total,
         origCode: code,
         createdAt: new Date().toISOString(),
         lastScan:  new Date().toISOString()
