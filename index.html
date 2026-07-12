@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -2539,11 +2539,11 @@ function buildProductsFromGlyphs(glyphs) {
     // x ~165-220→ اسم المادة (product name) — RTL reversed
     // x ~218-232→ رقم المادة (barcode/code)
 
-    // Find code items at x~218-232 with numeric 4-7 digit values
+    // Find code items at x~215-240 with numeric 4-8 digit values
     const codeItems = pageGlyphs
       .filter(g => {
         const candidate = normalizeDigits(g.u.replace(/\s/g,''));
-        return g.x >= 218 && g.x <= 232 && /^\d{4,7}$/.test(candidate);
+        return g.x >= 215 && g.x <= 240 && /^\d{4,8}$/.test(candidate);
       })
       .sort((a, b) => a.y - b.y);
 
