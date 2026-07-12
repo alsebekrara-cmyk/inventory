@@ -708,11 +708,18 @@ try { DB = JSON.parse(localStorage.getItem('inv_v4') || '{}'); } catch(e){ DB = 
 try { isLight = localStorage.getItem('inv_theme') === 'light'; if(isLight) document.documentElement.classList.add('light'); } catch(e){}
 
 const save = () => { try{ localStorage.setItem('inv_v4', JSON.stringify(DB)); }catch(e){} };
-const fmt = n => Math.round(n||0).toLocaleString('en-US');
+// Number formatters — Iraqi Arabic style (Arabic locale)
+const NF_INT = new Intl.NumberFormat('ar-IQ', {useGrouping:true, maximumFractionDigits:0});
+const NF_DEC = new Intl.NumberFormat('ar-IQ', {useGrouping:true, minimumFractionDigits:0, maximumFractionDigits:2});
+const fmt = n => {
+  try{ return NF_INT.format(Math.round(n||0)); }catch(e){ return String(Math.round(n||0)); }
+};
+// fmtP: display monetary values divided by 1000 (thousands scale), keep 2 decimals for fractional thousands
 const fmtP = n => {
   const value = Number(n) || 0;
-  const rounded = Math.round(value * 100) / 100;
-  return rounded.toLocaleString('en-US', {minimumFractionDigits:0,maximumFractionDigits:2});
+  const scaled = value / 1000; // display only, do not modify stored numbers
+  const rounded = Math.round(scaled * 100) / 100;
+  try{ return NF_DEC.format(rounded); }catch(e){ return String(rounded); }
 };
 const REPORT_COLS = [
   { key:'code', label:'الباركود', width:'70px', align:'center' },
@@ -1171,9 +1178,9 @@ function stopDetStream() {
 function refreshDetailLive(code) {
   const p=DB[code]; if(!p) return;
   const setV=(id,val)=>{ const el=document.getElementById(id); if(el) el.textContent=val; };
-  setV('dv-cnt',p.count.toLocaleString());
-  setV('dv-tot',fmt(p.totalSell)+' د.ع');
-  setV('dv-prf',fmt(p.totalSell-p.totalWholesale)+' د.ع');
+  setV('dv-cnt',fmt(p.count));
+  setV('dv-tot',fmtP(p.totalSell)+' د.ع');
+  setV('dv-prf',fmtP(p.totalSell-p.totalWholesale)+' د.ع');
 }
 
 // ══════════════════════════════════════
@@ -1313,12 +1320,13 @@ function startLblDecode(video) {
 // سعر البيع + هامش % → سعر الجملة: wp = sp / (1 + margin/100)
 
 function calcFromWp() {
-  const wp = parseFloat(document.getElementById('fWp')?.value) || 0;
+  const wpDisplayed = parseFloat(document.getElementById('fWp')?.value) || 0;
+  const wp = wpDisplayed * 1000;
   const margin = parseFloat(document.getElementById('fMargin')?.value);
   if(wp > 0 && !isNaN(margin) && margin > 0) {
     const sp = wp * (1 + margin / 100);
     const spEl = document.getElementById('fSp');
-    if(spEl) spEl.value = sp.toFixed(3);
+    if(spEl) spEl.value = (sp/1000).toFixed(2);
     showProfitAmt(wp, sp);
   } else {
     recalcMargin();
@@ -1326,12 +1334,13 @@ function calcFromWp() {
 }
 
 function calcFromSp() {
-  const sp = parseFloat(document.getElementById('fSp')?.value) || 0;
+  const spDisplayed = parseFloat(document.getElementById('fSp')?.value) || 0;
+  const sp = spDisplayed * 1000;
   const margin = parseFloat(document.getElementById('fMargin')?.value);
   if(sp > 0 && !isNaN(margin) && margin > 0) {
     const wp = sp / (1 + margin / 100);
     const wpEl = document.getElementById('fWp');
-    if(wpEl) wpEl.value = wp.toFixed(3);
+    if(wpEl) wpEl.value = (wp/1000).toFixed(2);
     showProfitAmt(wp, sp);
   } else {
     recalcMargin();
@@ -1340,27 +1349,31 @@ function calcFromSp() {
 
 function calcFromMargin() {
   const margin = parseFloat(document.getElementById('fMargin')?.value);
-  const wp = parseFloat(document.getElementById('fWp')?.value) || 0;
-  const sp = parseFloat(document.getElementById('fSp')?.value) || 0;
+  const wpDisplayed = parseFloat(document.getElementById('fWp')?.value) || 0;
+  const spDisplayed = parseFloat(document.getElementById('fSp')?.value) || 0;
+  const wp = wpDisplayed * 1000;
+  const sp = spDisplayed * 1000;
   if(isNaN(margin) || margin <= 0) return;
   if(wp > 0) {
     // Wholesale given → calculate sell price
     const newSp = wp * (1 + margin / 100);
     const spEl = document.getElementById('fSp');
-    if(spEl) spEl.value = newSp.toFixed(3);
+    if(spEl) spEl.value = (newSp/1000).toFixed(2);
     showProfitAmt(wp, newSp);
   } else if(sp > 0) {
     // Sell price given → calculate wholesale
     const newWp = sp / (1 + margin / 100);
     const wpEl = document.getElementById('fWp');
-    if(wpEl) wpEl.value = newWp.toFixed(3);
+    if(wpEl) wpEl.value = (newWp/1000).toFixed(2);
     showProfitAmt(newWp, sp);
   }
 }
 
 function recalcMargin() {
-  const wp = parseFloat(document.getElementById('fWp')?.value) || 0;
-  const sp = parseFloat(document.getElementById('fSp')?.value) || 0;
+  const wpDisplayed = parseFloat(document.getElementById('fWp')?.value) || 0;
+  const spDisplayed = parseFloat(document.getElementById('fSp')?.value) || 0;
+  const wp = wpDisplayed * 1000;
+  const sp = spDisplayed * 1000;
   if(wp > 0 && sp > 0) {
     const margin = ((sp - wp) / wp) * 100;
     const mEl = document.getElementById('fMargin');
@@ -1374,7 +1387,8 @@ function showProfitAmt(wp, sp) {
   if(!el) return;
   const profit = sp - wp;
   const margin = wp > 0 ? ((profit/wp)*100).toFixed(1) : 0;
-  el.textContent = `ربح: ${profit.toFixed(3)} د.ع (${margin}%)`;
+  const profitScaled = profit / 1000;
+  el.textContent = `ربح: ${profitScaled.toFixed(2)} د.ع (${margin}%)`;
   el.style.color = profit >= 0 ? 'var(--grn)' : 'var(--red)';
 }
 function showAddModal(origCode) {
@@ -1470,8 +1484,10 @@ function saveNew(origCode) {
   if(DB[newCode]&&newCode!==origCode){toast('هذا الباركود مستخدم بالفعل','a');return;}
   const name=document.getElementById('fNm').value.trim()||('منتج '+newCode);
   const cat=document.getElementById('fCt').value, sub=document.getElementById('fSb').value;
-  const wp=parseFloat(document.getElementById('fWp').value)||0;
-  const sp=parseFloat(document.getElementById('fSp').value)||0;
+  const wpDisplayed = parseFloat(document.getElementById('fWp').value)||0;
+  const spDisplayed = parseFloat(document.getElementById('fSp').value)||0;
+  const wp = wpDisplayed * 1000;
+  const sp = spDisplayed * 1000;
   const qty=Math.max(1, parseInt(document.getElementById('fQty')?.value)||1);
   DB[newCode]={
     name, cat, sub,
@@ -1510,8 +1526,8 @@ function showEditModal(code, e) {
       <div class="fg"><label class="fl">الفئة الفرعية</label><select class="fsl" id="eSb">${subOpts}</select></div>
     </div>
     <div class="fr">
-      <div class="fg"><label class="fl">سعر الجملة</label><input class="fi" id="eWp" type="number" value="${p.wholesalePrice}" step="0.001" min="0"></div>
-      <div class="fg"><label class="fl">سعر البيع</label><input class="fi" id="eSp" type="number" value="${p.sellPrice}" step="0.001" min="0"></div>
+      <div class="fg"><label class="fl">سعر الجملة</label><input class="fi" id="eWp" type="number" value="${(p.wholesalePrice/1000).toFixed(2)}" step="0.01" min="0"></div>
+      <div class="fg"><label class="fl">سعر البيع</label><input class="fi" id="eSp" type="number" value="${(p.sellPrice/1000).toFixed(2)}" step="0.01" min="0"></div>
     </div>
     <div class="fg"><label class="fl">العدد</label><input class="fi" id="eCnt" type="number" value="${p.count}" min="0"></div>
     <div style="background:var(--bg);border:1px solid var(--bdr2);border-radius:var(--rsm);padding:10px;margin-top:4px">
@@ -1545,8 +1561,8 @@ function saveEdit(oldCode) {
   const updP={...p,
     name:document.getElementById('eNm').value.trim()||p.name,
     cat:document.getElementById('eCt').value, sub:document.getElementById('eSb').value,
-    wholesalePrice:parseFloat(document.getElementById('eWp').value)||0,
-    sellPrice:parseFloat(document.getElementById('eSp').value)||0,
+    wholesalePrice:(parseFloat(document.getElementById('eWp').value)||0) * 1000,
+    sellPrice:(parseFloat(document.getElementById('eSp').value)||0) * 1000,
     count:parseInt(document.getElementById('eCnt').value)||0
   };
   updP.totalWholesale=updP.wholesalePrice*updP.count;
@@ -1579,18 +1595,18 @@ function showDetail(code) {
       <div class="di di-cnt">
         <div class="di-lbl">العدد</div>
         <div class="di-cnt-row">
-          <div class="di-val acc" id="dv-cnt">${p.count.toLocaleString()}</div>
+          <div class="di-val acc" id="dv-cnt">${fmt(p.count)}</div>
           <div class="di-cnt-btns">
             <button class="di-qbtn minus" onclick="bumpQty('${code}',-1)" title="إنقاص قطعة"><i data-lucide="minus"></i></button>
             <button class="di-qbtn plus" onclick="bumpQty('${code}',1)" title="إضافة قطعة"><i data-lucide="plus"></i></button>
           </div>
         </div>
       </div>
-      <div class="di"><div class="di-lbl">سعر البيع</div><div class="di-val grn">${fmt(p.sellPrice)} د.ع</div></div>
-      <div class="di"><div class="di-lbl">سعر الجملة</div><div class="di-val">${fmt(p.wholesalePrice)} د.ع</div></div>
-      <div class="di"><div class="di-lbl">ربح القطعة</div><div class="di-val ${profit>=0?'grn':''}">${fmt(profit)} د.ع</div></div>
-      <div class="di"><div class="di-lbl">إجمالي المخزون</div><div class="di-val" id="dv-tot">${fmt(p.totalSell)} د.ع</div></div>
-      <div class="di"><div class="di-lbl">الربح الكلي</div><div class="di-val grn" id="dv-prf">${fmt(profitTot)} د.ع</div></div>
+      <div class="di"><div class="di-lbl">سعر البيع</div><div class="di-val grn">${fmtP(p.sellPrice)} د.ع</div></div>
+      <div class="di"><div class="di-lbl">سعر الجملة</div><div class="di-val">${fmtP(p.wholesalePrice)} د.ع</div></div>
+      <div class="di"><div class="di-lbl">ربح القطعة</div><div class="di-val ${profit>=0?'grn':''}">${fmtP(profit)} د.ع</div></div>
+      <div class="di"><div class="di-lbl">إجمالي المخزون</div><div class="di-val" id="dv-tot">${fmtP(p.totalSell)} د.ع</div></div>
+      <div class="di"><div class="di-lbl">الربح الكلي</div><div class="di-val grn" id="dv-prf">${fmtP(profitTot)} د.ع</div></div>
     </div>
     <button class="btn btn-acc" style="width:100%;justify-content:center;margin-bottom:10px;padding:10px" onclick="bumpQty('${code}',1)">
       <i data-lucide="plus-circle"></i> إضافة قطعة واحدة يدوياً (+1)
@@ -1739,10 +1755,10 @@ function renderStats() {
   const ts=items.reduce((a,b)=>a+b.totalSell,0);
   const prf=ts-tw, mg=tw>0?Math.round(prf/tw*100):0;
   document.getElementById('statsGrid').innerHTML=`
-    <div class="sc cp"><div class="sc-ico"><i data-lucide="layers"></i></div><div class="sc-lbl">القطع</div><div class="sc-val">${tot.toLocaleString()}</div><div class="sc-sub">${items.length} صنف</div></div>
+    <div class="sc cp"><div class="sc-ico"><i data-lucide="layers"></i></div><div class="sc-lbl">القطع</div><div class="sc-val">${fmt(tot)}</div><div class="sc-sub">${items.length} صنف</div></div>
     <div class="sc cg"><div class="sc-ico"><i data-lucide="trending-up"></i></div><div class="sc-lbl">الربح</div><div class="sc-val" style="font-size:11px">${fmt(prf)}</div><div class="sc-sub">هامش ${mg}%</div></div>
-    <div class="sc cb"><div class="sc-ico"><i data-lucide="banknote"></i></div><div class="sc-lbl">رأس المال</div><div class="sc-val" style="font-size:11px">${fmt(tw)}</div><div class="sc-sub">د.ع</div></div>
-    <div class="sc ca"><div class="sc-ico"><i data-lucide="tag"></i></div><div class="sc-lbl">البيع</div><div class="sc-val" style="font-size:11px">${fmt(ts)}</div><div class="sc-sub">د.ع</div></div>
+    <div class="sc cb"><div class="sc-ico"><i data-lucide="banknote"></i></div><div class="sc-lbl">رأس المال</div><div class="sc-val" style="font-size:11px">${fmtP(tw)}</div><div class="sc-sub">د.ع</div></div>
+    <div class="sc ca"><div class="sc-ico"><i data-lucide="tag"></i></div><div class="sc-lbl">البيع</div><div class="sc-val" style="font-size:11px">${fmtP(ts)}</div><div class="sc-sub">د.ع</div></div>
   `;
   lucide.createIcons({nodes:[document.getElementById('statsGrid')]});
 }
@@ -1770,9 +1786,9 @@ function pcHTML(code,p,isRecent){
       <div class="pc-code">${code}</div>
     </div>
     <div class="pc-right">
-      ${isRecent?`<div class="pb"><div class="pd"></div>+1</div>`:`<div class="pc-cnt">${p.count} قطعة</div>`}
-      <div class="pc-sell">${fmt(p.sellPrice)} د.ع</div>
-      <div class="pc-wp">جملة: ${fmt(p.wholesalePrice)}</div>
+      ${isRecent?`<div class="pb"><div class="pd"></div>+1</div>`:`<div class="pc-cnt">${fmt(p.count)} قطعة</div>`}
+      <div class="pc-sell">${fmtP(p.sellPrice)} د.ع</div>
+      <div class="pc-wp">جملة: ${fmtP(p.wholesalePrice)}</div>
     </div>
     ${!isRecent?`<div class="pc-acts" onclick="event.stopPropagation()">
       <button class="ibtn b" onclick="showEditModal('${code}',event)"><i data-lucide="edit-3"></i></button>
@@ -1905,7 +1921,7 @@ function renderReport() {
 
 function renderSettings(){
   const items=Object.values(DB), tot=items.reduce((a,b)=>a+b.count,0);
-  const el=document.getElementById('settInfo'); if(el) el.textContent=`${items.length} صنف · ${tot.toLocaleString()} قطعة`;
+  const el=document.getElementById('settInfo'); if(el) el.textContent=`${items.length} صنف · ${fmt(tot)} قطعة`;
   applyLblPreview();
 }
 
@@ -2155,15 +2171,15 @@ function importJSON(e) {
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
             <div style="background:rgba(0,0,0,.15);border-radius:6px;padding:8px;text-align:center">
-              <div style="font-size:18px;font-weight:700;color:var(--txt)">${newCount.toLocaleString()}</div>
+              <div style="font-size:18px;font-weight:700;color:var(--txt)">${fmt(newCount)}</div>
               <div style="font-size:10px;color:var(--txt2)">صنف مختلف</div>
             </div>
             <div style="background:rgba(0,0,0,.15);border-radius:6px;padding:8px;text-align:center">
-              <div style="font-size:18px;font-weight:700;color:var(--txt)">${totalQty.toLocaleString()}</div>
+              <div style="font-size:18px;font-weight:700;color:var(--txt)">${fmt(totalQty)}</div>
               <div style="font-size:10px;color:var(--txt2)">إجمالي القطع</div>
             </div>
             <div style="background:rgba(0,0,0,.15);border-radius:6px;padding:8px;text-align:center">
-              <div style="font-size:14px;font-weight:700;color:var(--grn)">${Math.round(totalVal).toLocaleString('ar-IQ')}</div>
+              <div style="font-size:14px;font-weight:700;color:var(--grn)">${fmtP(totalVal)}</div>
               <div style="font-size:10px;color:var(--txt2)">إجمالي البيع (د.ع)</div>
             </div>
             <div style="background:rgba(0,0,0,.15);border-radius:6px;padding:8px;text-align:center">
@@ -2647,15 +2663,15 @@ function showOXPSImportPreview(parsed) {
       <div style="font-size:12px;font-weight:700;color:var(--grn);margin-bottom:8px">✓ تم قراءة الملف وتحليله بنجاح</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
         <div style="background:rgba(0,0,0,.15);border-radius:6px;padding:7px;text-align:center">
-          <div style="font-size:17px;font-weight:700;color:var(--txt)">${newCount.toLocaleString()}</div>
+          <div style="font-size:17px;font-weight:700;color:var(--txt)">${fmt(newCount)}</div>
           <div style="font-size:9px;color:var(--txt2)">صنف مستخرج</div>
         </div>
         <div style="background:rgba(0,0,0,.15);border-radius:6px;padding:7px;text-align:center">
-          <div style="font-size:17px;font-weight:700;color:var(--txt)">${totalQty.toLocaleString()}</div>
+          <div style="font-size:17px;font-weight:700;color:var(--txt)">${fmt(totalQty)}</div>
           <div style="font-size:9px;color:var(--txt2)">إجمالي القطع</div>
         </div>
         <div style="background:rgba(0,0,0,.15);border-radius:6px;padding:7px;text-align:center">
-          <div style="font-size:13px;font-weight:700;color:var(--grn)">${Math.round(totalVal).toLocaleString('ar-IQ')}</div>
+          <div style="font-size:13px;font-weight:700;color:var(--grn)">${fmtP(totalVal)}</div>
           <div style="font-size:9px;color:var(--txt2)">إجمالي البيع (د.ع)</div>
         </div>
         <div style="background:rgba(0,0,0,.15);border-radius:6px;padding:7px;text-align:center">
