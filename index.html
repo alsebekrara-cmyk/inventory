@@ -2122,18 +2122,20 @@ function importOXPS(e) {
   toast('جارٍ قراءة الملف...', 'a');
 
   const reader = new FileReader();
-  reader.onload = function(ev) {
-    const arrayBuffer = ev.target.result;
+  reader.onload = async function(ev) {
     try {
-      const products = parseOXPSBuffer(arrayBuffer);
-      if (products && Object.keys(products).length > 0) {
+      const arrayBuffer = ev.target.result;
+      // parseOXPSBuffer is now async (uses DecompressionStream)
+      const products = await parseOXPSBuffer(arrayBuffer);
+      const count = Object.keys(products).length;
+      if (count > 0) {
         showOXPSImportPreview(products);
       } else {
-        toast('لم يتم العثور على منتجات في الملف', 'r');
+        toast('لم يتم العثور على منتجات في الملف — تأكد أن الملف بصيغة OXPS/XPS', 'r');
       }
     } catch (err) {
       console.error('OXPS parse error:', err);
-      toast('خطأ في قراءة الملف: ' + err.message, 'r');
+      toast('خطأ في قراءة الملف: ' + (err.message || err), 'r');
     }
   };
   reader.onerror = () => toast('فشل قراءة الملف', 'r');
